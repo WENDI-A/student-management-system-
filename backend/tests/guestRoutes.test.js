@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Base URL for API requests
-const API_URL = process.env.API_URL || 'http://localhost:3002/api';
+const API_URL = process.env.API_URL || 'http://localhost:3001/api';
 
 // Store tokens and IDs for use across tests
 let adminToken;
@@ -32,23 +32,6 @@ const updatedGuestData = {
   visitDuration: '3 hours',
   status: 'active'
 };
-
-// Helper function to log in as admin
-async function loginAsAdmin() {
-  try {
-    const response = await axios.post(`${API_URL}/auth/login`, {
-      identifier : 'test.guest.1742659696972@example.com',
-      password: 'Password123!'
-    });
-    
-    adminToken = response.data.token;
-    console.log('Admin login successful');
-    return adminToken;
-  } catch (error) {
-    console.error('Admin login failed:', error.response?.data || error.message);
-    throw error;
-  }
-}
 
 // Test suite for guest routes
 async function runTests() {

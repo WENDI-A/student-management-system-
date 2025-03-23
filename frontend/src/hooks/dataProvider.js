@@ -2,7 +2,7 @@
 import { fetchUtils } from 'react-admin';
 import { stringify } from 'query-string';
 
-const apiUrl = 'http://localhost:3000'; // Replace with your API URL
+const apiUrl = 'http://localhost:3002';
 const httpClient = fetchUtils.fetchJson;
 
 const dataProvider = {
@@ -24,13 +24,10 @@ const dataProvider = {
         }));
     },
 
-    // Implement other methods as needed (getOne, getMany, update, create, delete, etc.)
     getOne: (resource, params) =>
         httpClient(`${apiUrl}/${resource}/${params.id}`).then(({ json }) => ({
             data: json,
         })),
-
-    // Add other methods as needed
 };
 
 export default dataProvider;

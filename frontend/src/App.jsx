@@ -1,6 +1,6 @@
 import React from "react";
 import { Admin, Resource } from "react-admin";
-import dataProvider from "./dataProvider";
+import dataProvider from "./hooks/dataProvider";
 import authProvider from "./hooks/authProvider";
 import { CustomLayout } from "./layout/CustomLayout";
 import LoginPage from "./Auth/LoginPage";

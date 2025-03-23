@@ -5,20 +5,8 @@ const loginController = require('../controllers/loginController');
 
 router.post('/login', loginController.login);
 
-// router.post('/forgot-password', userController.forgotPassword);
-// router.post('/reset-password/:token', userController.resetPassword);
+router.post('/forgot-password', loginController.forgotPassword);
+router.post('/reset-password/:token', loginController.resetPassword);
+router.get("/token-refresh/:token" ,loginController.token_refresh)
 
 module.exports = router;
-
-
-// {
-//     "firstName" : "kaleb",
-//       "lastName" : "adm",
-//      "email" : "email.com" ,
-//       "password" :  "12345", 
-//       "phone" : "02992929", 
-//       "address" : "aa",
-//       "organization" :"haww",
-//       "purpose" : "tour",
-//       "visitDuration" : "wow"
-// }

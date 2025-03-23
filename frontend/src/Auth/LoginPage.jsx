@@ -148,7 +148,7 @@ const LoginPage = () => {
                       htmlFor="username"
                       className="block text-gray-700 font-medium mb-1"
                     >
-                      Username
+                      Email
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
@@ -158,7 +158,7 @@ const LoginPage = () => {
                         type="text"
                         id="username"
                         name="username"
-                        placeholder="Enter your username"
+                        placeholder="Enter your Email"
                         value={formData.username || ""}
                         onChange={handleInputChange}
                         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md
