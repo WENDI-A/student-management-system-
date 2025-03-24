@@ -7,7 +7,6 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.post('/register', studentController.registerStudent);
 router.use(authMiddleware.protect);
 router.get('/profile/:id', authMiddleware.authorize('admin', 'student'), studentController.getStudentById);
-router.patch('/update/:id', authMiddleware.authorize('admin', 'student'), studentController.updateStudent);
 router.put('/update/:id', authMiddleware.authorize('admin', 'student'), studentController.updateStudent);
 router.get('/', authMiddleware.authorize('admin'), studentController.getAllStudents);
 router.delete('/:id', authMiddleware.authorize('admin'), studentController.deleteStudent);

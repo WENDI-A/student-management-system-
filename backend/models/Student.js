@@ -34,22 +34,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATEONLY,
       allowNull: true
     },
-    department: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    enrollmentYear: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
     enrollmentDate: {
       type: DataTypes.DATEONLY,
       allowNull: true
-    },
-    currentSemester: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 1
     },
     grade: {
       type: DataTypes.STRING,
@@ -69,7 +56,6 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Student.associate = function(models) {
-    // Student can have many parents
     Student.belongsToMany(models.Parent, {
       through: 'ParentStudent',
       foreignKey: 'studentId',
