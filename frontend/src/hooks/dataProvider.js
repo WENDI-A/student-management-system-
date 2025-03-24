@@ -2,25 +2,39 @@ import { fetchUtils } from 'react-admin';
 import { API_ENDPOINT_FUNCTION, GET_HEADER } from "../config/config";
 
 const get_path = {
-    students: "/students"
+    students: "/students",
+    teachers : "/teachers",
+    parents : "/parents",
 };
 
 const create_path = {
-    students: "/students/register"
+    students: "/students/register",
+    teachers :"/teachers/register",
+    parents : "/parents/register"
 };
 
 const get_one_path = {  
-    students: "/profile"
+    students: "/students/profile",
+    teachers : "/teachers/profile",
+    parents : "/parents/profile"
+
 };
 
 
 const delete_path = {
-    students: "/students"
+    students: "/students",
+    teachers : "/teachers",
+    parents : "/parents"
+
 };
 
 const update_path = {
-    students: "/students/update"
+    students: "/students/update",
+    teachers : "/teachers/update",
+    parents : "/parents/update"
 };
+
+
 const dataProvider = {
     getList: async (resource, params) => {
         const url = API_ENDPOINT_FUNCTION(get_path[resource]);
@@ -37,7 +51,7 @@ const dataProvider = {
         const options = await GET_HEADER();
         
         return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
-            data: json,
+            data: json.data,
         }));
     },
     
@@ -61,7 +75,7 @@ const dataProvider = {
         });
         
         return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
-            data: json,
+            data: json.data,
         }));
     },
     

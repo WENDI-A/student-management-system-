@@ -1,22 +1,20 @@
-// src/components/DepartmentFileCreate.tsx
 import React from "react";
-import { Create, SimpleForm, TextInput, required } from "react-admin";
+import { Edit, SimpleForm, TextInput, required } from "react-admin";
 
-const TeacherEdit = () => {
-
+const TeacherEdit = (props) => {
   return (
-    <Create>
+    <Edit {...props}>
       <SimpleForm>
-        <TextInput source="firstName" label="First Name" fullWidth validate={[required()]} />
-        <TextInput source="lastName" label="Last Name" fullWidth validate={[required()]} />
-        <TextInput source="student_id" label="Student Id" defaultValue="1746/14" fullWidth  validate={[required()]} />
-        <TextInput source="email" label="Email" fullWidth validate={[required()]} />
-        <TextInput source="password" label="password" fullWidth validate={[required()]} />
-        <TextInput source="dateOfBirth" label="Date Of Birth" fullWidth validate={[required()]} />
-        <TextInput source="enrollmentDate" label="Enrollment Date" fullWidth validate={[required()]} />
-        <TextInput source="grade" label="Grade" fullWidth validate={[required()]} />
+                <TextInput source="firstName" label="First Name" fullWidth validate={[required()]} />
+                <TextInput source="lastName" label="Last Name" fullWidth validate={[required()]} />
+                <TextInput source="email" label="Email" fullWidth validate={[required()]} />
+                <TextInput source="password" type="password" label="Password" fullWidth validate={[required()]} />
+                <TextInput source="department" label="Department" fullWidth validate={[required()]} />
+                <TextInput source="joinDate" type="date" label="Join Date" fullWidth validate={[required()]} />
+                <TextInput source="position" label="Position" fullWidth validate={[required()]} />
+                <TextInput source="phone" type="tel" label="Phone Number" fullWidth validate={[required()]} />
       </SimpleForm>
-    </Create>
+    </Edit>
   );
 };
 
