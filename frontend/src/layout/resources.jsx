@@ -14,6 +14,11 @@ import StudentDashboard from "../dashboards/StudentDashboard";
 import ParentDashboard from "../dashboards/ParentDashboard";
 import UserDashboard from "../dashboards/UserDashboard";
 
+// Teacher components
+import TeacherList from "../Admin/Teacher/TeacherList";
+import TeacherEdit from "../Admin/Teacher/TeacherEdit";
+import TeacherCreate from "../Admin/Teacher/TeacherCreate";
+
 
 const DASHBOARDS = {
   admin: AdminDashboard,
@@ -26,13 +31,9 @@ const DASHBOARDS = {
 const RESOURCES = {
   admin: [
     { key: "students", name: "students", options: { label: "Students" }, list: StudentList, create: StudentCreate, edit: StudentEdit },
-    { key: "teachers", name: "teachers", options: { label: "Teachers" } },
+    { key: "teachers", name: "teachers", options: { label: "Teachers" } , list: TeacherList , create:TeacherCreate , edit: TeacherEdit },
     { key: "parents", name: "parents", options: { label: "Parents" } },
-    { key: "courses", name: "courses", options: { label: "Courses" } },
-    { key: "assignments", name: "assignments", options: { label: "Assignments" } },
-    { key: "exams", name: "exams", options: { label: "Exams" } },
-    { key: "attendance", name: "attendance", options: { label: "Attendance" } },
-    { key: "announcements", name: "announcements", options: { label: "Announcements" } }
+    { key: "Notfication", name: "Notfication", options: { label: "Notfication" } },
   ],
   teacher: [
     { key: "students", name: "students", options: { label: "Students" } },

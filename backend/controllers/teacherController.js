@@ -1,6 +1,24 @@
-const { Teacher } = require('../models');
-const { sequelize } = require('../models');
+const { Teacher, sequelize } = require('../models');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+
+const generateToken = (teacher) => {
+  return jwt.sign(
+    { 
+      id: teacher.id,
+      email: teacher.email,
+      role: 'teacher' 
+    },
+    process.env.JWT_SECRET || 'your_jwt_secret',
+    { expiresIn: '1d' }
+  );
+};
+
+const checkTeacherExists = async (email) => {
+  const teacher = await Teacher.findOne({ where: { email } });
+  return !!teacher;
+};
 
 exports.registerTeacher = async (req, res, next) => {
   try {
@@ -10,72 +28,53 @@ exports.registerTeacher = async (req, res, next) => {
       email, 
       password, 
       phone, 
-      address,
-      teacher_id,
       department,
       specialization,
       joinDate,
       position
     } = req.body;
 
-    if (!firstName || !lastName || !email || !password || !teacher_id) {
+    if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({ 
         success: false, 
         message: 'Missing required fields' 
       });
     }
 
-    const userExists = await userController.checkUserExists(email);
-    if (userExists) {
+    const teacherExists = await checkTeacherExists(email);
+    if (teacherExists) {
       return res.status(409).json({ 
         success: false, 
-        message: 'User with this email already exists' 
+        message: 'Teacher with this email already exists' 
       });
     }
 
-    const existingTeacher = await Teacher.findOne({ where: { teacher_id } });
-    if (existingTeacher) {
-      return res.status(409).json({ 
-        success: false, 
-        message: 'Teacher ID is already in use' 
-      });
-    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const result = await sequelize.transaction(async (t) => {
-      const newUser = await userController.createBaseUser({
-        firstName,
-        lastName,
-        email,
-        password,
-        role: 'teacher',
-        phone,
-        address
-      }, t);
-
-      await Teacher.create({
-        userId: newUser.id,
-        teacher_id,
-        email,
-        department: department || null,
-        specialization: specialization || null,
-        joinDate: joinDate || new Date(),
-        position: position || null
-      }, { transaction: t });
-
-      return newUser;
+    const newTeacher = await Teacher.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      department: department || null,
+      specialization: specialization || null,
+      joinDate: joinDate || new Date(),
+      position: position || null,
+      phone: phone || null
     });
 
-    const token = userController.generateToken(result);
+    const token = generateToken(newTeacher);
 
     return res.status(201).json({
       success: true,
       message: 'Teacher registered successfully',
-      user: {
-        id: result.id,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        email: result.email,
-        role: result.role
+      teacher: {
+        id: newTeacher.id,
+        firstName: newTeacher.firstName,
+        lastName: newTeacher.lastName,
+        email: newTeacher.email,
+        role: 'teacher'
       },
       token
     });
@@ -93,14 +92,12 @@ exports.registerTeacher = async (req, res, next) => {
   }
 };
 
-// Update Specific Column (e.g., only position, department, etc.)
 exports.updateTeacherColumn = async (req, res, next) => {
   try {
     const teacherId = req.params.id;
     const { columnName, value } = req.body;
 
-    // Check if column exists
-    const validColumns = ['teacher_id', 'department', 'specialization', 'joinDate', 'position'];
+    const validColumns = ['firstName', 'lastName', 'email', 'department', 'specialization', 'joinDate', 'position', 'phone', 'isActive'];
     if (!validColumns.includes(columnName)) {
       return res.status(400).json({
         success: false,
@@ -116,7 +113,6 @@ exports.updateTeacherColumn = async (req, res, next) => {
       });
     }
 
-    // Update the column value
     const updatedTeacher = await teacher.update({ [columnName]: value });
 
     return res.status(200).json({
@@ -130,7 +126,6 @@ exports.updateTeacherColumn = async (req, res, next) => {
   }
 };
 
-// Delete Teacher by ID
 exports.deleteTeacher = async (req, res, next) => {
   try {
     const teacherId = req.params.id;
@@ -160,9 +155,7 @@ exports.updateTeacher = async (req, res, next) => {
     const teacherId = req.params.id;
     const isPartialUpdate = req.method === 'PATCH';
     
-    const teacher = await Teacher.findByPk(teacherId, {
-      include: [{ model: User, as: 'user' }]
-    });
+    const teacher = await Teacher.findByPk(teacherId);
     
     if (!teacher) {
       return res.status(404).json({
@@ -172,80 +165,49 @@ exports.updateTeacher = async (req, res, next) => {
     }
     
     const { 
-      teacher_id,
-      department,
-      specialization,
-      joinDate,
-      position,
       firstName, 
       lastName, 
       email, 
       password, 
-      phone, 
-      address,
+      department,
+      specialization,
+      joinDate,
+      position,
+      phone,
       isActive 
     } = req.body;
     
-    if (teacher_id && teacher_id !== teacher.teacher_id) {
-      const existingTeacher = await Teacher.findOne({ where: { teacher_id } });
-      if (existingTeacher) {
+    if (email && email !== teacher.email) {
+      const emailExists = await checkTeacherExists(email);
+      if (emailExists) {
         return res.status(409).json({
           success: false,
-          message: 'Teacher ID is already in use'
+          message: 'Email is already in use'
         });
       }
     }
 
-    await sequelize.transaction(async (t) => {
-      const teacherUpdateData = {};
-      
-      if (teacher_id !== undefined || !isPartialUpdate) teacherUpdateData.teacher_id = teacher_id || teacher.teacher_id;
-      if (department !== undefined || !isPartialUpdate) teacherUpdateData.department = department;
-      if (specialization !== undefined || !isPartialUpdate) teacherUpdateData.specialization = specialization;
-      if (joinDate !== undefined || !isPartialUpdate) teacherUpdateData.joinDate = joinDate || teacher.joinDate;
-      if (position !== undefined || !isPartialUpdate) teacherUpdateData.position = position;
+    const updateData = {};
+    
+    if (firstName !== undefined || !isPartialUpdate) updateData.firstName = firstName || teacher.firstName;
+    if (lastName !== undefined || !isPartialUpdate) updateData.lastName = lastName || teacher.lastName;
+    if (email !== undefined || !isPartialUpdate) updateData.email = email || teacher.email;
+    if (department !== undefined || !isPartialUpdate) updateData.department = department;
+    if (specialization !== undefined || !isPartialUpdate) updateData.specialization = specialization;
+    if (joinDate !== undefined || !isPartialUpdate) updateData.joinDate = joinDate || teacher.joinDate;
+    if (position !== undefined || !isPartialUpdate) updateData.position = position;
+    if (phone !== undefined || !isPartialUpdate) updateData.phone = phone;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+    
+    await teacher.update(updateData);
 
-      if (email !== undefined) teacherUpdateData.email = email;
-      
-      if (Object.keys(teacherUpdateData).length > 0) {
-        await teacher.update(teacherUpdateData, { transaction: t });
-      }
-      
-      if (teacher.user && (firstName || lastName || email || password || phone !== undefined || address !== undefined || isActive !== undefined)) {
-        if (email && email !== teacher.user.email) {
-          const emailExists = await userController.checkUserExists(email);
-          if (emailExists) {
-            throw new Error('Email is already in use');
-          }
-        }
-        
-        const userUpdateData = {};
-        
-        if (firstName !== undefined || !isPartialUpdate) userUpdateData.firstName = firstName || teacher.user.firstName;
-        if (lastName !== undefined || !isPartialUpdate) userUpdateData.lastName = lastName || teacher.user.lastName;
-        if (email !== undefined || !isPartialUpdate) userUpdateData.email = email || teacher.user.email;
-        if (phone !== undefined || !isPartialUpdate) userUpdateData.phone = phone;
-        if (address !== undefined || !isPartialUpdate) userUpdateData.address = address;
-        if (isActive !== undefined) userUpdateData.isActive = isActive;
-        
-        if (password) {
-          const salt = await bcrypt.genSalt(10);
-          userUpdateData.password = await bcrypt.hash(password, salt);
-        }
-        
-        if (Object.keys(userUpdateData).length > 0) {
-          await teacher.user.update(userUpdateData, { transaction: t });
-        }
-      }
-    });
-
-    const updatedTeacher = await Teacher.findByPk(teacherId, {
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: { exclude: ['password'] }
-      }]
-    });
+    // Fetch updated teacher
+    const updatedTeacher = await Teacher.findByPk(teacherId);
 
     return res.status(200).json({
       success: true,
@@ -279,11 +241,7 @@ exports.getTeacherById = async (req, res, next) => {
     const teacherId = req.params.id;
     
     const teacher = await Teacher.findByPk(teacherId, {
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: { exclude: ['password'] }
-      }]
+      attributes: { exclude: ['password'] }
     });
     
     if (!teacher) {
@@ -306,18 +264,14 @@ exports.getTeacherById = async (req, res, next) => {
 exports.getAllTeachers = async (req, res, next) => {
   try {
     const teachers = await Teacher.findAll({
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: { exclude: ['password'] }
-      }]
+      attributes: { exclude: ['password'] }
     });
 
     return res.status(200).json({
       success: true,
       count: teachers.length,
       data: teachers
-    });
+  })
   } catch (error) {
     console.error('Get all teachers error:', error);
     next(error);

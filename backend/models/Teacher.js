@@ -13,11 +13,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    teacher_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true
-    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -31,10 +26,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull : false
     },
     department: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    specialization: {
       type: DataTypes.STRING,
       allowNull: true
     },

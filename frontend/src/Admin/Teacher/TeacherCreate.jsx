@@ -9,12 +9,12 @@ const TeacherCreate = () => {
       <SimpleForm>
         <TextInput source="firstName" label="First Name" fullWidth validate={[required()]} />
         <TextInput source="lastName" label="Last Name" fullWidth validate={[required()]} />
-        <TextInput source="student_id" label="Student Id" defaultValue="1746/14" fullWidth  validate={[required()]} />
         <TextInput source="email" label="Email" fullWidth validate={[required()]} />
         <TextInput source="password" type="password" label="password" fullWidth validate={[required()]} />
-        <TextInput source="dateOfBirth" type="date" label="Date Of Birth" fullWidth validate={[required()]} />
-        <TextInput source="enrollmentDate" type="date" label="Enrollment Date" fullWidth validate={[required()]} />
-        <TextInput source="grade" label="Grade" fullWidth validate={[required()]} />
+        <TextInput source="department" label="department" fullWidth validate={[required()]} />
+        <TextInput source="joinDate" type="date" label="Enrollment Date" fullWidth validate={[required()]} />
+        <TextInput source="position" label="position" fullWidth validate={[required()]} />
+        <TextInput source="phone" type="tel" label="phone Number" fullWidth validate={[required()]} />
       </SimpleForm>
     </Create>
   );
