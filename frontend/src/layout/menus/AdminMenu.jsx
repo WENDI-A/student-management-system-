@@ -29,7 +29,7 @@ export const AdminMenu = () => (
             leftIcon={<AccountCircleIcon />}
         />
         <Menu.Item
-            to="/notifications"
+            to="/Notfication"
             primaryText="Notifications"
             leftIcon={<NotificationsIcon />}
         />

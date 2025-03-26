@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       type : DataTypes.STRING,
       allowNull : false
     },
-    department: {
+    grade: {
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -35,10 +35,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: DataTypes.NOW
-    },
-    position: {
-      type: DataTypes.STRING,
-      allowNull: true
     },
     phone: {
       type: DataTypes.STRING,

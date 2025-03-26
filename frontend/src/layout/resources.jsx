@@ -22,6 +22,7 @@ import ParentList from "../Admin/parent/ParentList";
 import parentCreate from "../Admin/parent/ParentCreate";
 import parentEdit from "../Admin/parent/ParentEdit";
 import { UpdatePasswordEdit } from "../Admin/UpdatePassword";
+import AdminReact from "../Admin/Notifcation/notifcationList";
 
 
 const DASHBOARDS = {
@@ -37,7 +38,7 @@ const RESOURCES = {
     { key: "students", name: "students", options: { label: "Students" }, list: StudentList, create: StudentCreate, edit: StudentEdit },
     { key: "teachers", name: "teachers", options: { label: "Teachers" } , list: TeacherList , create:TeacherCreate , edit: TeacherEdit },
     { key: "parents", name: "parents", options: { label: "Parents" } ,list :ParentList , create : parentCreate , edit : parentEdit },
-    { key: "Notfication", name: "Notfication", options: { label: "Notfication" }, },
+    { key: "Notfication", name: "Notfication", options: { label: "Notfication" }, list : AdminReact },
     { key: "Settings", name: "Settings", options: { label: "Settings" } ,list :  UpdatePasswordEdit },
   ],
   teacher: [
