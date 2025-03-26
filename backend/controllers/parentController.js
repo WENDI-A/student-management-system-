@@ -1,4 +1,5 @@
-const { Parent } = require('../models');
+const { Parent, Student } = require('../models');
+const { Op } = require('sequelize');
 const { sequelize } = require('../models');
 
 exports.registerParent = async (req, res, next) => {
@@ -36,7 +37,6 @@ exports.registerParent = async (req, res, next) => {
         lastName,
         email,
         password,
-        role: 'parent',
         phone,
         address,
         relation,
@@ -85,7 +85,7 @@ exports.getChildrenByParentId = async (req, res, next) => {
   try {
     const parentId = req.params.id;
     
-    if (req.user && req.user.role !== 'admin' && req.user.id !== parseInt(parentId)) {
+    if (req.user && req.user.role !== 'admin' && req.user.id !== parentId) {
       return res.status(403).json({ 
         success: false, 
         message: 'Not authorized to view these children' 
@@ -123,6 +123,62 @@ exports.getChildrenByParentId = async (req, res, next) => {
   }
 };
 
+exports.getStudentsByName = async (req, res, next) => {
+  try {
+    const parentId = req.params.id;
+    const { name } = req.query;
+    
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Student name is required'
+      });
+    }
+    
+    if (req.user && req.user.role !== 'admin' && req.user.id !== parentId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Not authorized to view these children' 
+      });
+    }
+    
+    const parent = await Parent.findByPk(parentId, {
+      include: [{
+        association: 'students',
+        attributes: ['id', 'firstName', 'lastName', 'grade', 'dateOfBirth', 'enrollmentDate'],
+        where: {
+          [Op.or]: [
+            { firstName: { [Op.like]: `%${name}%` } },
+            { lastName: { [Op.like]: `%${name}%` } }
+          ]
+        }
+      }]
+    });
+    
+    if (!parent) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Parent not found' 
+      });
+    }
+    
+    if (!parent.students || parent.students.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No children found with name containing "${name}"`
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      data: parent.students
+    });
+  } catch (error) {
+    console.error('Error fetching children by name:', error);
+    next(error);
+  }
+};
+
 exports.getAllParents = async (req, res, next) => {
   try {
     if (req.user && req.user.role !== 'admin') {
@@ -133,10 +189,7 @@ exports.getAllParents = async (req, res, next) => {
     }
     
     const parents = await Parent.findAll({
-      include: [{ 
-        association: 'user',
-        attributes: ['firstName', 'lastName', 'email', 'phone', 'address'] 
-      }]
+      attributes: ['id', 'firstName', 'lastName', 'email', 'phone', 'address', 'relation', 'occupation']
     });
     
     return res.status(200).json({
@@ -153,7 +206,7 @@ exports.getParentById = async (req, res, next) => {
   try {
     const parentId = req.params.id;
     
-    if (req.user && req.user.role !== 'admin' && req.user.id !== parseInt(parentId)) {
+    if (req.user && req.user.role !== 'admin' && req.user.id !== parentId) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to view this parent'
@@ -161,9 +214,10 @@ exports.getParentById = async (req, res, next) => {
     }
     
     const parent = await Parent.findByPk(parentId, {
-      include: [{ 
-        association: 'user',
-        attributes: ['firstName', 'lastName', 'email', 'phone', 'address'] 
+      attributes: ['id', 'firstName', 'lastName', 'email', 'phone', 'address', 'relation', 'occupation'],
+      include: [{
+        association: 'students',
+        attributes: ['id', 'firstName', 'lastName', 'grade']
       }]
     });
     
@@ -187,9 +241,18 @@ exports.getParentById = async (req, res, next) => {
 exports.updateParent = async (req, res, next) => {
   try {
     const parentId = req.params.id;
-    const { relation, occupation, studentIds } = req.body;
+    const { 
+      firstName, 
+      lastName, 
+      email, 
+      phone, 
+      address, 
+      relation, 
+      occupation, 
+      studentIds 
+    } = req.body;
     
-    if (req.user && req.user.role !== 'admin' && req.user.id !== parseInt(parentId)) {
+    if (req.user && req.user.role !== 'admin' && req.user.id !== parentId) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this parent'
@@ -206,17 +269,25 @@ exports.updateParent = async (req, res, next) => {
     }
     
     await sequelize.transaction(async (t) => {
-      if (relation || occupation) {
-        const updateData = {};
-        if (relation) {
-          const validRelations = ['father', 'mother', 'guardian', 'other'];
-          if (!validRelations.includes(relation)) {
-            throw new Error('Invalid relation. Must be one of: father, mother, guardian, other');
-          }
-          updateData.relation = relation;
+      const updateData = {};
+      
+      if (firstName) updateData.firstName = firstName;
+      if (lastName) updateData.lastName = lastName;
+      if (email) updateData.email = email;
+      if (phone) updateData.phone = phone;
+      if (address) updateData.address = address;
+      
+      if (relation) {
+        const validRelations = ['father', 'mother', 'guardian', 'other'];
+        if (!validRelations.includes(relation)) {
+          throw new Error('Invalid relation. Must be one of: father, mother, guardian, other');
         }
-        if (occupation) updateData.occupation = occupation;
-        
+        updateData.relation = relation;
+      }
+      
+      if (occupation) updateData.occupation = occupation;
+      
+      if (Object.keys(updateData).length > 0) {
         await parent.update(updateData, { transaction: t });
       }
       
@@ -240,16 +311,11 @@ exports.updateParent = async (req, res, next) => {
     });
     
     const updatedParent = await Parent.findByPk(parentId, {
-      include: [
-        { 
-          association: 'user',
-          attributes: ['firstName', 'lastName', 'email', 'phone', 'address'] 
-        },
-        {
-          association: 'students',
-          attributes: ['id', 'firstName', 'lastName', 'grade']
-        }
-      ]
+      attributes: ['id', 'firstName', 'lastName', 'email', 'phone', 'address', 'relation', 'occupation'],
+      include: [{
+        association: 'students',
+        attributes: ['id', 'firstName', 'lastName', 'grade']
+      }]
     });
     
     return res.status(200).json({
