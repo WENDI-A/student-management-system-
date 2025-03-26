@@ -1,3 +1,5 @@
+const bcrypt = require("bcrypt");
+
 module.exports = (sequelize, DataTypes) => {
   const Teacher = sequelize.define('Teacher', {
     id: {
@@ -52,13 +54,29 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue : "teacher"
     }
   }, {
-    timestamps: true
+    timestamps: true,
+    hooks: {
+      beforeCreate: async (teacher) => {
+        if (teacher.password) {
+          const salt = await bcrypt.genSalt(10);
+          teacher.password = await bcrypt.hash(teacher.password, salt);
+        }
+      },
+      beforeUpdate: async (teacher) => {
+        if (teacher.changed('password')) {
+          const salt = await bcrypt.genSalt(10);
+          teacher.password = await bcrypt.hash(teacher.password, salt);
+        }
+      }
+    }
   });
 
   Teacher.associate = function(models) {
-    // Remove the belongsTo association with User model
-    
-    // Keep other associations if they exist
+    // Define associations here if needed
+  };
+  
+  Teacher.prototype.isValidPassword = async function(password) {
+    return await bcrypt.compare(password, this.password);
   };
 
   return Teacher;

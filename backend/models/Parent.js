@@ -34,6 +34,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    relation: {
+      type: DataTypes.ENUM('father', 'mother', 'guardian', 'other'),
+      allowNull: false
+    },
+    occupation: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true

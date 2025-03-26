@@ -1,5 +1,6 @@
-import { fetchUtils } from 'react-admin';
+import {  fetchUtils } from 'react-admin';
 import { API_ENDPOINT_FUNCTION, GET_HEADER } from "../config/config";
+
 
 const get_path = {
     students: "/students",
@@ -16,7 +17,7 @@ const create_path = {
 const get_one_path = {  
     students: "/students/profile",
     teachers : "/teachers/profile",
-    parents : "/parents/profile"
+    parents : "/parents/profile",
 
 };
 
@@ -33,6 +34,14 @@ const update_path = {
     teachers : "/teachers/update",
     parents : "/parents/update"
 };
+
+const get_one_dashboard_path = {
+    Admindashboard : "/dashboard/admin"
+}
+
+const get_update_password = {
+    default : "/auth/update-password"
+}
 
 
 const dataProvider = {
@@ -88,7 +97,27 @@ const dataProvider = {
         return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
             data: json,
         }));
-    }
+    },
+    getDashboard : async (resource ,params) =>{
+        const url = API_ENDPOINT_FUNCTION(get_one_dashboard_path[resource]);
+        const options = await GET_HEADER();
+        
+        return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+            data: json.data,
+        }));
+    },
+
+    updatePassword: async (params) => {
+        const { oldPassword, newPassword, confirmPassword } = params.data;
+        const url = API_ENDPOINT_FUNCTION(get_update_password.default);
+        const options = await GET_HEADER({
+            method: 'PUT',
+            body: JSON.stringify({ oldPassword, newPassword, confirmPassword }),
+        });
+        return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+            data: json.data,
+        }));
+      },
 };
 
 export default dataProvider;

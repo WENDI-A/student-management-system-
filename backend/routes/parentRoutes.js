@@ -5,9 +5,10 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 
 router.post('/register', parentController.registerParent);
-router.get('/', authMiddleware.authorize('admin'), parentController.getAllParents);
+router.use(authMiddleware.protect);
+router.get('/', authMiddleware.authorize('admin','parent'), parentController.getAllParents);
 router.get('/children/:id', authMiddleware.authorize('admin', 'parent'), parentController.getChildrenByParentId);
-router.get('/:id', authMiddleware.authorize('admin', 'parent'), parentController.getParentById);
+router.get('/profile/:id', authMiddleware.authorize('admin', 'parent'), parentController.getParentById);
 router.put('/update/:id', authMiddleware.authorize('admin', 'parent'), parentController.updateParent);
 router.delete('/:id', authMiddleware.authorize('admin'), parentController.deleteParent);
 

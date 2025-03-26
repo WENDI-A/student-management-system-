@@ -32,9 +32,25 @@ const db = {
 
       if (forceMigration) {
         console.log('⚠️ FORCE_MIGRATION enabled. Dropping and recreating all tables...');
-        await sequelize.drop();
-        console.log('🗑️  All tables dropped.');
-        await sequelize.sync({ force: true });
+        
+        // Disable foreign key checks to allow dropping tables with dependencies
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+        
+        // Get all table names
+        const [tables] = await sequelize.query('SHOW TABLES');
+        const tableNames = tables.map(result => Object.values(result)[0]);
+        
+        // Drop all tables individually
+        for (const table of tableNames) {
+          await sequelize.query(`DROP TABLE IF EXISTS \`${table}\``);
+          console.log(`🗑️  Dropped table: ${table}`);
+        }
+        
+        // Re-enable foreign key checks
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+        
+        // Now sync all models to create tables
+        await sequelize.sync();
         console.log('✅ Database schema recreated successfully.');
       } else if (tableCount === 0) {
         console.log('🔄 No tables found. Initializing database schema...');

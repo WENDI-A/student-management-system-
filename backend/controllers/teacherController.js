@@ -25,8 +25,7 @@ exports.registerTeacher = async (req, res, next) => {
     const { 
       firstName, 
       lastName, 
-      email, 
-      password, 
+      email,  
       phone, 
       department,
       specialization,
@@ -50,7 +49,7 @@ exports.registerTeacher = async (req, res, next) => {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash("teacher123", salt);
 
     const newTeacher = await Teacher.create({
       firstName,
