@@ -7,25 +7,21 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      admin_id: {
+      sender_id: {
         type: DataTypes.UUID,
-        allowNull: true,
-        references: {
-          model: "Admins",
-          key: "id",
-        },
+        allowNull: false,
       },
-      teacher_id: {
-        type: DataTypes.UUID,
-        allowNull: true,
-        references: {
-          model: "Teachers",
-          key: "id",
-        },
+      sender_role: {
+        type: DataTypes.ENUM("Admin", "Teacher"),
+        allowNull: false,
       },
-      type: {
+      recipient_type: {
         type: DataTypes.ENUM("Students", "Parents"),
         allowNull: false,
+      },
+      recipient_id: {
+        type: DataTypes.UUID,
+        allowNull: true, // Null means it's sent to all students or parents
       },
       message: {
         type: DataTypes.TEXT,
@@ -35,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("Unread", "Read"),
         defaultValue: "Unread",
       },
-      date: {
+      createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
       },
@@ -46,8 +42,10 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Notification.associate = function (models) {
-    Notification.belongsTo(models.Admin, { foreignKey: "admin_id" });
-    Notification.belongsTo(models.Teacher, { foreignKey: "teacher_id" });
+    Notification.belongsTo(models.Admin, { foreignKey: "sender_id", constraints: false });
+    Notification.belongsTo(models.Teacher, { foreignKey: "sender_id", constraints: false });
+    Notification.belongsTo(models.Student, { foreignKey: "recipient_id", constraints: false });
+    Notification.belongsTo(models.Parent, { foreignKey: "recipient_id", constraints: false });
   };
 
   return Notification;

@@ -17,9 +17,7 @@ const TeacherList = () => (
         <TextField source="firstName" label="First Name"  />
         <TextField source="lastName" label="Last Name"  />
         <TextField source="email" label="Email"  />
-        <TextField source="department" label="department"  />
-        <TextField source="joinDate" type="date" label="Enrollment Date"  />
-        <TextField source="position" label="position"  />
+        <TextField source="grade" label="Grade"  />
         <TextField source="phone" type="tel" label="phone Number"  />
       <EditButton />
       <DeleteButton />

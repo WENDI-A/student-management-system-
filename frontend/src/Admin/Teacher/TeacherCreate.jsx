@@ -1,6 +1,12 @@
 // src/components/DepartmentFileCreate.tsx
 import React from "react";
-import { Create, SimpleForm, TextInput, required } from "react-admin";
+import { Create, SimpleForm, TextInput, required ,SelectInput} from "react-admin";
+
+  const gradeChoices = [
+    { id: '9', name: 'Grade 9' },
+    { id: '10', name: 'Grade 10' },
+  ];
+  
 
 const TeacherCreate = () => {
 
@@ -10,10 +16,15 @@ const TeacherCreate = () => {
         <TextInput source="firstName" label="First Name" fullWidth validate={[required()]} />
         <TextInput source="lastName" label="Last Name" fullWidth validate={[required()]} />
         <TextInput source="email" label="Email" fullWidth validate={[required()]} />
-        <TextInput source="department" label="department" fullWidth validate={[required()]} />
-        <TextInput source="joinDate" type="date" label="Enrollment Date" fullWidth validate={[required()]} />
-        <TextInput source="position" label="position" fullWidth validate={[required()]} />
         <TextInput source="phone" type="tel" label="phone Number" fullWidth validate={[required()]} />
+        <SelectInput 
+          source="grade" 
+          label="Grade" 
+          choices={gradeChoices} 
+          fullWidth 
+          validate={[required()]} 
+        />
+
       </SimpleForm>
     </Create>
   );

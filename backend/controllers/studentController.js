@@ -7,7 +7,7 @@ exports.registerStudent = async (req, res, next) => {
   try {
     const { firstName, lastName, email, student_id, dateOfBirth , enrollmentDate,grade} = req.body;
 
-    if (!firstName || !lastName || !email || !password || !student_id) {
+    if (!firstName || !lastName || !email || !student_id) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 

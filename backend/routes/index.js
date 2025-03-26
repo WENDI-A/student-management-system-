@@ -7,6 +7,7 @@ const parentRoutes = require('./parentRoutes');
 const adminRoutes = require('./adminRoutes');
 const guestRoutes = require('./guestRoutes');
 const dashbord = require('./dashbordRoute')
+const notifications = require('./notificationRoutes')
 
 router.use('/auth', authRoutes);
 router.use('/students', studentRoutes);
@@ -15,5 +16,6 @@ router.use('/parents', parentRoutes);
 router.use('/admins', adminRoutes);
 router.use('/guests', guestRoutes);
 router.use("/dashboard" , dashbord)
+router.use("/notifications" , notifications)
 
 module.exports = router;

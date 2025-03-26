@@ -16,7 +16,7 @@ exports.registerParent = async (req, res, next) => {
       studentIds  = []  
     } = req.body;
 
-    if (!firstName || !lastName || !email || !password || !relation) {
+    if (!firstName || !lastName || !email || !relation) {
       return res.status(400).json({ 
         success: false, 
         message: 'Missing required fields' 

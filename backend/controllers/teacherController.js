@@ -27,13 +27,13 @@ exports.registerTeacher = async (req, res, next) => {
       lastName, 
       email,  
       phone, 
-      department,
+      grade,
       specialization,
       joinDate,
       position
     } = req.body;
 
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email) {
       return res.status(400).json({ 
         success: false, 
         message: 'Missing required fields' 
@@ -56,7 +56,7 @@ exports.registerTeacher = async (req, res, next) => {
       lastName,
       email,
       password: hashedPassword,
-      department: department || null,
+      grade: grade || null,
       specialization: specialization || null,
       joinDate: joinDate || new Date(),
       position: position || null,
@@ -96,7 +96,7 @@ exports.updateTeacherColumn = async (req, res, next) => {
     const teacherId = req.params.id;
     const { columnName, value } = req.body;
 
-    const validColumns = ['firstName', 'lastName', 'email', 'department', 'specialization', 'joinDate', 'position', 'phone', 'isActive'];
+    const validColumns = ['firstName', 'lastName', 'email', 'grade', 'specialization', 'joinDate', 'position', 'phone', 'isActive'];
     if (!validColumns.includes(columnName)) {
       return res.status(400).json({
         success: false,
@@ -168,7 +168,7 @@ exports.updateTeacher = async (req, res, next) => {
       lastName, 
       email, 
       password, 
-      department,
+      grade,
       specialization,
       joinDate,
       position,
@@ -191,7 +191,7 @@ exports.updateTeacher = async (req, res, next) => {
     if (firstName !== undefined || !isPartialUpdate) updateData.firstName = firstName || teacher.firstName;
     if (lastName !== undefined || !isPartialUpdate) updateData.lastName = lastName || teacher.lastName;
     if (email !== undefined || !isPartialUpdate) updateData.email = email || teacher.email;
-    if (department !== undefined || !isPartialUpdate) updateData.department = department;
+    if (grade !== undefined || !isPartialUpdate) updateData.grade = grade;
     if (specialization !== undefined || !isPartialUpdate) updateData.specialization = specialization;
     if (joinDate !== undefined || !isPartialUpdate) updateData.joinDate = joinDate || teacher.joinDate;
     if (position !== undefined || !isPartialUpdate) updateData.position = position;

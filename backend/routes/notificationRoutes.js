@@ -3,16 +3,18 @@ const router = express.Router();
 const notificationController = require("../controllers/notificationController");
 const authMiddleware = require("../middleware/authMiddleware");
 
-router.post("/notify", notificationController.sendMessage);
+
+
+router.use(authMiddleware.protect)
+router.post("/send", authMiddleware.authorize("admin","teacher"), notificationController.sendNotification);
 router.get(
-  "/adminNotification/:id",
-  notificationController.getAdminMessageById
+  "/recipient/:recipient_type/:recipient_id?",
+  notificationController.getNotificationsByRecipient
 );
-router.get(
-  "/teacherNotification/:id",
-  notificationController.getTeacherMessageById
-);
-router.get("/studentsNotification", notificationController.getStudentsMessage);
-router.get("/parentsNotification", notificationController.getParentsMessage);
-router.put("/updateMessage/:id", notificationController.updateMessage);
-router.delete("/deleteMessage/:id", notificationController.deleteMessage);
+
+router.put("/mark-read/:id", notificationController.markNotificationAsRead);
+router.delete("/delete/:id", notificationController.deleteNotification);
+router.get("/admin", notificationController.getNotificationsBySender);
+
+
+module.exports = router;
