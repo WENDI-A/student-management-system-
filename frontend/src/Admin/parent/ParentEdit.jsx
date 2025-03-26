@@ -34,12 +34,6 @@ const parentEdit = (props) => {
                   fullWidth 
                 />
                 <TextInput 
-                  source="password" 
-                  type="password" 
-                  label="Password" 
-                  fullWidth 
-                />
-                <TextInput 
                   source="address" 
                   label="Address" 
                   fullWidth 

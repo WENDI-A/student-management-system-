@@ -1,39 +1,113 @@
-import React from 'react';
-import { Title, useGetIdentity } from 'react-admin';
-import { Box, Card, CardContent, Typography, Grid, Paper } from '@mui/material';
-import { School, People, MenuBook, Assignment, Announcement } from '@mui/icons-material';
+import { Title, useGetIdentity, useDataProvider } from 'react-admin';
+import { Box, Card, CardContent, Typography, Grid, Paper, CircularProgress } from '@mui/material';
+import { School, People, MenuBook, Assignment, Announcement, FamilyRestroom } from '@mui/icons-material';
+import { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export const AdminDashboard = () => {
     const { identity } = useGetIdentity();
+    const dataProvider = useDataProvider();
+    const [loading, setLoading] = useState(true);
+    const [dashboardData, setDashboardData] = useState({
+        stats: {
+            students: 0,
+            teachers: 0,
+            courses: 0,
+            assignments: 0,
+            announcements: 0,
+            parents: 0
+        }
+    });
+
     const currentDate = new Date().toLocaleDateString('en-US', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
     });
 
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const response = await dataProvider.getDashboard('Admindashboard');
+                setDashboardData(response.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [dataProvider]);
+
     const stats = [
-        { icon: <School fontSize="large" color="primary" />, title: 'Students', count: 568, link: '#/students' },
-        { icon: <People fontSize="large" color="secondary" />, title: 'Teachers', count: 42, link: '#/teachers' },
-        { icon: <MenuBook fontSize="large" style={{ color: '#ff9800' }} />, title: 'Courses', count: 36, link: '#/courses' },
-        { icon: <Assignment fontSize="large" style={{ color: '#4caf50' }} />, title: 'Assignments', count: 215, link: '#/assignments' },
-        { icon: <Announcement fontSize="large" style={{ color: '#f44336' }} />, title: 'Announcements', count: 8, link: '#/announcements' },
+        { 
+            name: 'Students', 
+            value: dashboardData.stats.students, 
+            icon: <School color="primary" />, 
+            color: '#2196f3', 
+            link: 'students'
+        },
+        { 
+            name: 'Teachers', 
+            value: dashboardData.stats.teachers, 
+            icon: <People color="secondary" />, 
+            color: '#f50057', 
+            link: 'teachers'
+        },
+        { 
+            name: 'Parents', 
+            value: dashboardData.stats.parents, 
+            icon: <FamilyRestroom style={{ color: '#9c27b0' }} />, 
+            color: '#9c27b0', 
+            link: 'parents'
+        },
+        { 
+            name: 'Courses', 
+            value: dashboardData.stats.courses, 
+            icon: <MenuBook style={{ color: '#ff9800' }} />, 
+            color: '#ff9800', 
+            link: ''
+        },
+        { 
+            name: 'Assignments', 
+            value: dashboardData.stats.assignments, 
+            icon: <Assignment style={{ color: '#4caf50' }} />, 
+            color: '#4caf50', 
+            link: ''
+        },
+        { 
+            name: 'Announcements', 
+            value: dashboardData.stats.announcements, 
+            icon: <Announcement style={{ color: '#f44336' }} />, 
+            color: '#f44336', 
+            link: ''
+        },
     ];
+    
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
         <Box p={3}>
             <Title title="Admin Dashboard" />
-            
+
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h4">Welcome, {identity?.fullName}</Typography>
                 <Typography variant="subtitle1" color="textSecondary">{currentDate}</Typography>
             </Box>
-            
+
             <Card sx={{ mb: 3 }}>
                 <CardContent>
                     <Typography variant="h5" gutterBottom>School Overview</Typography>
                     <Grid container spacing={3} sx={{ mt: 1 }}>
                         {stats.map((stat, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={2.4} key={index}>
+                            <Grid item xs={12} sm={6} md={4} lg={2} key={index}>
                                 <Paper
                                     elevation={3}
                                     sx={{
@@ -46,14 +120,14 @@ export const AdminDashboard = () => {
                                         height: '100%'
                                     }}
                                     component="a"
-                                    href={stat.link}
+                                    href={`#/${stat.link}`}
                                 >
                                     {stat.icon}
                                     <Typography variant="h6" align="center" sx={{ mt: 1 }}>
-                                        {stat.count}
+                                        {stat.value}
                                     </Typography>
                                     <Typography variant="body2" color="textSecondary" align="center">
-                                        {stat.title}
+                                        {stat.name}
                                     </Typography>
                                 </Paper>
                             </Grid>
@@ -61,48 +135,49 @@ export const AdminDashboard = () => {
                     </Grid>
                 </CardContent>
             </Card>
-            
+
             <Grid container spacing={3}>
+                {/* Bar Chart */}
                 <Grid item xs={12} md={6}>
                     <Card>
                         <CardContent>
-                            <Typography variant="h6" gutterBottom>Recent Activities</Typography>
-                            <Box>
-                                <Typography variant="body2" sx={{ py: 1, borderBottom: '1px solid #eee' }}>
-                                    New teacher onboarded - Mathematics Department
-                                </Typography>
-                                <Typography variant="body2" sx={{ py: 1, borderBottom: '1px solid #eee' }}>
-                                    Semester 2 schedule finalized
-                                </Typography>
-                                <Typography variant="body2" sx={{ py: 1, borderBottom: '1px solid #eee' }}>
-                                    Annual budget review meeting scheduled
-                                </Typography>
-                                <Typography variant="body2" sx={{ py: 1, borderBottom: '1px solid #eee' }}>
-                                    School maintenance scheduled for next weekend
-                                </Typography>
-                            </Box>
+                            <Typography variant="h6" gutterBottom>School Statistics Overview</Typography>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={stats}>
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Bar dataKey="value" fill="#3f51b5" />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </CardContent>
                     </Card>
                 </Grid>
-                
+
+                {/* Pie Chart */}
                 <Grid item xs={12} md={6}>
                     <Card>
                         <CardContent>
-                            <Typography variant="h6" gutterBottom>System Notifications</Typography>
-                            <Box>
-                                <Typography variant="body2" sx={{ py: 1, borderBottom: '1px solid #eee' }}>
-                                    Database backup scheduled for tonight
-                                </Typography>
-                                <Typography variant="body2" sx={{ py: 1, borderBottom: '1px solid #eee' }}>
-                                    New system update available
-                                </Typography>
-                                <Typography variant="body2" sx={{ py: 1, borderBottom: '1px solid #eee' }}>
-                                    15 new user registrations pending approval
-                                </Typography>
-                                <Typography variant="body2" sx={{ py: 1, borderBottom: '1px solid #eee' }}>
-                                    Server maintenance scheduled for Sunday, 2 AM
-                                </Typography>
-                            </Box>
+                            <Typography variant="h6" gutterBottom>Distribution Overview</Typography>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie
+                                        data={stats}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={100}
+                                        fill="#8884d8"
+                                        label
+                                    >
+                                        {stats.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </CardContent>
                     </Card>
                 </Grid>

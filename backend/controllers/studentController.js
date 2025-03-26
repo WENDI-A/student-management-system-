@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 exports.registerStudent = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, password, student_id, dateOfBirth , enrollmentDate,grade} = req.body;
+    const { firstName, lastName, email, student_id, dateOfBirth , enrollmentDate,grade} = req.body;
 
     if (!firstName || !lastName || !email || !password || !student_id) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
@@ -22,7 +22,7 @@ exports.registerStudent = async (req, res, next) => {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash("student123", salt);
 
     const newStudent = await Student.create({
       firstName,

@@ -14,6 +14,6 @@ router.use('/teachers', teacherRoutes);
 router.use('/parents', parentRoutes);
 router.use('/admins', adminRoutes);
 router.use('/guests', guestRoutes);
-router.use("/dashbord" , dashbord)
+router.use("/dashboard" , dashbord)
 
 module.exports = router;

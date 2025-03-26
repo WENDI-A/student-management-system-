@@ -41,13 +41,6 @@ const ParentCreate = () => {
           validate={[required(), email()]} 
         />
         <TextInput 
-          source="password" 
-          type="password" 
-          label="Password" 
-          fullWidth 
-          validate={[required(), minLength(6)]} 
-        />
-        <TextInput 
           source="address" 
           label="Address" 
           fullWidth 

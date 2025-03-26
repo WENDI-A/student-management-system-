@@ -7,6 +7,7 @@ import {
     AccountCircle as AccountCircleIcon,
     ListAlt as ListAltIcon,
     Settings as SettingsIcon,
+    Notifications as NotificationsIcon, // Import Notifications icon
 } from '@mui/icons-material';
 
 export const AdminMenu = () => (
@@ -28,14 +29,9 @@ export const AdminMenu = () => (
             leftIcon={<AccountCircleIcon />}
         />
         <Menu.Item
-            to="/classes"
-            primaryText="Classes"
-            leftIcon={<MenuBookIcon />}
-        />
-        <Menu.Item
-            to="/courses"
-            primaryText="Courses"
-            leftIcon={<ListAltIcon />}
+            to="/notifications"
+            primaryText="Notifications"
+            leftIcon={<NotificationsIcon />}
         />
         <Menu.Item
             to="/settings"

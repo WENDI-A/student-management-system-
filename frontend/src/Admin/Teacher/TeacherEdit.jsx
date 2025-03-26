@@ -8,7 +8,6 @@ const TeacherEdit = (props) => {
                 <TextInput source="firstName" label="First Name" fullWidth validate={[required()]} />
                 <TextInput source="lastName" label="Last Name" fullWidth validate={[required()]} />
                 <TextInput source="email" label="Email" fullWidth validate={[required()]} />
-                <TextInput source="password" type="password" label="Password" fullWidth validate={[required()]} />
                 <TextInput source="department" label="Department" fullWidth validate={[required()]} />
                 <TextInput source="joinDate" type="date" label="Join Date" fullWidth validate={[required()]} />
                 <TextInput source="position" label="Position" fullWidth validate={[required()]} />
