@@ -26,7 +26,7 @@ exports.registerParent = async (req, res, next) => {
     if (!validRelations.includes(relation)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid relation. Must be one of: father, mother, guardian, other'
+        message: 'Invalid relation. Must be one of: father, mother, guardian or other'
       });
     }
 
