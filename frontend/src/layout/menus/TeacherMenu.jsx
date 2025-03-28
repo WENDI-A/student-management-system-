@@ -24,13 +24,13 @@ export const TeacherMenu = () => (
             leftIcon={<PeopleIcon />}
         />
         <Menu.Item
-            to="/assignments"
-            primaryText="Assignments"
+            to="/assessment"
+            primaryText="Assessment"
             leftIcon={<AssignmentIcon />}
         />
      <Menu.Item
-            to="/assessment"
-            primaryText="Assessment"
+            to="/attendance"
+            primaryText="Attendance"
             leftIcon={<CalendarTodayIcon />}
         />
         <Menu.Item
