@@ -19,6 +19,7 @@ const App = () => {
       dashboard={DashboardSelector}
       layout={CustomLayout}
       loginPage={LoginPage}
+      darkTheme={false}
       requireAuth
     >
       {getResources(getUserRole())}

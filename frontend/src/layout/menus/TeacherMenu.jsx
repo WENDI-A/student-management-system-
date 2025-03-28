@@ -1,21 +1,21 @@
 import React from 'react';
 import { Menu } from 'react-admin';
 import {
-    Dashboard as DashboardIcon,
     MenuBook as MenuBookIcon,
     People as PeopleIcon,
-    Assessment as AssessmentIcon,
     Assignment as AssignmentIcon,
     CalendarToday as CalendarTodayIcon,
     Announcement as AnnouncementIcon,
+    Settings as SettingsIcon,
+    Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 
 export const TeacherMenu = () => (
     <Menu>
         <Menu.DashboardItem />
         <Menu.Item
-            to="/classes"
-            primaryText="My Classes"
+            to="/courseMaterial"
+            primaryText="CourseMaterial"
             leftIcon={<MenuBookIcon />}
         />
         <Menu.Item
@@ -24,24 +24,24 @@ export const TeacherMenu = () => (
             leftIcon={<PeopleIcon />}
         />
         <Menu.Item
-            to="/assignments"
-            primaryText="Assignments"
+            to="/assessment"
+            primaryText="Assessment"
             leftIcon={<AssignmentIcon />}
         />
-        <Menu.Item
-            to="/exams"
-            primaryText="Exams"
-            leftIcon={<AssessmentIcon />}
-        />
-        <Menu.Item
+     <Menu.Item
             to="/attendance"
             primaryText="Attendance"
             leftIcon={<CalendarTodayIcon />}
         />
         <Menu.Item
-            to="/announcements"
-            primaryText="Announcements"
-            leftIcon={<AnnouncementIcon />}
+            to="/notifications"
+            primaryText="Notifications"
+            leftIcon={<NotificationsIcon />}
+        />
+        <Menu.Item
+            to="/settings"
+            primaryText="Settings"
+            leftIcon={<SettingsIcon />}
         />
     </Menu>
 );

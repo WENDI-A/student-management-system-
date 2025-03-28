@@ -1,7 +1,7 @@
 const { Parent, Student } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../models');
-const bycrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 
 exports.registerParent = async (req, res, next) => {
   try {
@@ -31,14 +31,13 @@ exports.registerParent = async (req, res, next) => {
       });
     }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash("parent123", salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash("parent123", salt);
 
     const result = await sequelize.transaction(async (t) => {
       const newParent = await Parent.create({
         firstName,
         lastName,
-        
         email,
         password :hashedPassword,
         phone,

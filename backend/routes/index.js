@@ -8,6 +8,10 @@ const adminRoutes = require('./adminRoutes');
 const guestRoutes = require('./guestRoutes');
 const dashbord = require('./dashbordRoute')
 const notifications = require('./notificationRoutes')
+const coures = require('./couresRoutes')
+const CourseMaterial = require('./CourseMaterialRoute')
+const Assessment = require('./assessmentsRoute');
+const Grade = require('./gradesRoute');
 
 router.use('/auth', authRoutes);
 router.use('/students', studentRoutes);
@@ -17,5 +21,10 @@ router.use('/admins', adminRoutes);
 router.use('/guests', guestRoutes);
 router.use("/dashboard" , dashbord)
 router.use("/notifications" , notifications)
+router.use("/courses" ,coures )
+router.use("/CourseMaterial" ,CourseMaterial )
+router.use("/Assessment" , Assessment)
+router.use("/grade", Grade)
+
 
 module.exports = router;

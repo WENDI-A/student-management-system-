@@ -1,6 +1,7 @@
 const { Teacher, sequelize } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const defaultPassword = "teacher123"
 
 
 const generateToken = (teacher) => {
@@ -10,7 +11,7 @@ const generateToken = (teacher) => {
       email: teacher.email,
       role: 'teacher' 
     },
-    process.env.JWT_SECRET || 'your_jwt_secret',
+    process.env.JWT_SECRET,
     { expiresIn: '1d' }
   );
 };
@@ -49,7 +50,7 @@ exports.registerTeacher = async (req, res, next) => {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash("teacher123", salt);
+    const hashedPassword = await bcrypt.hash(defaultPassword, salt);
 
     const newTeacher = await Teacher.create({
       firstName,
