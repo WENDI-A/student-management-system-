@@ -23,7 +23,9 @@ export const API_ENDPOINT_FUNCTION = (path) => {
 export const GET_HEADER = async (options = {}) => {
   const authData = await localStorage.getItem("auth");
   const headers = new Headers();
-  headers.append('Content-Type', 'application/json');
+  if (options.isJson) {
+    headers.append('Content-Type', 'application/json');
+  }
 
   if (authData) {
     try {
@@ -38,6 +40,7 @@ export const GET_HEADER = async (options = {}) => {
 
   return { headers, ...options };
 };
+
 
 export default {
   API_URL,

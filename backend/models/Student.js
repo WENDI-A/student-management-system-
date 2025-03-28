@@ -62,6 +62,12 @@ module.exports = (sequelize, DataTypes) => {
       otherKey: 'parentId',
       as: 'parents'
     });
+    Student.hasMany(models.Grade, { foreignKey: "student_id" });
+    Student.belongsToMany(models.Course, { 
+      through: 'CourseEnrollments',
+      foreignKey: 'student_id',
+      otherKey: 'course_id'
+    });
   };
 
   return Student;

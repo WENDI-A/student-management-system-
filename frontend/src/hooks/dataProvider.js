@@ -2,22 +2,30 @@ import {  fetchUtils } from 'react-admin';
 import { API_ENDPOINT_FUNCTION, GET_HEADER } from "../config/config";
 
 
-const get_path = {
+const get_path_list = {
     students: "/students",
     teachers : "/teachers",
     parents : "/parents",
+    course : "/courses",
+    Notfication : "/notifications",
+    CourseMaterial : "/CourseMaterial"
+
 };
 
 const create_path = {
     students: "/students/register",
     teachers :"/teachers/register",
-    parents : "/parents/register"
+    parents : "/parents/register",
+    course : "/courses",
+    CourseMaterial : "/CourseMaterial"
 };
 
 const get_one_path = {  
     students: "/students/profile",
     teachers : "/teachers/profile",
     parents : "/parents/profile",
+    course : "/courses",
+    CourseMaterial : "/CourseMaterial"
 
 };
 
@@ -25,14 +33,18 @@ const get_one_path = {
 const delete_path = {
     students: "/students",
     teachers : "/teachers",
-    parents : "/parents"
+    parents : "/parents",
+    course  : "/courses",
+        CourseMaterial : "/CourseMaterial"
 
 };
 
 const update_path = {
     students: "/students/update",
     teachers : "/teachers/update",
-    parents : "/parents/update"
+    parents : "/parents/update",
+    course : "/courses",
+        CourseMaterial : "/CourseMaterial"
 };
 
 const get_one_dashboard_path = {
@@ -46,7 +58,7 @@ const get_update_password = {
 
 const dataProvider = {
     getList: async (resource, params) => {
-        const url = API_ENDPOINT_FUNCTION(get_path[resource]);
+        const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
         const options = await GET_HEADER();
         
         return fetchUtils.fetchJson(url, { ...options }).then(({ headers, json }) => ({
@@ -63,7 +75,21 @@ const dataProvider = {
             data: json.data,
         }));
     },
-    
+
+    getMany: async (resource, params) => {
+        const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
+        const options = await GET_HEADER();
+        
+        return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => {
+            const filteredData = Array.isArray(json.data) 
+                ? json.data.filter(item => params.ids.includes(item.id))
+                : [];
+            
+            return {
+                data: filteredData,
+            };
+        });
+    },
     create: async (resource, params) => {
         const url = API_ENDPOINT_FUNCTION(create_path[resource]);
         const options = await GET_HEADER({
