@@ -340,25 +340,14 @@ exports.getCourseMaterials = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const course = await Course.findOne({
-      where: { id, isActive: true }
-    });
-    
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: "Course not found"
-      });
-    }
-    
     const materials = await CourseMaterial.findAll({
-      where: { course_id: id }
+      where: {  id }
     });
     
     return res.status(200).json({
       success: true,
       count: materials.length,
-      data: materials
+      data: materials[0].dataValues
     });
   } catch (error) {
     console.error("Error fetching course materials:", error);
