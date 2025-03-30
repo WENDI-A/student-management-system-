@@ -1,5 +1,6 @@
-import {  fetchUtils } from 'react-admin';
+import { fetchUtils } from 'react-admin';
 import { API_ENDPOINT_FUNCTION, GET_HEADER } from "../config/config";
+import extendedDataProvider from './dataProviderExtensions';
 
 
 const get_path_list = {
@@ -8,8 +9,10 @@ const get_path_list = {
     parents : "/parents",
     course : "/courses",
     Notfication : "/notifications",
-    CourseMaterial : "/CourseMaterial"
-
+    CourseMaterial : "/CourseMaterial",
+    courseEnrollments : "/courseenrollments" ,
+    Assessment : "/Assessment/teacher",
+    attendance: "/Attendance",
 };
 
 const create_path = {
@@ -17,7 +20,8 @@ const create_path = {
     teachers :"/teachers/register",
     parents : "/parents/register",
     course : "/courses",
-    CourseMaterial : "/CourseMaterial"
+    CourseMaterial : "/CourseMaterial",
+    "attendance/attendance/bulk": "/attendance/bulk"
 };
 
 const get_one_path = {  
@@ -25,7 +29,8 @@ const get_one_path = {
     teachers : "/teachers/profile",
     parents : "/parents/profile",
     course : "/courses",
-    CourseMaterial : "/CourseMaterial"
+    CourseMaterial : "/CourseMaterial",
+    Assessment : "/Assessment"
 
 };
 
@@ -35,8 +40,8 @@ const delete_path = {
     teachers : "/teachers",
     parents : "/parents",
     course  : "/courses",
-        CourseMaterial : "/CourseMaterial"
-
+    CourseMaterial : "/CourseMaterial",
+    Assessment : "/Assessment"
 };
 
 const update_path = {
@@ -58,6 +63,21 @@ const get_update_password = {
 
 const dataProvider = {
     getList: async (resource, params) => {
+        // Special handling for attendance resources
+        if (resource === 'attendance') {
+            // For fetching attendance records by course and date
+            const { courseId, date } = params.filter || {};
+            if (courseId && date) {
+                const url = `${API_ENDPOINT_FUNCTION('/attendance/records')}?courseId=${courseId}&date=${date}`;
+                const options = await GET_HEADER();
+                
+                return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+                    data: json.data || [],
+                    total: json.total || 0,
+                }));
+            }
+        }
+        
         const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
         const options = await GET_HEADER();
         
@@ -144,6 +164,47 @@ const dataProvider = {
             data: json.data,
         }));
       },
+      // Custom methods for attendance management
+      getAttendanceByDate: async (courseId, date) => {
+          const url = `${API_ENDPOINT_FUNCTION('/attendance/records')}?courseId=${courseId}&date=${date}`;
+          const options = await GET_HEADER();
+          
+          return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+              data: json.data || [],
+          }));
+      },
+      
+      getTeacherCourses: async () => {
+          const url = API_ENDPOINT_FUNCTION('/attendance/teacher/courses');
+          const options = await GET_HEADER();
+          
+          return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+              data: json.data || [],
+          }));
+      },
+      
+      getStudentsForAttendance: async (courseId) => {
+          const url = `${API_ENDPOINT_FUNCTION('/attendance/teacher/students')}?courseId=${courseId}`;
+          const options = await GET_HEADER();
+          
+          return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+              data: json.data || [],
+          }));
+      },
+      
+      bulkMarkAttendance: async (data) => {
+          const url = API_ENDPOINT_FUNCTION('/attendance/bulk');
+          const options = await GET_HEADER({
+              method: 'POST',
+              body: JSON.stringify(data)
+          });
+          
+          return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+              data: json.data || {},
+          }));
+      },
+      
+      ...extendedDataProvider
 };
 
 export default dataProvider;

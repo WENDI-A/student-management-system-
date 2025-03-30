@@ -29,7 +29,7 @@ const useNotifications = (adminId) => {
     try {
      await axios.post(`${API_URL}/notifications/send`, {
         sender_id: adminId,
-        sender_role: 'Admin',
+        sender_role: 'Teacher',
         recipient_type: recipientType,
         message,
       });

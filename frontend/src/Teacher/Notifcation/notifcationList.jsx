@@ -23,7 +23,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import useNotifications from '../../hooks/useNotifications';
 
-const AdminReact = () => {
+const TeacherNotfication  = () => {
   const { notifications, loading, sendNotification, deleteNotification } = useNotifications();
   const [message, setMessage] = useState('');
   const [recipientType, setRecipientType] = useState('Students');
@@ -136,4 +136,4 @@ const AdminReact = () => {
   );
 };
 
-export default AdminReact;
+export default TeacherNotfication;
