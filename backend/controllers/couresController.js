@@ -1,9 +1,10 @@
 const { Course } = require("../models");
 const { CourseMaterial } = require("../models");
+const {enrollAllStudentsInGradeLevelCourses } = require("./CourseEnrollmentController")
 
 exports.setCourse = async (req, res) => {
   try {
-    const { Coures_name, Coures_code, course_name, course_code, teacher_id } = req.body;
+    const { Coures_name, Coures_code, course_name, course_code, teacher_id ,grade } = req.body;
     
     const finalCourseName = course_name || Coures_name;
     const finalCourseCode = course_code || Coures_code;
@@ -18,8 +19,12 @@ exports.setCourse = async (req, res) => {
     const newCourse = await Course.create({
       Course_name: finalCourseName,
       Course_code: finalCourseCode,
-      teacher_id: teacher_id || null
+      teacher_id: teacher_id || null,
+      grade
     });
+
+    enrollAllStudentsInGradeLevelCourses()
+
     
     return res.status(201).json({
       success: true,
@@ -99,7 +104,8 @@ exports.updateCourse = async (req, res) => {
     const { 
       course_name, course_code, 
       Coures_name, Coures_code, 
-      teacher_id, isActive 
+      teacher_id, isActive ,
+      grade
     } = req.body;
     
     const course = await Course.findByPk(id);
@@ -118,7 +124,8 @@ exports.updateCourse = async (req, res) => {
       Course_name: finalCourseName || course.Course_name,
       Course_code: finalCourseCode || course.Course_code,
       teacher_id: teacher_id || course.teacher_id,
-      isActive: isActive !== undefined ? isActive : course.isActive
+      isActive: isActive !== undefined ? isActive : course.isActive,
+      grade
     });
     
     return res.status(200).json({

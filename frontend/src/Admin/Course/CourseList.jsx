@@ -15,6 +15,7 @@ const CourseList = () => {
       <Datagrid>
         <TextField source="Course_name" label="Course Name" />
         <TextField source="Course_code" label="Course Code" />
+        <TextField source="grade" label="Grade" />
         <ReferenceField source="teacher_id" reference="teachers" label="Teacher">
           <TextField source="firstName" />
         </ReferenceField>

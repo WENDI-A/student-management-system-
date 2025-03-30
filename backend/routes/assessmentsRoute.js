@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const AssessmentController = require('../controllers/AssessmentController');
-const authenticateJWT  = require('../middleware/authMiddleware');
+const authenticateJWT = require('../middleware/authMiddleware');
 
 router.use(authenticateJWT.protect);
-router.get('/courses/:courseId/assessments', authenticateJWT.authorize("admin"),AssessmentController.getCourseAssessments);
-router.get('/assessments/:assessmentId', authenticateJWT.authorize("admin"), AssessmentController.getAssessment);
-router.post('/courses/:courseId/assessments', authenticateJWT.authorize("admin"),AssessmentController.createAssessment);
-router.put('/assessments/:assessmentId', authenticateJWT.authorize("admin"), AssessmentController.updateAssessment);
-router.delete('/assessments/:assessmentId', authenticateJWT.authorize("admin"), AssessmentController.deleteAssessment);
+router.get('/teacher', authenticateJWT.authorize("teacher"), AssessmentController.getTeacherAssessments);
+router.get('/courses', authenticateJWT.authorize("admin", "teacher"), AssessmentController.getCourseAssessments);
+router.post('/courses', authenticateJWT.authorize("admin", "teacher"), AssessmentController.createAssessment);
+router.put('/:assessmentId', authenticateJWT.authorize("admin", "teacher"), AssessmentController.updateAssessment);
+router.get('/:id', authenticateJWT.authorize("admin", "teacher"), AssessmentController.getOneAssessment);
+router.delete('/:assessmentId', authenticateJWT.authorize("admin", "teacher"), AssessmentController.deleteAssessment);
 
 module.exports = router;

@@ -8,6 +8,11 @@ import {
   BooleanInput
 } from "react-admin";
 
+const gradeChoices = [
+  { id: '9', name: 'Grade 9' },
+  { id: '10', name: 'Grade 10' },
+];
+
 const CourseEdit = () => {
   return (
     <Edit>
@@ -20,6 +25,12 @@ const CourseEdit = () => {
             fullWidth
           />
         </ReferenceInput>
+                <SelectInput 
+                  source="grade" 
+                  label="Grade" 
+                  choices={gradeChoices} 
+                  fullWidth 
+                />
       </SimpleForm>
     </Edit>
   );

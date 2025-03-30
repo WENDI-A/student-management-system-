@@ -17,7 +17,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       teacher_id: {
         type: DataTypes.UUID,
-        allowNull: true,
+        allowNull:false,
+      },
+      grade : {
+        type : DataTypes.STRING,
+        allowNull :false
       },
       isActive: {
         type: DataTypes.BOOLEAN,
@@ -41,6 +45,10 @@ module.exports = (sequelize, DataTypes) => {
       through: 'CourseEnrollments',
       foreignKey: 'course_id',
       otherKey: 'student_id'
+    });
+    Course.hasMany(models.Attendance, {
+      foreignKey: 'courseId',
+      as: 'attendances'
     });
   };
 

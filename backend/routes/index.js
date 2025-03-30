@@ -12,6 +12,8 @@ const coures = require('./couresRoutes')
 const CourseMaterial = require('./CourseMaterialRoute')
 const Assessment = require('./assessmentsRoute');
 const Grade = require('./gradesRoute');
+const attendanceRoutes = require('./attendanceRoutes');
+const courseEnrollments = require('./courseEnrollmentsRoute')
 
 router.use('/auth', authRoutes);
 router.use('/students', studentRoutes);
@@ -25,6 +27,9 @@ router.use("/courses" ,coures )
 router.use("/CourseMaterial" ,CourseMaterial )
 router.use("/Assessment" , Assessment)
 router.use("/grade", Grade)
+router.use('/Attendance', attendanceRoutes);
+router.use('/courseenrollments', courseEnrollments);
+
 
 
 module.exports = router;
