@@ -12,7 +12,9 @@ const get_path_list = {
     CourseMaterial : "/CourseMaterial",
     courseEnrollments : "/courseenrollments" ,
     Assessment : "/Assessment/teacher",
-    attendance: "/Attendance",
+    attendance: "/Attendance/current-week",
+    grade : "/grade/courses",
+    schedules: "/schedules"
 };
 
 const create_path = {
@@ -21,7 +23,9 @@ const create_path = {
     parents : "/parents/register",
     course : "/courses",
     CourseMaterial : "/CourseMaterial",
-    "attendance/attendance/bulk": "/attendance/bulk"
+    attendance: "/Attendance/set-attendance",
+    grade : "/grade",
+    schedules: "/schedules"
 };
 
 const get_one_path = {  
@@ -30,8 +34,9 @@ const get_one_path = {
     parents : "/parents/profile",
     course : "/courses",
     CourseMaterial : "/CourseMaterial",
-    Assessment : "/Assessment"
-
+    Assessment : "/Assessment",
+    grade : "/grade/set-grade",
+    schedules: "/schedules"
 };
 
 
@@ -41,7 +46,8 @@ const delete_path = {
     parents : "/parents",
     course  : "/courses",
     CourseMaterial : "/CourseMaterial",
-    Assessment : "/Assessment"
+    Assessment : "/Assessment",
+    schedules: "/schedules"
 };
 
 const update_path = {
@@ -49,11 +55,14 @@ const update_path = {
     teachers : "/teachers/update",
     parents : "/parents/update",
     course : "/courses",
-        CourseMaterial : "/CourseMaterial"
+    CourseMaterial : "/CourseMaterial",
+    grade : "/grade",
+    schedules: "/schedules"
 };
 
 const get_one_dashboard_path = {
-    Admindashboard : "/dashboard/admin"
+    Admindashboard : "/dashboard/admin",
+    TeacherDashboard : "/dashboard/teacher"
 }
 
 const get_update_password = {
@@ -63,29 +72,35 @@ const get_update_password = {
 
 const dataProvider = {
     getList: async (resource, params) => {
-        // Special handling for attendance resources
-        if (resource === 'attendance') {
-            // For fetching attendance records by course and date
-            const { courseId, date } = params.filter || {};
-            if (courseId && date) {
-                const url = `${API_ENDPOINT_FUNCTION('/attendance/records')}?courseId=${courseId}&date=${date}`;
-                const options = await GET_HEADER();
-                
-                return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
-                    data: json.data || [],
-                    total: json.total || 0,
-                }));
-            }
-        }
-        
         const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
         const options = await GET_HEADER();
         
         return fetchUtils.fetchJson(url, { ...options }).then(({ headers, json }) => ({
             data: json.data,
-            total: parseInt(headers.get('content-range')?.split('/')?.pop(), 10) || json.length,
+            total: parseInt(headers.get('content-range')?.split('/')?.pop(), 10) || json.length || json.data.length ,
         }));
     },
+
+    getAttendanceList: async (resource, params) => {
+        const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
+        const options = await GET_HEADER();
+        
+        return fetchUtils.fetchJson(url, { ...options }).then(({ headers, json }) => ({
+            data: json,
+            total: json.data.attendance,
+        }));
+    },
+
+    getGradeList: async (resource, params) => {
+        const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
+        const options = await GET_HEADER();
+        
+        return fetchUtils.fetchJson(url, { ...options }).then(({ headers, json }) => ({
+            data: json.data,
+            total: json.data.attendance,
+        }));
+    },
+
 
     getOne: async (resource, params) => {
         const url = `${API_ENDPOINT_FUNCTION(get_one_path[resource])}/${params.id}`;

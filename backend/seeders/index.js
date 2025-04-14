@@ -28,7 +28,7 @@ const seedData = async () => {
       lastName: "Doe",
       email: "teacher@example.com",
       password: hashedTeacherPassword,
-      grade: "Grade 5",
+      grade: "10",
       specialization: "Mathematics",
       joinDate: new Date(),
       position: "Senior Teacher",

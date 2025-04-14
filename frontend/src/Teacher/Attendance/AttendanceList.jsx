@@ -1,118 +1,148 @@
 import { useEffect, useState } from 'react';
 import {
-  List,
-  Datagrid,
-  TextField,
-  DateField,
-  Edit,
-  SimpleForm,
-  TextInput,
-  DateInput,
-  SelectInput,
   useNotify,
-  useRefresh,
-  useRedirect,
-  TopToolbar,
-  required,
-  ReferenceField,
-  ReferenceInput,
-  useRecordContext,
   useDataProvider,
 } from 'react-admin';
 import { 
   Box, 
   Typography, 
   Paper, 
-  Grid, 
-  Button, 
+  Grid,  
   ToggleButton, 
   ToggleButtonGroup,
-  CircularProgress
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import moment from 'moment';
 
-/**
- * Redesigned Attendance Management Component
- * 
- * Features:
- * - Weekday selector at the top (Monday to Friday)
- * - Attendance list filtered by selected day
- * - Mark attendance functionality based on selected day
- * - Weekly date updates
- */
+const STATUS_OPTIONS = [
+  { value: 'present', label: 'Present', icon: <CheckCircleIcon color="success" /> },
+  { value: 'absent', label: 'Absent', icon: <CancelIcon color="error" /> },
+  { value: 'late', label: 'Late', icon: <AccessTimeIcon color="warning" /> },
+  { value: 'excused', label: 'Excused', icon: <CheckCircleIcon color="info" /> }
+];
 
-// Custom actions for the attendance list - removed CreateButton and ExportButton
-const ListActions = () => (
-  <TopToolbar>
-    {/* No buttons here as requested */}
-  </TopToolbar>
-);
-
-// Custom status field with icons
-const StatusField = props => {
-  const record = useRecordContext(props);
-  if (!record) return null;
-  
-  return (
-    <Box display="flex" alignItems="center">
-      {record.status === 'present' ? (
-        <CheckCircleIcon color="success" sx={{ mr: 1 }} />
-      ) : record.status === 'absent' ? (
-        <CancelIcon color="error" sx={{ mr: 1 }} />
-      ) : (
-        <AccessTimeIcon color="warning" sx={{ mr: 1 }} />
-      )}
-      <Typography>{record.status}</Typography>
-    </Box>
+// Function to get status icon and label
+const getStatusDisplay = (status) => {
+  const statusOption = STATUS_OPTIONS.find(option => option.value === status);
+  return statusOption ? (
+    <Tooltip title={statusOption.label}>
+      <Box display="flex" alignItems="center" gap={1}>
+        {statusOption.icon}
+        <Typography variant="body2">{statusOption.label}</Typography>
+      </Box>
+    </Tooltip>
+  ) : (
+    <Typography variant="body2" color="text.secondary">Not Set</Typography>
   );
 };
 
-// Helper function to get the date for a specific weekday in the current week
-const getDateForWeekday = (weekday) => {
-  const today = new Date();
+// Function to generate week options
+const getWeekOptions = () => {
+  const currentDate = moment();
+  const currentWeek = currentDate.week();
+  const currentYear = currentDate.year();
   
-  // Get the current week's Monday
-  const currentWeekMonday = new Date(today);
-  const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust to get Monday
-  currentWeekMonday.setDate(today.getDate() + diff);
+  // Get semester start and end dates
+  const semesterStart = moment().month(0).startOf('month'); // January
+  const semesterEnd = moment().month(11).endOf('month'); // December
   
-  // Calculate the target day based on the selected weekday
-  const weekdayOffset = {
-    'monday': 0,
-    'tuesday': 1,
-    'wednesday': 2,
-    'thursday': 3,
-    'friday': 4
-  };
+  const weeks = [];
+  let weekIterator = semesterStart.clone();
   
-  const targetDate = new Date(currentWeekMonday);
-  targetDate.setDate(currentWeekMonday.getDate() + weekdayOffset[weekday.toLowerCase()]);
+  while (weekIterator.isBefore(semesterEnd)) {
+    const weekNum = weekIterator.week();
+    const yearNum = weekIterator.year();
+    
+    const weekStart = weekIterator.clone().startOf('week').add(1, 'days');
+    const weekEnd = weekIterator.clone().endOf('week').subtract(1, 'days');
+    
+    weeks.push({
+      week: weekNum,
+      year: yearNum,
+      label: `Week ${weekNum} (${weekStart.format('MMM D')} - ${weekEnd.format('MMM D')})`,
+      isCurrent: weekNum === currentWeek && yearNum === currentYear
+    });
+    
+    weekIterator.add(1, 'week');
+  }
   
-  return targetDate;
+  return weeks;
 };
 
-// Format date as YYYY-MM-DD
-const formatDate = (date) => {
-  return date.toISOString().split('T')[0];
-};
-
-// Main Attendance Component with Weekday Selector
 const AttendanceList = props => {
   const [selectedWeekday, setSelectedWeekday] = useState('monday');
   const [loading, setLoading] = useState(false);
-  const [targetDate, setTargetDate] = useState(formatDate(getDateForWeekday('monday')));
+  const [selectedWeek, setSelectedWeek] = useState({
+    week: moment().week(),
+    year: moment().year()
+  });
+  const [students, setStudents] = useState([]);
+  const [attendanceData, setAttendanceData] = useState({});
   const dataProvider = useDataProvider();
   const notify = useNotify();
-  const refresh = useRefresh();
 
-  // Update the target date when the selected weekday changes
+  const fetchStudentsAndAttendance = async () => {
+    setLoading(true);
+    try {
+      // Calculate the specific date for the selected week and weekday
+      const selectedDate = moment()
+        .year(selectedWeek.year)
+        .week(selectedWeek.week)
+        .day(selectedWeekday === 'monday' ? 1 
+          : selectedWeekday === 'tuesday' ? 2 
+          : selectedWeekday === 'wednesday' ? 3 
+          : selectedWeekday === 'thursday' ? 4 
+          : 5)
+        .format('YYYY-MM-DD');
+
+      const response = await dataProvider.getAttendanceList('attendance', {
+        pagination: { page: 1, perPage: 100 },
+        sort: { field: 'id', order: 'ASC' },
+        filter: {
+          week: selectedWeek.week,
+          year: selectedWeek.year,
+          date: selectedDate // Add date to filter
+        }
+      });
+
+      // Transform the attendance data for easier access
+      const attendanceMap = {};
+      if (response.data.data?.attendance) {
+        response.data.data.attendance.forEach(record => {
+          // Only include attendance records for the selected date
+          if (moment(record.date).format('YYYY-MM-DD') === selectedDate) {
+            attendanceMap[record.studentId] = record;
+          }
+        });
+      }
+
+      setStudents(response.data?.data?.enrolledStudents || []);
+      setAttendanceData(attendanceMap);
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+      notify('Error fetching attendance data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const newDate = getDateForWeekday(selectedWeekday);
-    setTargetDate(formatDate(newDate));
-  }, [selectedWeekday]);
+    fetchStudentsAndAttendance();
+  }, [selectedWeek, selectedWeekday]);
 
   const handleWeekdayChange = (event, newWeekday) => {
     if (newWeekday !== null) {
@@ -120,36 +150,86 @@ const AttendanceList = props => {
     }
   };
 
-  const handleMarkAttendance = async () => {
-    setLoading(true);
+  const handleWeekChange = (event) => {
+    const [week, year] = event.target.value.split('-');
+    setSelectedWeek({
+      week: parseInt(week),
+      year: parseInt(year)
+    });
+  };
+
+  const handleStatusChange = async (studentId, status) => {
     try {
-      // This should match your backend API endpoint for marking attendance
-      await dataProvider.create('mark-attendance', { 
-        data: { 
-          date: targetDate
-        } 
+      const date = moment()
+        .year(selectedWeek.year)
+        .week(selectedWeek.week)
+        .day(selectedWeekday === 'monday' ? 1 
+          : selectedWeekday === 'tuesday' ? 2 
+          : selectedWeekday === 'wednesday' ? 3 
+          : selectedWeekday === 'thursday' ? 4 
+          : 5)
+        .format('YYYY-MM-DD');
+
+      await dataProvider.create('attendance', {
+        data: {
+          studentId,
+          date,
+          status,
+          notes: ''
+        }
       });
-      notify(`Attendance for ${selectedWeekday} (${targetDate}) marked successfully`, 'success');
-      refresh();
+      
+      notify('Attendance updated successfully', 'success');
+      fetchStudentsAndAttendance();
     } catch (error) {
-      notify(`Error: ${error.message || 'Could not mark attendance'}`, 'error');
-    } finally {
-      setLoading(false);
+      console.error('Error updating attendance:', error);
+      notify('Error updating attendance', 'error');
     }
   };
 
-  // Get the display name for the weekday (capitalize first letter)
-  const getWeekdayDisplayName = (weekday) => {
-    return weekday.charAt(0).toUpperCase() + weekday.slice(1);
+  // Get week options for the dropdown
+  const weekOptions = getWeekOptions();
+  
+  // Add selected date display
+  const getSelectedDateDisplay = () => {
+    return moment()
+      .year(selectedWeek.year)
+      .week(selectedWeek.week)
+      .day(selectedWeekday === 'monday' ? 1 
+        : selectedWeekday === 'tuesday' ? 2 
+        : selectedWeekday === 'wednesday' ? 3 
+        : selectedWeekday === 'thursday' ? 4 
+        : 5)
+      .format('MMMM D, YYYY');
   };
 
   return (
     <>
-      {/* Weekday Selector and Mark Attendance Button */}
       <Paper elevation={3} sx={{ padding: 2, marginBottom: 2 }}>
         <Typography variant="h6" gutterBottom>Attendance Management</Typography>
         
         <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>Select Week</InputLabel>
+              <Select
+                value={`${selectedWeek.week}-${selectedWeek.year}`}
+                onChange={handleWeekChange}
+                label="Select Week"
+              >
+                {weekOptions.map((option) => (
+                  <MenuItem 
+                    key={`${option.week}-${option.year}`} 
+                    value={`${option.week}-${option.year}`}
+                  >
+                    {option.label}
+                    {option.isCurrent && " (Current)"}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={12} md={8}>
             <Typography variant="subtitle1" gutterBottom>Select Day:</Typography>
             <ToggleButtonGroup
@@ -158,105 +238,76 @@ const AttendanceList = props => {
               onChange={handleWeekdayChange}
               aria-label="weekday selection"
               fullWidth
-              sx={{ mb: 2 }}
             >
-              <ToggleButton value="monday" aria-label="monday">
-                Monday
-              </ToggleButton>
-              <ToggleButton value="tuesday" aria-label="tuesday">
-                Tuesday
-              </ToggleButton>
-              <ToggleButton value="wednesday" aria-label="wednesday">
-                Wednesday
-              </ToggleButton>
-              <ToggleButton value="thursday" aria-label="thursday">
-                Thursday
-              </ToggleButton>
-              <ToggleButton value="friday" aria-label="friday">
-                Friday
-              </ToggleButton>
+              <ToggleButton value="monday">Monday</ToggleButton>
+              <ToggleButton value="tuesday">Tuesday</ToggleButton>
+              <ToggleButton value="wednesday">Wednesday</ToggleButton>
+              <ToggleButton value="thursday">Thursday</ToggleButton>
+              <ToggleButton value="friday">Friday</ToggleButton>
             </ToggleButtonGroup>
           </Grid>
-          
-          <Grid item xs={12} md={4}>
-            <Typography variant="subtitle1" gutterBottom>
-              Selected Date: {targetDate}
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleMarkAttendance}
-              disabled={loading}
-              fullWidth
-              sx={{ height: '40px' }}
-            >
-              {loading ? <CircularProgress size={24} /> : `Mark ${getWeekdayDisplayName(selectedWeekday)} Attendance`}
-            </Button>
-          </Grid>
         </Grid>
+
+        <Typography variant="subtitle2" sx={{ mt: 2, color: 'text.secondary' }}>
+          Selected Date: {getSelectedDateDisplay()}
+        </Typography>
       </Paper>
 
-      {/* Attendance List filtered by selected date */}
-      <List 
-        {...props} 
-        actions={<ListActions />}
-        sort={{ field: 'date', order: 'DESC' }}
-        filter={{ date: targetDate }}
-        title={`${getWeekdayDisplayName(selectedWeekday)} Attendance (${targetDate})`}
-      >
-        <Datagrid rowClick="edit">
-          <TextField source="id" />
-          <ReferenceField source="studentId" reference="students">
-            <TextField source="name" />
-          </ReferenceField>
-          <ReferenceField source="courseId" reference="courses">
-            <TextField source="name" />
-          </ReferenceField>
-          <DateField source="date" />
-          <StatusField source="status" />
-          <TextField source="remarks" />
-        </Datagrid>
-      </List>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Student Name</TableCell>
+              <TableCell>Current Status</TableCell>
+              <TableCell>Update Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {students.map((student) => {
+              const attendanceRecord = attendanceData[student.Student.id];
+              return (
+                <TableRow key={student.Student.id}>
+                  <TableCell>
+                    {`${student.Student.firstName} ${student.Student.lastName}`}
+                  </TableCell>
+                  <TableCell>
+                    {getStatusDisplay(attendanceRecord?.status)}
+                  </TableCell>
+                  <TableCell>
+                    <FormControl fullWidth>
+                      <Select
+                        value={attendanceRecord?.status || ''}
+                        onChange={(e) => handleStatusChange(student.Student.id, e.target.value)}
+                        displayEmpty
+                      >
+                      <MenuItem value="" disabled>
+                        Select Status
+                      </MenuItem>
+                      {STATUS_OPTIONS.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            {option.icon}
+                            {option.label}
+                          </Box>
+                        </MenuItem>
+                      ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {loading && (
+        <Box display="flex" justifyContent="center" my={2}>
+          <CircularProgress />
+        </Box>
+      )}
     </>
   );
 };
 
-// Attendance Edit Component
-const AttendanceEdit = props => {
-  const notify = useNotify();
-  const refresh = useRefresh();
-  const redirect = useRedirect();
-
-  const onSuccess = () => {
-    notify('Attendance updated successfully');
-    redirect('list', 'attendance');
-    refresh();
-  };
-
-  return (
-    <Edit {...props} mutationOptions={{ onSuccess }}>
-      <SimpleForm>
-        <TextInput disabled source="id" />
-        <ReferenceInput source="studentId" reference="students">
-          <SelectInput optionText="name" validate={required()} />
-        </ReferenceInput>
-        <ReferenceInput source="courseId" reference="courses">
-          <SelectInput optionText="name" validate={required()} />
-        </ReferenceInput>
-        <DateInput source="date" validate={required()} />
-        <SelectInput 
-          source="status" 
-          choices={[
-            { id: 'present', name: 'Present' },
-            { id: 'absent', name: 'Absent' },
-            { id: 'late', name: 'Late' },
-          ]} 
-          validate={required()} 
-        />
-        <TextInput source="remarks" multiline fullWidth />
-      </SimpleForm>
-    </Edit>
-  );
-};
-
-export { AttendanceList, AttendanceEdit };
+export { AttendanceList };

@@ -2,22 +2,16 @@ const express = require('express');
 const router = express.Router();
 const GradeController = require('../controllers/GradeController');
 const authenticateJWT = require('../middleware/authMiddleware');
+const { route } = require('./authRoutes');
 
 router.use(authenticateJWT.protect);
-router.get('/courses/:courseId/grades', authenticateJWT.authorize("teacher"), GradeController.getCourseGrades);
-router.get('/courses/:courseId/students/:studentId/grades',authenticateJWT.authorize("teacher"), GradeController.getStudentCourseGrades);
-router.post('/courses/:courseId/students/:studentId/assessments/:assessmentId/grade', 
-  authenticateJWT.authorize("teacher"), 
-  GradeController.createOrUpdateGrade
-);
-router.put('/courses/:courseId/assessments/:assessmentId/publish', 
-  authenticateJWT.authorize("teacher"), 
-  GradeController.publishAssessmentGrades
-);
+router.get('/courses', authenticateJWT.authorize("teacher"), GradeController.getPublishedAssessmentsAndGrades);
+router.post('/', authenticateJWT.authorize("teacher"), GradeController.setStudentGrade);
+router.get('/:id', authenticateJWT.authorize("teacher"), GradeController.getStudentGrades);
+router.put('/:id', authenticateJWT.authorize("teacher"), GradeController.updateStudentGrade);
+router.get('/set-grade/:id', authenticateJWT.authorize("teacher"), GradeController.getGradeById);
 
-router.post('/courses/:courseId/calculate-final-grades', 
-  authenticateJWT.authorize("teacher"), 
-  GradeController.calculateFinalGrades
-);
+
+
 
 module.exports = router;

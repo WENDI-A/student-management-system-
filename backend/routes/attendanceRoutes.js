@@ -1,13 +1,14 @@
+
 const express = require('express');
 const router = express.Router();
 const attendanceController = require('../controllers/attendanceController');
-const authenticate = require('../middleware/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
-router.use(authenticate.protect);
-router.use(authenticate.authorize("teacher"));
-router.get('/', attendanceController.getAttendanceByTeacherCourse);
-router.get('/weekday', attendanceController.getAttendanceByWeekday);
-router.post('/attendance', attendanceController.markAttendance);
-router.post('/attendance/bulk', attendanceController.bulkMarkAttendance);
+router.use(authMiddleware.protect);
+router.use(authMiddleware.authorize("teacher"));
+
+router.get('/current-week', attendanceController.getCurrentWeekAttendance);
+router.post('/set-attendance', attendanceController.setAttendance);
+router.get('/by-week', attendanceController.getAttendanceByWeek);
 
 module.exports = router;

@@ -15,6 +15,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import AnnouncementIcon from '@mui/icons-material/Announcement';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 // Student components
 import StudentList from "../Admin/Student/StudentList";
@@ -24,7 +25,7 @@ import StudentEdit from "../Admin/Student/StudentEdit";
 // Dashboard components
 import AdminDashboard from "../Admin/AdminDashboard";
 import TeacherDashboard from "../Teacher/TeacherDashboard";
-import StudentDashboard from "../dashboards/StudentDashboard";
+import StudentDashboard from "../student/StudentDashboard";
 import ParentDashboard from "../dashboards/ParentDashboard";
 import UserDashboard from "../dashboards/UserDashboard";
 
@@ -42,15 +43,21 @@ import CourseCreate from "../Admin/Course/CourseCreate";
 import CourseEdit from "../Admin/Course/CourseEdit";
 import CourseList from "../Admin/Course/CourseList";
 
-import StudentListTeacher from "../Teacher/Student/StudentList";
 import CourseMaterialList from "../Teacher/CourseMaterial/CourseMaterialList";
 import CourseMaterialCreate from "../Teacher/CourseMaterial/CourseMaterialCreate";
 import CourseMaterialEdit from "../Teacher/CourseMaterial/CourseMaterialEdit";
 import NotificationTeacher from "../Teacher/Notifcation/notifcationList";
 import {UpdatePasswordEditTeacher } from "../Teacher/UpdatePassword";
-import { AttendanceList , AttendanceEdit} from "../Teacher/Attendance/AttendanceList";
+import { AttendanceList} from "../Teacher/Attendance/AttendanceList";
 import PendingEnrollments from "../Teacher/courseEnrollments/courseEnrollmentsList";
 import Assessment from "../Teacher/assessments/index";
+import GradeList from "../Teacher/Grade/gradeList";
+import GradeEdit from "../Teacher/Grade/gradeEdit";
+
+// Schedule components
+import ScheduleList from "../Admin/Schedule/ScheduleList";
+import ScheduleCreate from "../Admin/Schedule/ScheduleCreate";
+import ScheduleEdit from "../Admin/Schedule/ScheduleEdit";
 
 const DASHBOARDS = {
   admin: AdminDashboard,
@@ -66,6 +73,7 @@ const RESOURCES = {
     { key: "teachers", name: "teachers", options: { label: "Teachers" } , list: TeacherList , create:TeacherCreate , edit: TeacherEdit, icon: PersonIcon },
     { key: "parents", name: "parents", options: { label: "Parents" } ,list :ParentList , create : parentCreate , edit : parentEdit, icon: FamilyRestroomIcon },
     { key: "course", name: "course", options: { label: "courses" } ,list : CourseList , create : CourseCreate  , edit : CourseEdit, icon: MenuBookIcon },
+    { key: "schedules", name: "schedules", options: { label: "Schedules" }, list: ScheduleList, create: ScheduleCreate, edit: ScheduleEdit, icon: CalendarTodayIcon },
     { key: "Notfication", name: "Notfication", options: { label: "Notfication" }, list : Notification, icon: NotificationsIcon },
     { key: "Settings", name: "Settings", options: { label: "Settings" } ,list :  UpdatePasswordEdit, icon: SettingsIcon },
   ],
@@ -73,23 +81,25 @@ const RESOURCES = {
     { key: "CourseMaterial", name: "CourseMaterial", options: { label: "CourseMaterial" }  ,list :CourseMaterialList, create : CourseMaterialCreate , edit : CourseMaterialEdit, icon: LibraryBooksIcon },
     { key: "courseEnrollments", name: "courseEnrollments", options: { label: "Course Enrollments" }, icon: HowToRegIcon  ,list : PendingEnrollments },
     { key: "Assessment", name: "Assessment", options: { label: "Assessment" }, icon: AssessmentIcon  , list : Assessment.AssessmentList ,create  : Assessment.AssessmentCreate , edit :  Assessment.AssessmentEdit },
-    { key: "attendance", name: "attendance", options: { label: "Attendance" } , list: AttendanceList, edit : AttendanceEdit , icon: EventIcon },
+    { key: "attendance", name: "attendance", options: { label: "Attendance" } , list: AttendanceList , icon: EventIcon },
+    { key: "grade", name: "grade", options: { label: "grade" }, list: GradeList , create : GradeEdit , edit : GradeEdit , icon: AssessmentIcon  },
     { key: "notifications", name: "notifications", options: { label: "notifications" } ,list :NotificationTeacher, icon: NotificationsIcon },
     { key: "settings", name: "settings", options: { label: "settings" } , list:UpdatePasswordEditTeacher, icon: SettingsIcon },
-    
   ],
   student: [
     { key: "courses", name: "courses", options: { label: "My Courses" }, icon: MenuBookIcon },
     { key: "assignments", name: "assignments", options: { label: "My Assignments" }, icon: AssignmentIcon },
     { key: "exams", name: "exams", options: { label: "My Exams" }, icon: AssessmentIcon },
-    { key: "attendance", name: "attendance", options: { label: "My Attendance" }, icon: EventIcon }
+    { key: "attendance", name: "attendance", options: { label: "My Attendance" }, icon: EventIcon },
+    { key: "schedules", name: "schedules", options: { label: "My Schedule" }, icon: CalendarTodayIcon }
   ],
   parent: [
     { key: "students", name: "students", options: { label: "My Children" }, icon: SchoolIcon },
     { key: "courses", name: "courses", options: { label: "Courses" }, icon: MenuBookIcon },
     { key: "assignments", name: "assignments", options: { label: "Assignments" }, icon: AssignmentIcon },
     { key: "exams", name: "exams", options: { label: "Exams" }, icon: AssessmentIcon },
-    { key: "attendance", name: "attendance", options: { label: "Attendance" }, icon: EventIcon }
+    { key: "attendance", name: "attendance", options: { label: "Attendance" }, icon: EventIcon },
+    { key: "schedules", name: "schedules", options: { label: "Schedules" }, icon: CalendarTodayIcon }
   ],
   user: [
     { key: "announcements", name: "announcements", options: { label: "Announcements" }, icon: AnnouncementIcon }
