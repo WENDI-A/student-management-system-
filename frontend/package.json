@@ -10,6 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.9",
+    "@mui/material": "^6.4.9",
+    "@mui/system": "^6.4.9",
+    "@mui/utils": "^6.4.9",
     "@mui/x-date-pickers": "^7.28.2",
     "@tailwindcss/vite": "^4.0.14",
     "axios": "^1.8.4",

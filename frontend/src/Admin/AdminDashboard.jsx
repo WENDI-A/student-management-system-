@@ -98,7 +98,7 @@ export const AdminDashboard = () => {
             <Title title="Admin Dashboard" />
 
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4">Welcome, {identity?.fullName ||  "Admin"} </Typography>
+                <Typography variant="h4">Welcome, {identity?.firstName ||  "Admin"} </Typography>
                 <Typography variant="subtitle1" color="textSecondary">{currentDate}</Typography>
             </Box>
 

@@ -1,4 +1,4 @@
-const { Course, CourseMaterial } = require("../models");
+const { Course, CourseMaterial , courseEnrollments } = require("../models");
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -338,6 +338,50 @@ exports.getAllMaterialsByTeacher = async (req, res) => {
 
 exports.getCourseMaterials = async (req, res) => {
   try {
+    const studentId = req.user.id;
+    
+    const enrollments = await courseEnrollments.findAll({
+      where: { student_id: studentId }
+    });
+    
+    const courseIds = enrollments.map(enrollment => enrollment.course_id);
+    
+    if (courseIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        data: []
+      });
+    }
+    
+    const materials = await CourseMaterial.findAll({
+      where: { 
+        course_id: courseIds 
+      },
+      include: [{
+        model: Course,
+        as: 'Course', 
+        attributes: ['id', 'Course_name', 'Course_code']
+      }]
+    });
+    
+    return res.status(200).json({
+      success: true,
+      count: materials.length,
+      data: materials
+    });
+  } catch (error) {
+    console.error("Error fetching course materials:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch course materials",
+      error: error.message
+    });
+  }
+};
+
+exports.getCourseMaterialsById = async (req, res) => {
+  try {
     const { id } = req.params;
     
     const materials = await CourseMaterial.findAll({
@@ -358,6 +402,7 @@ exports.getCourseMaterials = async (req, res) => {
     });
   }
 };
+
 
 exports.deleteMaterial = async (req, res) => {
   try {

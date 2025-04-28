@@ -1,6 +1,7 @@
 const db = require('../models');
 const Schedule = db.Schedule;
 const Course = db.Course;
+const Student = db.Student;
 const { Op } = require('sequelize');
 
 exports.createSchedule = async (req, res) => {
@@ -55,7 +56,8 @@ exports.createSchedule = async (req, res) => {
       day_of_week,
       start_time,
       end_time,
-      room_number
+      room_number,
+      isActive: true
     });
 
     return res.status(201).json({
@@ -176,7 +178,6 @@ exports.getSchedulesByStudentGrade = async (req, res) => {
     const schedules = await Schedule.findAll({
       where: {
         room_number: studentGrade.toString(), // Convert grade to string to match room_number format
-        isActive: true
       },
       include: [
         {
