@@ -30,6 +30,7 @@ router.use("/grade", Grade)
 router.use('/Attendance', attendanceRoutes);
 router.use('/courseenrollments', courseEnrollments);
 router.use("/schedules", require('./scheduleRoutes'))
+router.use('/StudentcourseEnrollments', require('./studentAssessments'));
 
 
 

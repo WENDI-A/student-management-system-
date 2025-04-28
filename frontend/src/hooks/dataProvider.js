@@ -14,7 +14,8 @@ const get_path_list = {
     Assessment : "/Assessment/teacher",
     attendance: "/Attendance/current-week",
     grade : "/grade/courses",
-    schedules: "/schedules"
+    schedules: "/schedules",
+    myAssessment : "/StudentcourseEnrollments/student",
 };
 
 const create_path = {
@@ -36,7 +37,8 @@ const get_one_path = {
     CourseMaterial : "/CourseMaterial",
     Assessment : "/Assessment",
     grade : "/grade/set-grade",
-    schedules: "/schedules"
+    schedules: "/schedules",
+    myAssessment : "/StudentcourseEnrollments/student",
 };
 
 
@@ -62,7 +64,8 @@ const update_path = {
 
 const get_one_dashboard_path = {
     Admindashboard : "/dashboard/admin",
-    TeacherDashboard : "/dashboard/teacher"
+    TeacherDashboard : "/dashboard/teacher",
+    ParentDashboard : "/dashboard/parent"
 }
 
 const get_update_password = {

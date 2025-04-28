@@ -1,5 +1,6 @@
 
 export const API_URL = 'http://localhost:3001/api';
+export const BASE_URL = 'http://localhost:3001/';
 export const AUTH_ENDPOINTS = {
   LOGIN: `${API_URL}/auth/login`,
   REGISTER: `${API_URL}/auth/register`,
