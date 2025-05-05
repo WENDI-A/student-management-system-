@@ -33,7 +33,7 @@ const AdminReact = () => {
 
   // Handler for sending notification using the hook
   const handleSendNotification = async () => {
-    await sendNotification({ recipientType, message });
+    await sendNotification({ role:'Admin',recipientType, message });
     setMessage('');
     setOpen(false);
   };

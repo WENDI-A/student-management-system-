@@ -20,7 +20,7 @@ const useNotifications = (adminId) => {
     }
   };
   
-  const sendNotification = async ({ recipientType, message }) => {
+  const sendNotification = async ({ role,recipientType, message }) => {
     if (!message || !recipientType) {
       notify('Message and recipient type are required.', { type: 'error' });
       return;
@@ -29,7 +29,7 @@ const useNotifications = (adminId) => {
     try {
      await axios.post(`${API_URL}/notifications/send`, {
         sender_id: adminId,
-        sender_role: 'Teacher',
+        sender_role: role,
         recipient_type: recipientType,
         message,
       });

@@ -29,7 +29,7 @@ const TeacherNotfication  = () => {
   const [recipientType, setRecipientType] = useState('Students');
   const [open, setOpen] = useState(false);
   const handleSendNotification = async () => {
-    await sendNotification({ recipientType, message });
+    await sendNotification({ role : 'Teacher',recipientType, message });
     setMessage('');
     setOpen(false);
   };

@@ -178,9 +178,6 @@ export const StudentAssessmentList = () => {
           )}
         />
         <TextField source="title" label="Assessment" />
-        <ReferenceField source="course_id" reference="courses" label="Course">
-          <TextField source="Course_name" />
-        </ReferenceField>
         <DateField source="due_date" label="Due Date" showTime />
         <FunctionField
           label="Status"
