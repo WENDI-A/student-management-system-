@@ -6,6 +6,7 @@ import {   Edit,
   ReferenceArrayInput, 
   SelectArrayInput,
 } from "react-admin";
+import InputVildcation from "../../components/InputVildcation";
 const relationChoices = [
   { id: 'father', name: 'Father' },
   { id: 'mother', name: 'Mother' },
@@ -20,23 +21,26 @@ const parentEdit = (props) => {
                   source="firstName" 
                   label="First Name" 
                   fullWidth 
+                  parse={(value) => InputVildcation(value , "letter")}
                  
                 />
                 <TextInput 
                   source="lastName" 
                   label="Last Name" 
                   fullWidth 
-                 
+                  parse={(value) => InputVildcation(value , "letter")}
                 />
                 <TextInput 
                   source="email" 
                   label="Email" 
                   fullWidth 
+
                 />
                 <TextInput 
                   source="address" 
                   label="Address" 
                   fullWidth 
+                  parse={(value) => InputVildcation(value , "letter")}
                  
                 />
                 <TextInput 
@@ -44,6 +48,7 @@ const parentEdit = (props) => {
                   type="tel" 
                   label="Phone Number" 
                   fullWidth 
+                  parse={(value) => InputVildcation(value , "phone")}
                  
                 />
                 <SelectInput 
@@ -57,6 +62,7 @@ const parentEdit = (props) => {
                   source="occupation" 
                   label="Occupation" 
                   fullWidth 
+                  parse={(value) => InputVildcation(value , "letter")}
                 />
                 <ReferenceArrayInput 
                   source="studentIds" 

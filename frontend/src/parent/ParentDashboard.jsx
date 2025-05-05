@@ -104,7 +104,7 @@ export const ParentDashboard = () => {
                                                 <th style={{ textAlign: 'left', padding: '8px', borderBottom: '1px solid #ddd' }}>Course</th>
                                                 <th style={{ textAlign: 'left', padding: '8px', borderBottom: '1px solid #ddd' }}>Assessment</th>
                                                 <th style={{ textAlign: 'left', padding: '8px', borderBottom: '1px solid #ddd' }}>Score</th>
-                                                <th style={{ textAlign: 'left', padding: '8px', borderBottom: '1px solid #ddd' }}>Grade</th>
+                                                {/* <th style={{ textAlign: 'left', padding: '8px', borderBottom: '1px solid #ddd' }}>Grade</th> */}
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -119,9 +119,9 @@ export const ParentDashboard = () => {
                                                     <td style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>
                                                         {grade.score || 0}/{grade.assessment?.max_score || 0}
                                                     </td>
-                                                    <td style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>
+                                                    {/* <td style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>
                                                         {grade.letterGrade || 'N/A'}
-                                                    </td>
+                                                    </td> */}
                                                 </tr>
                                             ))}
                                         </tbody>

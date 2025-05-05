@@ -115,7 +115,7 @@ export const ParentNotificationList = () => {
       setLoading(true);
       
       // Determine recipient type based on user role
-      const recipientType = "parent"
+      const recipientType = "Parents"
       
       // Use API_ENDPOINT_FUNCTION from config.js to construct the endpoint
       const endpoint = API_ENDPOINT_FUNCTION(`/notifications/recipient/${recipientType}/${identity.id}`);
@@ -172,7 +172,6 @@ export const ParentNotificationList = () => {
         <Paper elevation={1}>
           <Datagrid
             bulkActionButtons={false}
-            rowClick="show"
             data={notifications}
             isLoading={loading}
             resource="notifications"
@@ -185,17 +184,10 @@ export const ParentNotificationList = () => {
               },
             }}
           >
-            <FunctionField
-              label=""
-              render={record => <NotificationIcon record={record} />}
-            />
-            <TextField source="title" label="Title" />
+            
+            <TextField source="sender_role" label="sender" />
             <TextField source="message" label="Message" />
-            <DateField source="created_at" label="Received" showTime />
-            <FunctionField
-              label="Status"
-              render={record => <NotificationStatus record={record} />}
-            />
+            <DateField source="createdAt" label="Received" showTime />
           </Datagrid>
         </Paper>
       )}

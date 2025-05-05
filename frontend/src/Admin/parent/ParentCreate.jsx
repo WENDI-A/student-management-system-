@@ -10,6 +10,7 @@ import {
   email,
   minLength
 } from "react-admin";
+import InputVildcation from "../../components/InputVildcation";
 
 const relationChoices = [
   { id: 'father', name: 'Father' },
@@ -26,12 +27,14 @@ const ParentCreate = () => {
           source="firstName" 
           label="First Name" 
           fullWidth 
+          parse={(value) => InputVildcation(value , "letter")}
           validate={[required()]} 
         />
         <TextInput 
           source="lastName" 
           label="Last Name" 
           fullWidth 
+          parse={(value) => InputVildcation(value , "letter")}
           validate={[required()]} 
         />
         <TextInput 
@@ -50,6 +53,7 @@ const ParentCreate = () => {
           source="phone" 
           type="tel" 
           label="Phone Number" 
+          parse={(value) => InputVildcation(value , "phone")}
           fullWidth 
           validate={[required()]} 
         />
@@ -63,6 +67,7 @@ const ParentCreate = () => {
         <TextInput 
           source="occupation" 
           label="Occupation" 
+          parse={(value) => InputVildcation(value , "letter")}
           fullWidth 
         />
         <ReferenceArrayInput 
