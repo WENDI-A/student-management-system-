@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { Layout, useGetIdentity, useGetPermissions, useRefresh } from 'react-admin';
+import React, { useEffect, useState, useRef } from 'react';
+import { Layout, useGetIdentity, useRefresh } from 'react-admin';
 import { CircularProgress } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import { CustomAppBar } from './CustomAppBar';
@@ -10,28 +10,46 @@ export const CustomLayout = (props) => {
     const [menuKey, setMenuKey] = useState(0); // Key to force menu refresh
     const location = useLocation();
     const refresh = useRefresh();
-    
-    // Refresh sidebar menu when URL changes or identity changes
+    const initialRenderRef = useRef(true);
+    const previousPathRef = useRef(location.pathname);
+
+    // Refresh only when identity changes, but not on initial render
     useEffect(() => {
-        // Increment the key to force re-render of the menu
-        setMenuKey(prevKey => prevKey + 1);
-        
-        // Optional: refresh data if needed
-        refresh();
-        
-        console.log('Sidebar menu refreshed due to navigation or identity change');
-    }, [location.pathname, identity, refresh]);
-    
+        if (initialRenderRef.current) {
+            initialRenderRef.current = false;
+            return;
+        }
+
+        if (identity) {
+            // Increment the key to force re-render of the menu
+            setMenuKey(prevKey => prevKey + 1);
+            console.log('Layout refreshed due to identity change');
+        }
+    }, [identity]);
+
+    // Refresh menu when URL path changes but don't refresh data
+    // Also skip the initial render and only update when path actually changes
+    useEffect(() => {
+        if (initialRenderRef.current) {
+            return;
+        }
+
+        if (previousPathRef.current !== location.pathname) {
+            previousPathRef.current = location.pathname;
+            setMenuKey(prevKey => prevKey + 1);
+            console.log('Menu refreshed due to navigation');
+        }
+    }, [location.pathname]);
+
     if (isLoading) {
         return <CircularProgress />;
     }
 
     return (
-        <Layout 
-            {...props} 
+        <Layout
+            {...props}
             appBar={CustomAppBar}
             className="flex flex-col h-screen"
-            key={`layout-${menuKey}`}
             menu={props.menu ? React.cloneElement(props.menu, { key: `menu-${menuKey}` }) : undefined}
         />
     );

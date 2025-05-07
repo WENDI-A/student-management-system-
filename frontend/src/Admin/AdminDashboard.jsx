@@ -41,50 +41,30 @@ export const AdminDashboard = () => {
     }, [dataProvider]);
 
     const stats = [
-        { 
-            name: 'Students', 
-            value: dashboardData.stats.students, 
-            icon: <School color="primary" />, 
-            color: '#2196f3', 
+        {
+            name: 'Students',
+            value: dashboardData.stats.students,
+            icon: <School color="primary" />,
+            color: '#2196f3',
             link: 'students'
         },
-        { 
-            name: 'Teachers', 
-            value: dashboardData.stats.teachers, 
-            icon: <People color="secondary" />, 
-            color: '#f50057', 
+        {
+            name: 'Teachers',
+            value: dashboardData.stats.teachers,
+            icon: <People color="secondary" />,
+            color: '#f50057',
             link: 'teachers'
         },
-        { 
-            name: 'Parents', 
-            value: dashboardData.stats.parents, 
-            icon: <FamilyRestroom style={{ color: '#9c27b0' }} />, 
-            color: '#9c27b0', 
+        {
+            name: 'Parents',
+            value: dashboardData.stats.parents,
+            icon: <FamilyRestroom style={{ color: '#9c27b0' }} />,
+            color: '#9c27b0',
             link: 'parents'
         },
-        { 
-            name: 'Courses', 
-            value: dashboardData.stats.courses, 
-            icon: <MenuBook style={{ color: '#ff9800' }} />, 
-            color: '#ff9800', 
-            link: ''
-        },
-        { 
-            name: 'Assignments', 
-            value: dashboardData.stats.assignments, 
-            icon: <Assignment style={{ color: '#4caf50' }} />, 
-            color: '#4caf50', 
-            link: ''
-        },
-        { 
-            name: 'Announcements', 
-            value: dashboardData.stats.announcements, 
-            icon: <Announcement style={{ color: '#f44336' }} />, 
-            color: '#f44336', 
-            link: ''
-        },
+
     ];
-    
+
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
@@ -107,7 +87,7 @@ export const AdminDashboard = () => {
                     <Typography variant="h5" gutterBottom>School Overview</Typography>
                     <Grid container spacing={3} sx={{ mt: 1 }}>
                         {stats.map((stat, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={2} key={index}>
+                            <Grid item xs={12} sm={6} md={4} key={index}>
                                 <Paper
                                     elevation={3}
                                     sx={{
