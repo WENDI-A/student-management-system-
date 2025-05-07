@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-  Button, 
-  Card, 
-  CardContent, 
-  Typography, 
-  Divider, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  ListItemAvatar, 
-  CircularProgress, 
-  Snackbar, 
-  Tooltip, 
-  Box, 
+import {
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  CircularProgress,
+  Snackbar,
+  Tooltip,
+  Box,
   Paper,
   Alert
 } from '@mui/material';
-import { 
-  Download as DownloadIcon, 
-  Book as BookIcon, 
-  Description as FileTextIcon, 
+import {
+  Download as DownloadIcon,
+  Book as BookIcon,
+  Description as FileTextIcon,
   PictureAsPdf as PdfIcon,
   InsertDriveFile as WordIcon,
   TableChart as ExcelIcon,
@@ -95,13 +95,13 @@ const StudentCourseMaterial = () => {
       setLoading(true);
       const options = await GET_HEADER({ isJson: true });
       const response = await axios.get(
-        API_ENDPOINT_FUNCTION('/CourseMaterial/student'), 
+        API_ENDPOINT_FUNCTION('/CourseMaterial/student'),
         options
       );
-      
+
       if (response.data.success) {
         setMaterials(response.data.data);
-        
+
         const grouped = {};
         response.data.data.forEach(material => {
           const courseId = material.Course?.id;
@@ -115,7 +115,7 @@ const StudentCourseMaterial = () => {
             grouped[courseId].materials.push(material);
           }
         });
-        
+
         setGroupedMaterials(grouped);
       }
       setLoading(false);
@@ -141,23 +141,69 @@ const StudentCourseMaterial = () => {
         return;
       }
 
+      setSnackbar({
+        open: true,
+        message: `Downloading ${material.title}...`,
+        severity: 'info'
+      });
 
-        const downloadUrl = `${BASE_URL}${material.fileUrl}`;
-        
-        console.log('Downloading from:', downloadUrl);
+      // Get the file name from the URL
+      const fileName = material.fileUrl.split('/').pop();
+      // Create a proper download URL
+      const downloadUrl = `${BASE_URL}${material.fileUrl}`;
+
+      try {
+        // Use fetch to get the file as a blob
+        const response = await fetch(downloadUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Get the blob from the response
+        const blob = await response.blob();
+
+        // Create a download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        // Use the original file name or material title with extension
+        link.download = fileName || `${material.title}.${blob.type.split('/')[1]}`;
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+
+        setSnackbar({
+          open: true,
+          message: `Downloaded ${material.title} successfully`,
+          severity: 'success'
+        });
+      } catch (fetchError) {
+        console.error('Error fetching file:', fetchError);
+
+        // Fallback to direct download if fetch fails
+        console.log('Falling back to direct download from:', downloadUrl);
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.setAttribute('download', "book");
+        link.setAttribute('download', fileName || material.title);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    
-      
-      setSnackbar({
-        open: true,
-        message: `Downloaded ${material.title} successfully`,
-        severity: 'success'
-      });
+
+        setSnackbar({
+          open: true,
+          message: `Downloaded ${material.title} successfully`,
+          severity: 'success'
+        });
+      }
     } catch (error) {
       console.error('Error downloading file:', error);
       setSnackbar({
@@ -170,9 +216,9 @@ const StudentCourseMaterial = () => {
 
   const getFileIcon = (fileUrl) => {
     if (!fileUrl) return <UnknownIcon sx={{ fontSize: 40 }} />;
-    
+
     const extension = fileUrl.split('.').pop().toLowerCase();
-    
+
     switch (extension) {
       case 'pdf':
         return <PdfIcon sx={{ fontSize: 40, color: '#f44336' }} />;
@@ -235,9 +281,9 @@ const StudentCourseMaterial = () => {
           <Typography variant="body2" color="text.secondary">
             View and download materials for your enrolled courses
           </Typography>
-          
+
           <Divider sx={{ margin: '16px 0' }} />
-          
+
           {Object.keys(groupedMaterials).length > 0 ? (
             Object.entries(groupedMaterials).map(([courseId, { courseInfo, materials }]) => (
               <CourseCard key={courseId} variant="outlined">
@@ -246,10 +292,10 @@ const StudentCourseMaterial = () => {
                     <BookIcon />
                     <Typography variant="h6">{courseInfo.title}</Typography>
                   </CourseTitle>
-                  <Typography variant="body2" paragraph>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
                     {courseInfo.description}
                   </Typography>
-                  
+
                   <List>
                     {materials.map((material) => (
                       <ListItem key={material.id} divider>
@@ -294,10 +340,10 @@ const StudentCourseMaterial = () => {
           )}
         </CardContent>
       </Card>
-      
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
         onClose={handleCloseSnackbar}
       >
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>

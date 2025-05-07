@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppBar, UserMenu, useGetIdentity } from 'react-admin';
 import { Typography, Box, Chip, useMediaQuery, useTheme } from '@mui/material';
 import Image from "../assets/hwu_logo.png";
@@ -7,12 +7,15 @@ export const CustomAppBar = (props) => {
     const { identity, isLoading } = useGetIdentity();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    
+    // We don't need the refresh here as it's handled in the layout
+    const [appBarKey] = useState(0); // Use a static key instead of changing it
+
     return (
         <AppBar
             {...props}
             color="primary"
             elevation={1}
+            key={`appbar-${appBarKey}`}
             sx={{
                 '& .RaAppBar-title': {
                     flex: 1,
@@ -22,17 +25,17 @@ export const CustomAppBar = (props) => {
                 },
             }}
         >
-            <Box 
-                display="flex" 
-                alignItems="center" 
+            <Box
+                display="flex"
+                alignItems="center"
                 sx={{ marginRight: '1rem' }}
             >
-                <img 
-                    src={Image} 
-                    alt="School Logo" 
-                    width={40} 
-                    height={40} 
-                    style={{ 
+                <img
+                    src={Image}
+                    alt="School Logo"
+                    width={40}
+                    height={40}
+                    style={{
                         borderRadius: '50%',
                         backgroundColor: 'white',
                         padding: '2px'
@@ -43,26 +46,26 @@ export const CustomAppBar = (props) => {
             <Typography
                 variant="h6"
                 color="inherit"
-                sx={{ 
+                sx={{
                     flex: 1,
-                    display: isMobile ? 'none' : 'block' 
+                    display: isMobile ? 'none' : 'block'
                 }}
             >
                 HU Model Community School
             </Typography>
-            
+
             {/* Empty flex spacer for mobile view */}
             {isMobile && <Box sx={{ flex: 1 }} />}
-            
+
             {!isLoading && identity && (
-                <Chip 
-                    label={identity.role?.toUpperCase()} 
-                    color="secondary" 
+                <Chip
+                    label={identity.role?.toUpperCase()}
+                    color="secondary"
                     size="small"
                     sx={{ marginRight: '1rem' }}
                 />
             )}
-            
+
             {props.children}
         </AppBar>
     );

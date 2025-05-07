@@ -1,12 +1,21 @@
 import React from "react";
-import {   Edit,
-  SimpleForm, 
-  TextInput, 
-  SelectInput, 
-  ReferenceArrayInput, 
+import {
+  Edit,
+  SimpleForm,
+  TextInput,
+  SelectInput,
+  ReferenceArrayInput,
   SelectArrayInput,
+  required,
+  regex
 } from "react-admin";
 import InputVildcation from "../../components/InputVildcation";
+
+// Phone number validation - must start with 0 followed by 9 or 7, then 8 more digits
+const validatePhone = [
+  required(),
+  regex(/^0[97]\d{8}$/, 'Phone number must start with 09 or 07 followed by 8 digits')
+];
 const relationChoices = [
   { id: 'father', name: 'Father' },
   { id: 'mother', name: 'Mother' },
@@ -17,61 +26,62 @@ const parentEdit = (props) => {
   return (
     <Edit {...props}>
       <SimpleForm>
-                <TextInput 
-                  source="firstName" 
-                  label="First Name" 
-                  fullWidth 
+                <TextInput
+                  source="firstName"
+                  label="First Name"
+                  fullWidth
                   parse={(value) => InputVildcation(value , "letter")}
-                 
-                />
-                <TextInput 
-                  source="lastName" 
-                  label="Last Name" 
-                  fullWidth 
-                  parse={(value) => InputVildcation(value , "letter")}
-                />
-                <TextInput 
-                  source="email" 
-                  label="Email" 
-                  fullWidth 
 
                 />
-                <TextInput 
-                  source="address" 
-                  label="Address" 
-                  fullWidth 
+                <TextInput
+                  source="lastName"
+                  label="Last Name"
+                  fullWidth
                   parse={(value) => InputVildcation(value , "letter")}
-                 
                 />
-                <TextInput 
-                  source="phone" 
-                  type="tel" 
-                  label="Phone Number" 
-                  fullWidth 
+                <TextInput
+                  source="email"
+                  label="Email"
+                  fullWidth
+
+                />
+                <TextInput
+                  source="address"
+                  label="Address"
+                  fullWidth
+                  parse={(value) => InputVildcation(value , "letter")}
+
+                />
+                <TextInput
+                  source="phone"
+                  type="tel"
+                  label="Phone Number"
+                  fullWidth
                   parse={(value) => InputVildcation(value , "phone")}
-                 
+                  validate={validatePhone}
+                  helperText="Must start with 09 or 07 followed by 8 digits"
                 />
-                <SelectInput 
-                  source="relation" 
-                  label="Relation" 
-                  choices={relationChoices} 
-                  fullWidth 
-                 
+                <SelectInput
+                  source="relation"
+                  label="Relation"
+                  choices={relationChoices}
+                  fullWidth
+
                 />
-                <TextInput 
-                  source="occupation" 
-                  label="Occupation" 
-                  fullWidth 
+                <TextInput
+                  source="occupation"
+                  label="Occupation"
+                  fullWidth
                   parse={(value) => InputVildcation(value , "letter")}
                 />
-                <ReferenceArrayInput 
-                  source="studentIds" 
-                  reference="students" 
+                <ReferenceArrayInput
+                  source="studentIds"
+                  reference="students"
                   label="Children"
                   filter={{ isActive: true }}
                 >
-                  <SelectArrayInput 
-                    optionText={(record) => 
+                  <SelectArrayInput
+                    optionText={(record) =>
                       record ? `${record.firstName} ${record.lastName} (Grade: ${record.grade})` : ''
                     }
                     filter={{ isActive: true }}

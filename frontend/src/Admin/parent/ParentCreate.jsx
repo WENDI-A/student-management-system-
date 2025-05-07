@@ -1,16 +1,23 @@
 import React from "react";
-import { 
-  Create, 
-  SimpleForm, 
-  TextInput, 
-  SelectInput, 
-  ReferenceArrayInput, 
+import {
+  Create,
+  SimpleForm,
+  TextInput,
+  SelectInput,
+  ReferenceArrayInput,
   SelectArrayInput,
   required,
   email,
-  minLength
+  minLength,
+  regex
 } from "react-admin";
 import InputVildcation from "../../components/InputVildcation";
+
+// Phone number validation - must start with 0 followed by 9 or 7, then 8 more digits
+const validatePhone = [
+  required(),
+  regex(/^0[97]\d{8}$/, 'Phone number must start with 09 or 07 followed by 8 digits')
+];
 
 const relationChoices = [
   { id: 'father', name: 'Father' },
@@ -23,61 +30,62 @@ const ParentCreate = () => {
   return (
     <Create>
       <SimpleForm>
-        <TextInput 
-          source="firstName" 
-          label="First Name" 
-          fullWidth 
+        <TextInput
+          source="firstName"
+          label="First Name"
+          fullWidth
           parse={(value) => InputVildcation(value , "letter")}
-          validate={[required()]} 
+          validate={[required()]}
         />
-        <TextInput 
-          source="lastName" 
-          label="Last Name" 
-          fullWidth 
+        <TextInput
+          source="lastName"
+          label="Last Name"
+          fullWidth
           parse={(value) => InputVildcation(value , "letter")}
-          validate={[required()]} 
+          validate={[required()]}
         />
-        <TextInput 
-          source="email" 
-          label="Email" 
-          fullWidth 
-          validate={[required(), email()]} 
+        <TextInput
+          source="email"
+          label="Email"
+          fullWidth
+          validate={[required(), email()]}
         />
-        <TextInput 
-          source="address" 
-          label="Address" 
-          fullWidth 
-          validate={[required()]} 
+        <TextInput
+          source="address"
+          label="Address"
+          fullWidth
+          validate={[required()]}
         />
-        <TextInput 
-          source="phone" 
-          type="tel" 
-          label="Phone Number" 
+        <TextInput
+          source="phone"
+          type="tel"
+          label="Phone Number"
           parse={(value) => InputVildcation(value , "phone")}
-          fullWidth 
-          validate={[required()]} 
+          fullWidth
+          validate={validatePhone}
+          helperText="Must start with 09 or 07 followed by 8 digits"
         />
-        <SelectInput 
-          source="relation" 
-          label="Relation" 
-          choices={relationChoices} 
-          fullWidth 
-          validate={[required()]} 
+        <SelectInput
+          source="relation"
+          label="Relation"
+          choices={relationChoices}
+          fullWidth
+          validate={[required()]}
         />
-        <TextInput 
-          source="occupation" 
-          label="Occupation" 
+        <TextInput
+          source="occupation"
+          label="Occupation"
           parse={(value) => InputVildcation(value , "letter")}
-          fullWidth 
+          fullWidth
         />
-        <ReferenceArrayInput 
-          source="studentIds" 
-          reference="students" 
+        <ReferenceArrayInput
+          source="studentIds"
+          reference="students"
           label="Children"
           filter={{ isActive: true }}
         >
-          <SelectArrayInput 
-            optionText={(record) => 
+          <SelectArrayInput
+            optionText={(record) =>
               record ? `${record.firstName} ${record.lastName} (Grade: ${record.grade})` : ''
             }
             filter={{ isActive: true }}
