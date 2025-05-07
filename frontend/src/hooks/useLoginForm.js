@@ -47,15 +47,29 @@ export const useLoginForm = () => {
     if (activeTab === "student") {
       if (!formData.studentId) {
         newErrors.studentId = "Student ID is required";
+      } else {
+        // Validate student ID format (can be customized based on your requirements)
+        const studentIdRegex = /^\d+\/\d+$/;
+        if (!studentIdRegex.test(formData.studentId)) {
+          newErrors.studentId = "Invalid student ID format. Expected format: numbers/numbers";
+        }
       }
     } else {
       if (!formData.username) {
-        newErrors.username = "Username is required";
+        newErrors.username = "Email is required";
+      } else {
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.username)) {
+          newErrors.username = "Please enter a valid email address";
+        }
       }
     }
 
     if (!formData.password) {
       newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     if (Object.keys(newErrors).length > 0) {

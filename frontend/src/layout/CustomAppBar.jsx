@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { AppBar, UserMenu, useGetIdentity } from 'react-admin';
 import { Typography, Box, Chip, useMediaQuery, useTheme } from '@mui/material';
 import Image from "../assets/hwu_logo.png";
@@ -7,15 +7,29 @@ export const CustomAppBar = (props) => {
     const { identity, isLoading } = useGetIdentity();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    // We don't need the refresh here as it's handled in the layout
-    const [appBarKey] = useState(0); // Use a static key instead of changing it
+    const previousIdentityRef = useRef(null);
+
+    // Log identity changes for debugging
+    useEffect(() => {
+        if (identity && previousIdentityRef.current) {
+            const identityChanged =
+                (previousIdentityRef.current?.id !== identity?.id) ||
+                (previousIdentityRef.current?.role !== identity?.role);
+
+            if (identityChanged) {
+                console.log('Identity changed in AppBar:',
+                    previousIdentityRef.current?.role, '->', identity?.role);
+            }
+        }
+
+        previousIdentityRef.current = identity;
+    }, [identity]);
 
     return (
         <AppBar
             {...props}
             color="primary"
             elevation={1}
-            key={`appbar-${appBarKey}`}
             sx={{
                 '& .RaAppBar-title': {
                     flex: 1,
@@ -25,23 +39,7 @@ export const CustomAppBar = (props) => {
                 },
             }}
         >
-            <Box
-                display="flex"
-                alignItems="center"
-                sx={{ marginRight: '1rem' }}
-            >
-                <img
-                    src={Image}
-                    alt="School Logo"
-                    width={40}
-                    height={40}
-                    style={{
-                        borderRadius: '50%',
-                        backgroundColor: 'white',
-                        padding: '2px'
-                    }}
-                />
-            </Box>
+
             {/* School name - hidden on mobile */}
             <Typography
                 variant="h6"
@@ -51,7 +49,7 @@ export const CustomAppBar = (props) => {
                     display: isMobile ? 'none' : 'block'
                 }}
             >
-                HU Model Community School
+                Student Managment System
             </Typography>
 
             {/* Empty flex spacer for mobile view */}

@@ -6,7 +6,7 @@ import { useForgotPassword } from "../hooks/useForgotPassword";
 
 const LoginPage = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  
+
   // Login form hook
   const {
     activeTab,
@@ -18,7 +18,7 @@ const LoginPage = () => {
     handleInputChange,
     handleSubmit,
   } = useLoginForm();
-  
+
   // Forgot password hook
   const {
     email,
@@ -35,10 +35,12 @@ const LoginPage = () => {
     () => setShowForgotPassword(false)
   );
 
+  /* Forgot password functionality commented out
   const handleForgotPassword = (e) => {
     e.preventDefault();
     setShowForgotPassword(true);
   };
+  */
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -127,7 +129,7 @@ const LoginPage = () => {
                         type="text"
                         id="studentId"
                         name="studentId"
-                        placeholder="Enter your student ID"
+                        placeholder="Enter your student ID (format: numbers/numbers)"
                         value={formData.studentId || ""}
                         onChange={handleInputChange}
                         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md
@@ -155,10 +157,10 @@ const LoginPage = () => {
                         <User className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
-                        type="text"
+                        type="email"
                         id="username"
                         name="username"
-                        placeholder="Enter your Email"
+                        placeholder="Enter your Email (e.g., example@domain.com)"
                         value={formData.username || ""}
                         onChange={handleInputChange}
                         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md
@@ -187,7 +189,7 @@ const LoginPage = () => {
                       type="password"
                       id="password"
                       name="password"
-                      placeholder="Enter your password"
+                      placeholder="Enter your password (min. 6 characters)"
                       value={formData.password || ""}
                       onChange={handleInputChange}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md
@@ -210,6 +212,7 @@ const LoginPage = () => {
                   {loading ? "Logging in..." : "Login"}
                 </button>
 
+                {/* Forgot password functionality commented out
                 <div className="mt-4 text-right">
                   <button
                     type="button"
@@ -219,6 +222,7 @@ const LoginPage = () => {
                     Forgot password?
                   </button>
                 </div>
+                */}
               </form>
             </>
           ) : (
