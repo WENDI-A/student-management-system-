@@ -70,7 +70,7 @@ const App = () => {
       authProvider={authProvider}
       layout={CustomLayout}
       loginPage={LoginPage}
-      defaultTheme={true}
+      defaultTheme={false}
       requireAuth
       loading={Loading}
       disableTelemetry
