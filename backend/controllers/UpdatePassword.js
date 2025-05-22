@@ -1,4 +1,4 @@
-const { Admin, Teacher, Student, Parent } = require('../models'); 
+const { Admin, Teacher, Student, Parent, Director } = require('../models'); 
 const bcrypt = require('bcryptjs');
 
 exports.updatePassword = async (req, res) => {
@@ -19,6 +19,9 @@ exports.updatePassword = async (req, res) => {
         break;
       case 'parent':
         user = await Parent.findByPk(userId);
+        break;
+      case 'director':
+        user = await Director.findByPk(userId);
         break;
       default:
         return res.status(400).json({ message: 'Invalid role' });

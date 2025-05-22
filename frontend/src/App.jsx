@@ -7,9 +7,10 @@ import { CustomLayout } from "./layout/CustomLayout";
 import LoginPage from "./Auth/LoginPage";
 import { getResources } from "./layout/resources";
 import { Loading } from "./components/Loading";
+import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 
-const App = () => {
-  const [role, setRole] = useState(null);
+const AppContent = () => {
+  const { role } = useAuth();
   const [key, setKey] = useState(Date.now());
   
   const getUserRole = () => {
@@ -30,7 +31,9 @@ const App = () => {
       try {
         await authProvider.checkAuth();
         const userRole = getUserRole();
-        setRole(userRole);
+        if (userRole !== role) {
+          setRole(userRole);
+        }
       } catch (error) {
         console.error("Auth check failed:", error);
         setRole(null);
@@ -41,7 +44,9 @@ const App = () => {
     
     const handleStorageChange = () => {
       const userRole = getUserRole();
-      setRole(userRole);
+      if (userRole !== role) {
+        setRole(userRole);
+      }
       // Force refresh when auth changes
       setKey(Date.now());
     };
@@ -90,6 +95,14 @@ const App = () => {
         );
       }}
     </Admin>
+  );
+};
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

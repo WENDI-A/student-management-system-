@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../models');
-const { Admin, Teacher, Student, Parent, Guest } = db;
+const { Admin, Teacher, Student, Parent, Guest, Director } = db;
 
 exports.login = async (req, res, next) => {
   try {
@@ -19,6 +19,11 @@ exports.login = async (req, res, next) => {
     if (!isStudentId) {
       user = await Admin.findOne({ where: { email: identifier, isActive: true } });
       if (user) role = 'admin';
+    }
+
+    if (!user && !isStudentId) {
+      user = await Director.findOne({ where: { email: identifier } });
+      if (user) role = 'director';
     }
 
     if (!user && !isStudentId) {
@@ -91,6 +96,9 @@ exports.forgotPassword = async (req, res, next) => {
       case 'admin':
         user = await Admin.findOne({ where: { email, isActive: true } });
         break;
+      case 'director':
+        user = await Director.findOne({ where: { email } });
+        break;
       case 'teacher':
         user = await Teacher.findOne({ where: { email, isActive: true } });
         break;
@@ -144,6 +152,9 @@ exports.token_refresh = async (req, res) => {
     switch (decoded.role) {
       case "admin":
         user = await Admin.findOne({ where: { id: decoded.id, isActive: true } });
+        break;
+      case "director":
+        user = await Director.findOne({ where: { id: decoded.id} });
         break;
       case "teacher":
         user = await Teacher.findOne({ where: { id: decoded.id, isActive: true } });

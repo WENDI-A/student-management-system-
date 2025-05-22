@@ -8,7 +8,7 @@ router.post('/register', studentController.registerStudent);
 router.use(authMiddleware.protect);
 router.get('/profile/:id', authMiddleware.authorize('admin', 'student'), studentController.getStudentById);
 router.put('/update/:id', authMiddleware.authorize('admin', 'student'), studentController.updateStudent);
-router.get('/', authMiddleware.authorize('admin',"teacher"), studentController.getAllStudents);
+router.get('/', authMiddleware.authorize('admin',"teacher","director"), studentController.getAllStudents);
 router.delete('/:id', authMiddleware.authorize('admin'), studentController.deleteStudent);
 
 module.exports = router;

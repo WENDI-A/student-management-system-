@@ -15,6 +15,9 @@ const Grade = require('./gradesRoute');
 const attendanceRoutes = require('./attendanceRoutes');
 const courseEnrollments = require('./courseEnrollmentsRoute')
 
+const gradeRoutes = require('./gradeRoutes');
+
+router.use('/directory/grade', gradeRoutes);
 router.use('/auth', authRoutes);
 router.use('/students', studentRoutes);
 router.use('/teachers', teacherRoutes);
@@ -31,7 +34,6 @@ router.use('/Attendance', attendanceRoutes);
 router.use('/courseenrollments', courseEnrollments);
 router.use("/schedules", require('./scheduleRoutes'))
 router.use('/StudentcourseEnrollments', require('./studentAssessments'));
-
-
+router.use('/directors', require('./director'));
 
 module.exports = router;

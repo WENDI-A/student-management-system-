@@ -5,7 +5,7 @@ const attendanceController = require('../controllers/attendanceController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware.protect);
-router.use(authMiddleware.authorize("teacher"));
+router.use(authMiddleware.authorize("teacher" ,"director"));
 
 router.get('/current-week', attendanceController.getCurrentWeekAttendance);
 router.post('/set-attendance', attendanceController.setAttendance);
