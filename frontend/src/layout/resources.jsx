@@ -65,11 +65,17 @@ import StudentAssessmentList from "../student/studentAssessments/AssessmentList"
 import NotificationList from "../student/notifications/NotificationList";
 import ParentNotificationList from "../parent/notifications/NotificationList";
 
+import DirectorList from "../Admin/Director/DirectorList";
+import DirectorCreate from "../Admin/Director/DirectorCreate";
+import DirectorEdit from "../Admin/Director/DirectorEdit";
+import DirectorGradeManager from "../director/Grade/DirectorGradeManager";
+
 const RESOURCES = {
   admin: [
     { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, list: AdminDashboard, icon: DashboardIcon },
     { key: "students", name: "students", options: { label: "Students" }, list: StudentList, create: StudentCreate, edit: StudentEdit, icon: SchoolIcon },
     { key: "teachers", name: "teachers", options: { label: "Teachers" }, list: TeacherList, create: TeacherCreate, edit: TeacherEdit, icon: PersonIcon },
+    { key: "directors", name: "directors", options: { label: "Directors" }, list: DirectorList, create: DirectorCreate, edit: DirectorEdit, icon: PersonIcon },
     { key: "parents", name: "parents", options: { label: "Parents" }, list: ParentList, create: parentCreate, edit: parentEdit, icon: FamilyRestroomIcon },
     { key: "course", name: "course", options: { label: "courses" }, list: CourseList, create: CourseCreate, edit: CourseEdit, icon: MenuBookIcon },
     { key: "schedules", name: "schedules", options: { label: "Schedules" }, list: ScheduleList, create: ScheduleCreate, edit: ScheduleEdit, icon: CalendarTodayIcon },
@@ -102,7 +108,19 @@ const RESOURCES = {
   user: [
     { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, list: UserDashboard, icon: DashboardIcon },
     { key: "announcements", name: "announcements", options: { label: "Announcements" }, icon: AnnouncementIcon }
-  ]
+  ],
+  director: [
+    { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, icon: DashboardIcon },
+    {
+      key: "director-grade-manager",
+      name: "director-grade-manager",
+      options: { label: "Manage Grades" },
+      list: DirectorGradeManager,
+      icon: AssessmentIcon
+    },
+    { key: "settings", name: "settings", options: { label: "settings" }, list: UpdatePasswordEditTeacher, icon: SettingsIcon },
+    // The director will use the custom DirectorGradeManager component for grade management
+  ],
 };
 
 

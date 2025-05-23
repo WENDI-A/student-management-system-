@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { Admin, Teacher, Student, Parent, Guest } = require('../models');  // Importing Guest model
+const { Admin, Teacher, Student, Parent, Guest, Director } = require('../models');  // Importing Director model
 
 exports.protect = async (req, res, next) => {
   try {
@@ -40,6 +40,9 @@ exports.protect = async (req, res, next) => {
         case 'guest':  // Handling guest role
           currentUser = await Guest.findByPk(decoded.id);
           break;
+        case 'director':
+          currentUser = await Director.findByPk(decoded.id);
+          break;
       }
       
       if (!currentUser) {
@@ -49,7 +52,7 @@ exports.protect = async (req, res, next) => {
         });
       }
       
-      if (!currentUser.isActive) {
+      if (!currentUser.isActive &&  decoded.role != 'director') {
         return res.status(403).json({
           success: false,
           message: 'Your account has been deactivated. Please contact administrator.'
@@ -131,6 +134,11 @@ exports.isLoggedIn = async (req, res, next) => {
             break;
           case 'guest':  // Handling guest role
             currentUser = await Guest.findByPk(decoded.id, {
+              attributes: { exclude: ['password'] }
+            });
+            break;
+          case 'director':
+            currentUser = await Director.findByPk(decoded.id, {
               attributes: { exclude: ['password'] }
             });
             break;

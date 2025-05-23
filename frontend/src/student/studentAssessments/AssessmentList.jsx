@@ -142,7 +142,6 @@ const ScoreDisplay = ({ record }) => {
 // Main list component
 export const StudentAssessmentList = () => {
   const { identity } = useGetIdentity();
-  const studentId = identity?.id;
 
   return (
     <List

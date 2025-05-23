@@ -16,6 +16,8 @@ const get_path_list = {
     grade : "/grade/courses",
     schedules: "/schedules",
     myAssessment : "/StudentcourseEnrollments/student",
+    directors: "/directors",
+   
 };
 
 const create_path = {
@@ -26,7 +28,8 @@ const create_path = {
     CourseMaterial : "/CourseMaterial",
     attendance: "/Attendance/set-attendance",
     grade : "/grade",
-    schedules: "/schedules"
+    schedules: "/schedules",
+    directors: "/directors",
 };
 
 const get_one_path = {  
@@ -39,6 +42,8 @@ const get_one_path = {
     grade : "/grade/set-grade",
     schedules: "/schedules",
     myAssessment : "/StudentcourseEnrollments/student",
+    directors: "/directors",
+     "director-grade" : "/directory/grade/student"
 };
 
 
@@ -49,7 +54,8 @@ const delete_path = {
     course  : "/courses",
     CourseMaterial : "/CourseMaterial",
     Assessment : "/Assessment",
-    schedules: "/schedules"
+    schedules: "/schedules",
+    directors: "/directors",
 };
 
 const update_path = {
@@ -59,7 +65,9 @@ const update_path = {
     course : "/courses",
     CourseMaterial : "/CourseMaterial",
     grade : "/grade",
-    schedules: "/schedules"
+    schedules: "/schedules",
+    directors: "/directors",
+    "update-grade" : "/directory/grade"
 };
 
 const get_one_dashboard_path = {
@@ -77,7 +85,16 @@ const dataProvider = {
     getList: async (resource, params) => {
         const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
         const options = await GET_HEADER();
-        
+
+        // Custom handling for grades resource
+        if (resource === "grade") {
+            return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+                data: json.data[0].grades || [],
+                total: (json.data[0].grades && json.data[0].grades.length) || 0,
+            }));
+        }
+
+        // Default for other resources
         return fetchUtils.fetchJson(url, { ...options }).then(({ headers, json }) => ({
             data: json.data,
             total: parseInt(headers.get('content-range')?.split('/')?.pop(), 10) || json.length || json.data.length ,
@@ -109,6 +126,16 @@ const dataProvider = {
         const url = `${API_ENDPOINT_FUNCTION(get_one_path[resource])}/${params.id}`;
         const options = await GET_HEADER();
         
+        // Custom handling for director-grade
+        if (resource === "director-grade") {
+            return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
+                data: {
+                    id: params.id,
+                    ...json.data // this will include grades: [...]
+                }
+            }));
+        }
+
         return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({
             data: json.data,
         }));
