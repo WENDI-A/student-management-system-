@@ -28,6 +28,8 @@ const GradeEditModal = ({ open, grade, onSave, onCancel }) => {
 
   if (!grade) return null;
 
+  const maxScore = grade?.Assessment?.weight || 0;
+
   return (
     <Dialog open={open} onClose={onCancel}>
       <DialogTitle>Edit Grade</DialogTitle>
@@ -36,7 +38,18 @@ const GradeEditModal = ({ open, grade, onSave, onCancel }) => {
           label="Score"
           type="number"
           value={score}
-          onChange={e => setScore(Number(e.target.value))}
+          inputProps={{ min: 0, max: maxScore }}
+          onChange={e => {
+            let val = e.target.value;
+            if (val === "" || val === null) {
+              setScore(0);
+            } else {
+              let num = Number(val);
+              if (num < 0) num = 0;
+              if (num > maxScore) num = maxScore;
+              setScore(num);
+            }
+          }}
           fullWidth
           margin="normal"
         />
@@ -67,6 +80,11 @@ const DirectorGradeManager = props => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [grades, setGrades] = useState([]);
   const [editingGrade, setEditingGrade] = useState(null);
+  // Approved grades state, persisted in localStorage
+  const [approvedIds, setApprovedIds] = useState(() => {
+    const saved = localStorage.getItem('approvedGradeIds');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Fetch grades for selected student
   useEffect(() => {
@@ -93,6 +111,12 @@ const DirectorGradeManager = props => {
           .getOne("director-grade", { id: selectedStudent.id })
           .then(({ data }) => setGrades(data.grades || []));
       });
+  };
+
+  const handleApprove = (gradeId) => {
+    const updated = [...approvedIds, gradeId];
+    setApprovedIds(updated);
+    localStorage.setItem('approvedGradeIds', JSON.stringify(updated));
   };
 
   // Helper: Group grades by course
@@ -172,15 +196,30 @@ const DirectorGradeManager = props => {
                         <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{grade.Assessment?.title || grade.assessment_id}</td>
                         <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{grade.score}</td>
                         <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{grade.feedback}</td>
-                        <td className="px-4 py-2">
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            className="!border-blue-500 !text-blue-500 hover:!bg-blue-50 dark:!border-blue-400 dark:!text-blue-400 dark:hover:!bg-blue-900"
-                            onClick={() => setEditingGrade(grade)}
-                          >
-                            Edit
-                          </Button>
+                        <td className="px-4 py-2 flex gap-2">
+                          {!approvedIds.includes(grade.id) && (
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              className="!border-blue-500 !text-blue-500 hover:!bg-blue-50 dark:!border-blue-400 dark:!text-blue-400 dark:hover:!bg-blue-900"
+                              onClick={() => setEditingGrade(grade)}
+                            >
+                              Edit
+                            </Button>
+                          )}
+                          {!approvedIds.includes(grade.id) && (
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              className="!border-green-500 !text-green-600 hover:!bg-green-50 dark:!border-green-400 dark:!text-green-400 dark:hover:!bg-green-900"
+                              onClick={() => handleApprove(grade.id)}
+                            >
+                              Approve
+                            </Button>
+                          )}
+                          {approvedIds.includes(grade.id) && (
+                            <span className="text-green-600 dark:text-green-400 font-semibold">Approved</span>
+                          )}
                         </td>
                       </tr>
                     ))}
