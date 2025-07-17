@@ -6,8 +6,8 @@ const {getStudentAssessmentsWithGrades} = require('../controllers/StudentAssessm
 
 router.use(authenticateJWT.protect);
 router.get('/teacher', authenticateJWT.authorize("teacher", "director"), AssessmentController.getTeacherAssessments);
-router.get('/courses', authenticateJWT.authorize("admin", "teacher", "director"), AssessmentController.getCourseAssessments);
-router.post('/courses', authenticateJWT.authorize("admin", "teacher", "director"), AssessmentController.createAssessment);
+router.get('/courses', authenticateJWT.authorize('admin', 'teacher', 'director'), AssessmentController.getCourseAssessments);
+router.post('/courses', authenticateJWT.authorize('admin', 'teacher', 'director'), AssessmentController.createAssessment);
 
 // only to get the student assessments
 router.get('/student/:courseId', authenticateJWT.authorize("student" , "director"), getStudentAssessmentsWithGrades);

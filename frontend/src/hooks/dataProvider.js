@@ -8,6 +8,7 @@ const get_path_list = {
     teachers : "/teachers",
     parents : "/parents",
     course : "/courses",
+    courses : "/courses", // added plural
     Notfication : "/notifications",
     CourseMaterial : "/CourseMaterial",
     courseEnrollments : "/courseenrollments" ,
@@ -16,8 +17,9 @@ const get_path_list = {
     grade : "/grade/courses",
     schedules: "/schedules",
     myAssessment : "/StudentcourseEnrollments/student",
+    exam: "/StudentcourseEnrollments/student",
     directors: "/directors",
-   
+    Question: "/questions",
 };
 
 const create_path = {
@@ -25,11 +27,13 @@ const create_path = {
     teachers :"/teachers/register",
     parents : "/parents/register",
     course : "/courses",
+    courses : "/courses", // added plural
     CourseMaterial : "/CourseMaterial",
     attendance: "/Attendance/set-attendance",
     grade : "/grade",
     schedules: "/schedules",
     directors: "/directors",
+    Question: "/questions",
 };
 
 const get_one_path = {  
@@ -37,13 +41,16 @@ const get_one_path = {
     teachers : "/teachers/profile",
     parents : "/parents/profile",
     course : "/courses",
+    courses : "/courses", // added plural
     CourseMaterial : "/CourseMaterial",
     Assessment : "/Assessment",
     grade : "/grade/set-grade",
     schedules: "/schedules",
     myAssessment : "/StudentcourseEnrollments/student",
+    exam: "/StudentcourseEnrollments/student",
     directors: "/directors",
-     "director-grade" : "/directory/grade/student"
+     "director-grade" : "/directory/grade/student",
+    Question: "/questions",
 };
 
 
@@ -52,10 +59,12 @@ const delete_path = {
     teachers : "/teachers",
     parents : "/parents",
     course  : "/courses",
+    courses : "/courses", // added plural
     CourseMaterial : "/CourseMaterial",
     Assessment : "/Assessment",
     schedules: "/schedules",
     directors: "/directors",
+    Question: "/questions",
 };
 
 const update_path = {
@@ -63,11 +72,13 @@ const update_path = {
     teachers : "/teachers/update",
     parents : "/parents/update",
     course : "/courses",
+    courses : "/courses", // added plural
     CourseMaterial : "/CourseMaterial",
     grade : "/grade",
     schedules: "/schedules",
     directors: "/directors",
-    "update-grade" : "/directory/grade"
+    "update-grade" : "/directory/grade",
+    Question: "/questions",
 };
 
 const get_one_dashboard_path = {
@@ -80,10 +91,18 @@ const get_update_password = {
     default : "/auth/update-password"
 }
 
+const getPathOrWarn = (map, resource, mapName) => {
+    const path = map[resource];
+    if (!path) {
+        console.warn(`API path for resource '${resource}' not found in ${mapName}. This may cause /apiundefined errors.`);
+    }
+    return path;
+};
+
 
 const dataProvider = {
     getList: async (resource, params) => {
-        const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
+        const url = API_ENDPOINT_FUNCTION(getPathOrWarn(get_path_list, resource, 'get_path_list'));
         const options = await GET_HEADER();
 
         // Custom handling for grades resource
@@ -102,7 +121,7 @@ const dataProvider = {
     },
 
     getAttendanceList: async (resource, params) => {
-        const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
+        const url = API_ENDPOINT_FUNCTION(getPathOrWarn(get_path_list, resource, 'get_path_list'));
         const options = await GET_HEADER();
         
         return fetchUtils.fetchJson(url, { ...options }).then(({ headers, json }) => ({
@@ -112,7 +131,7 @@ const dataProvider = {
     },
 
     getGradeList: async (resource, params) => {
-        const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
+        const url = API_ENDPOINT_FUNCTION(getPathOrWarn(get_path_list, resource, 'get_path_list'));
         const options = await GET_HEADER();
         
         return fetchUtils.fetchJson(url, { ...options }).then(({ headers, json }) => ({
@@ -123,7 +142,13 @@ const dataProvider = {
 
 
     getOne: async (resource, params) => {
-        const url = `${API_ENDPOINT_FUNCTION(get_one_path[resource])}/${params.id}`;
+        console.log('[dataProvider.getOne]', { resource, params });
+        let url;
+        if (resource === "exam" || resource === "myAssessment") {
+            url = `/api/StudentcourseEnrollments/student/assessment/${params.id}`;
+        } else {
+            url = `${API_ENDPOINT_FUNCTION(getPathOrWarn(get_one_path, resource, 'get_one_path'))}/${params.id}`;
+        }
         const options = await GET_HEADER();
         
         // Custom handling for director-grade
@@ -142,7 +167,7 @@ const dataProvider = {
     },
 
     getMany: async (resource, params) => {
-        const url = API_ENDPOINT_FUNCTION(get_path_list[resource]);
+        const url = API_ENDPOINT_FUNCTION(getPathOrWarn(get_path_list, resource, 'get_path_list'));
         const options = await GET_HEADER();
         
         return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => {
@@ -156,7 +181,7 @@ const dataProvider = {
         });
     },
     create: async (resource, params) => {
-        const url = API_ENDPOINT_FUNCTION(create_path[resource]);
+        const url = API_ENDPOINT_FUNCTION(getPathOrWarn(create_path, resource, 'create_path'));
         const options = await GET_HEADER({
             method: 'POST',
             body: JSON.stringify(params.data)
@@ -168,7 +193,7 @@ const dataProvider = {
     },
     
     update: async (resource, params) => {
-        const url = `${API_ENDPOINT_FUNCTION(update_path[resource])}/${params.id}`;
+        const url = `${API_ENDPOINT_FUNCTION(getPathOrWarn(update_path, resource, 'update_path'))}/${params.id}`;
         const options = await GET_HEADER({
             method: 'PUT',
             body: JSON.stringify(params.data)
@@ -180,7 +205,7 @@ const dataProvider = {
     },
     
     delete: async (resource, params) => {
-        const url = `${API_ENDPOINT_FUNCTION(delete_path[resource])}/${params.id}`;
+        const url = `${API_ENDPOINT_FUNCTION(getPathOrWarn(delete_path, resource, 'delete_path'))}/${params.id}`;
         const options = await GET_HEADER({
             method: 'DELETE'
         });
@@ -190,7 +215,7 @@ const dataProvider = {
         }));
     },
     getDashboard : async (resource ,params) =>{
-        const url = API_ENDPOINT_FUNCTION(get_one_dashboard_path[resource]);
+        const url = API_ENDPOINT_FUNCTION(getPathOrWarn(get_one_dashboard_path, resource, 'get_one_dashboard_path'));
         const options = await GET_HEADER();
         
         return fetchUtils.fetchJson(url, { ...options }).then(({ json }) => ({

@@ -1,11 +1,11 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../models');
 const { Admin, Teacher, Student, Parent, Guest, Director } = db;
 
 exports.login = async (req, res, next) => {
   try {
-    const { identifier, password ,userType } = req.body;
+    const { identifier, password } = req.body;
 
     if (!identifier || !password) {
       return res.status(400).json({ success: false, message: 'Identifier and password are required' });
@@ -13,58 +13,93 @@ exports.login = async (req, res, next) => {
 
     let user = null;
     let role = null;
-    const studentIdRegex = /^\d+\/\d+$/;
-    const isStudentId = studentIdRegex.test(identifier) || userType === "student";
 
-    if (!isStudentId) {
-      user = await Admin.findOne({ where: { email: identifier, isActive: true } });
-      if (user) role = 'admin';
-    }
+    // Try Admin
+    user = await Admin.findOne({ where: { email: identifier, isActive: true } });
+    if (user) role = 'admin';
 
-    if (!user && !isStudentId) {
-      user = await Director.findOne({ where: { email: identifier } });
-      if (user) role = 'director';
-    }
-
-    if (!user && !isStudentId) {
+    // Try Teacher
+    if (!user) {
       user = await Teacher.findOne({ where: { email: identifier, isActive: true } });
       if (user) role = 'teacher';
     }
 
-    if (!user  && isStudentId) {
-      user = await Student.findOne({ where: { student_id: identifier, isActive: true } });
-      if (user) role = 'student';
+    // Try Director
+    if (!user) {
+      user = await Director.findOne({ where: { email: identifier } });
+      if (user) role = 'director';
     }
 
-    if (!user && !isStudentId) {
+    // Try Parent
+    if (!user) {
       user = await Parent.findOne({ where: { email: identifier, isActive: true } });
       if (user) role = 'parent';
     }
 
+    // Try Guest
     if (!user) {
-      user = await Guest.findOne({ where: { email: identifier } });
-      if (user) {
-        role = 'guest';
+      user = await Guest.findOne({ where: { email: identifier, status: 'active' } });
+      if (user) role = 'guest';
+    }
+
+    // Try Student (by studentId or email)
+    if (!user) {
+      user = await Student.findOne({ where: { student_id: identifier, isActive: true } });
+      if (user) role = 'student';
+      if (!user) {
+        user = await Student.findOne({ where: { email: identifier, isActive: true } });
+        if (user) role = 'student';
       }
     }
 
     if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid email or student ID' });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ success: false, message: 'Invalid password' });
+    // Check password using bcrypt for all user types
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    return sendLoginResponse(res, user, role);
+    // Prepare user info for response
+    let firstName = user.firstName;
+    let lastName = user.lastName;
+    if (role === 'director') {
+      firstName = user.name;
+      lastName = '';
+    }
+
+    const token = jwt.sign({ id: user.id, role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    return res.json({
+      success: true,
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        firstName,
+        lastName,
+        email: user.email,
+        role
+      },
+      token
+    });
   } catch (error) {
-    console.error('Login error:', error);
-    next(error);
+    console.error('LOGIN ERROR:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
 const sendLoginResponse = (res, user, role) => {
+  let firstName = user.firstName;
+  let lastName = user.lastName;
+
+  // Special handling for Director model, which uses 'name' instead of firstName/lastName
+  if (role === 'director') {
+    firstName = user.name;
+    lastName = '';
+  }
+
   const token = jwt.sign({ id: user.id, role }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
   const responseData = {
@@ -72,8 +107,8 @@ const sendLoginResponse = (res, user, role) => {
     message: 'Login successful',
     user: {
       id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      firstName,
+      lastName,
       email: user.email,
       role
     },

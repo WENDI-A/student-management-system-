@@ -34,6 +34,9 @@ import GradeIcon from '@mui/icons-material/Grade';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { API_ENDPOINT_FUNCTION, GET_HEADER } from '../../config/config';
 
 // Custom actions for the show view
 const AssessmentShowActions = () => {
@@ -228,10 +231,85 @@ const GradeDisplay = () => {
 
 // Main show component
 export const StudentAssessmentDetail = () => {
+  const record = useRecordContext();
+  console.log('StudentAssessmentDetail record:', record);
+  const { identity } = useGetIdentity();
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
+
+  if (!record) {
+    console.log('No record found in StudentAssessmentDetail');
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h5" color="error">
+          Unable to load exam details. You may not be enrolled in this course or do not have access.
+        </Typography>
+      </Box>
+    );
+  }
+
+  useEffect(() => {
+    if (record?.id) {
+      console.log('Fetching questions for assessment id:', record.id);
+      const fetchQuestions = async () => {
+        try {
+          const options = await GET_HEADER({ isJson: true });
+          console.log('GET_HEADER options:', options);
+          const res = await axios.get(
+            API_ENDPOINT_FUNCTION(`/questions/assessment/${record.id}`),
+            options
+          );
+          console.log('Questions fetch response:', res);
+          if (res.data.success) {
+            setQuestions(res.data.data);
+            console.log('Questions set:', res.data.data);
+          } else {
+            console.log('Questions fetch not successful:', res.data);
+          }
+        } catch (err) {
+          setQuestions([]);
+          console.log('Error fetching questions:', err);
+        }
+      };
+      fetchQuestions();
+    } else {
+      console.log('No record.id found in useEffect');
+    }
+  }, [record?.id]);
+
+  const handleAnswerChange = (questionId, value) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setSubmitSuccess(null);
+    setSubmitError(null);
+    try {
+      const options = await GET_HEADER({ isJson: true });
+      await axios.post(
+        API_ENDPOINT_FUNCTION('/studentAssessments/student/submit-answers'),
+        {
+          assessment_id: record.id,
+          answers: questions.map(q => ({ question_id: q.id, answer: answers[q.id] || '' }))
+        },
+        options
+      );
+      setSubmitSuccess('Answers submitted successfully!');
+    } catch (err) {
+      setSubmitError('Failed to submit answers.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Show 
       actions={<AssessmentShowActions />}
-      title={<Typography variant="h5"><AssessmentIcon sx={{ mr: 1, verticalAlign: 'middle' }} /> Assessment Details</Typography>}
+      title={<Typography variant="h5"><AssignmentIcon sx={{ mr: 1, verticalAlign: 'middle' }} /> Assessment Details</Typography>}
     >
       <SimpleShowLayout>
         <Box sx={{ mb: 3 }}>
@@ -240,11 +318,17 @@ export const StudentAssessmentDetail = () => {
             <AssessmentType />
           </Box>
           <Box sx={{ mt: 1 }}>
-            <ReferenceField source="course_id" reference="courses" link={false}>
-              <Typography variant="subtitle1" color="primary">
-                <TextField source="Course_name" /> (<TextField source="Course_code" />)
+            {record && record.course_id ? (
+              <ReferenceField source="course_id" reference="courses" link={false}>
+                <Typography variant="subtitle1" color="primary">
+                  <TextField source="Course_name" /> (<TextField source="Course_code" />)
+                </Typography>
+              </ReferenceField>
+            ) : (
+              <Typography variant="subtitle1" color="error">
+                Course information not available
               </Typography>
-            </ReferenceField>
+            )}
           </Box>
           <DueDateDisplay />
         </Box>
@@ -283,6 +367,69 @@ export const StudentAssessmentDetail = () => {
             <GradeDisplay />
           </Grid>
         </Grid>
+        <Divider sx={{ my: 3 }} />
+        {/* Exam Questions Section */}
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h5" gutterBottom>Exam Questions</Typography>
+          {questions.length === 0 ? (
+            <Typography>No questions available for this exam.</Typography>
+          ) : (
+            <form onSubmit={e => { e.preventDefault(); handleSubmit(); }}>
+              <List>
+                {questions.map((q, idx) => {
+                  console.log('Rendering question:', q);
+                  return (
+                    <ListItem key={q.id} alignItems="flex-start" divider>
+                      <Box sx={{ width: '100%' }}>
+                        <Typography variant="subtitle1">{idx + 1}. {q.question_text}</Typography>
+                        {q.type === 'mcq' && Array.isArray(q.options) ? (
+                          <Box sx={{ mt: 1 }}>
+                            {q.options.map((opt, i) => (
+                              <Box key={i} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <input
+                                  type="radio"
+                                  name={`question_${q.id}`}
+                                  value={opt}
+                                  checked={answers[q.id] === opt}
+                                  onChange={() => handleAnswerChange(q.id, opt)}
+                                  disabled={submitting}
+                                />
+                                <Typography sx={{ ml: 1 }}>{opt}</Typography>
+                              </Box>
+                            ))}
+                          </Box>
+                        ) : (
+                          <Box sx={{ mt: 1 }}>
+                            <input
+                              type="text"
+                              value={answers[q.id] || ''}
+                              onChange={e => handleAnswerChange(q.id, e.target.value)}
+                              style={{ width: '100%', padding: 8 }}
+                              disabled={submitting}
+                            />
+                          </Box>
+                        )}
+                      </Box>
+                    </ListItem>
+                  );
+                })}
+              </List>
+              {submitError && <Typography color="error" sx={{ mt: 2 }}>{submitError}</Typography>}
+              {submitSuccess && <Typography color="success.main" sx={{ mt: 2 }}>{submitSuccess}</Typography>}
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={submitting}
+                  startIcon={<UploadFileIcon />}
+                >
+                  {submitting ? 'Submitting...' : 'Submit Answers'}
+                </Button>
+              </Box>
+            </form>
+          )}
+        </Box>
       </SimpleShowLayout>
     </Show>
   );

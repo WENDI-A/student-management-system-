@@ -4,6 +4,7 @@ import { Box, Card, CardContent, Typography, Grid, List, ListItem, ListItemText,
 import { Schedule } from '@mui/icons-material';
 import axios from 'axios';
 import { API_ENDPOINT_FUNCTION, GET_HEADER } from '../config/config';
+import StudentAssessmentList from './studentAssessments/AssessmentList';
 
 // Days of the week for tab navigation
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -160,6 +161,12 @@ export const StudentDashboard = () => {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Exam Dashboard Section */}
+            <Box mt={4}>
+                <Typography variant="h5" gutterBottom>Exam Dashboard</Typography>
+                <StudentAssessmentList />
+            </Box>
         </Box>
     );
 };

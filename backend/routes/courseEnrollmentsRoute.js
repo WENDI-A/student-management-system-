@@ -4,6 +4,6 @@ const courseEnrollments = require('../controllers/CourseEnrollmentController');
 const authMiddleware = require('../middleware/authMiddleware');
 // Course routes
 router.use(authMiddleware.protect)
-router.get('/', authMiddleware.authorize("teacher"),courseEnrollments.getPendingStudentsByCourse);
+router.get('/', authMiddleware.authorize('admin', 'teacher'), courseEnrollments.getPendingStudentsByCourse);
 
 module.exports = router;

@@ -61,6 +61,7 @@ import ScheduleCreate from "../Admin/Schedule/ScheduleCreate";
 import ScheduleEdit from "../Admin/Schedule/ScheduleEdit";
 import StudentCourseMaterial from "../student/StudentCourseMaterial";
 import StudentAssessmentList from "../student/studentAssessments/AssessmentList";
+import StudentAssessmentDetail from "../student/studentAssessments/AssessmentDetail";
 
 import NotificationList from "../student/notifications/NotificationList";
 import ParentNotificationList from "../parent/notifications/NotificationList";
@@ -69,10 +70,12 @@ import DirectorList from "../Admin/Director/DirectorList";
 import DirectorCreate from "../Admin/Director/DirectorCreate";
 import DirectorEdit from "../Admin/Director/DirectorEdit";
 import DirectorGradeManager from "../director/Grade/DirectorGradeManager";
+import QuestionList from "../Teacher/questions/QuestionList";
+import QuestionCreate from "../Teacher/questions/QuestionCreate";
+import QuestionEdit from "../Teacher/questions/QuestionEdit";
 
 const RESOURCES = {
   admin: [
-    { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, list: AdminDashboard, icon: DashboardIcon },
     { key: "students", name: "students", options: { label: "Students" }, list: StudentList, create: StudentCreate, edit: StudentEdit, icon: SchoolIcon },
     { key: "teachers", name: "teachers", options: { label: "Teachers" }, list: TeacherList, create: TeacherCreate, edit: TeacherEdit, icon: PersonIcon },
     { key: "directors", name: "directors", options: { label: "Directors" }, list: DirectorList, create: DirectorCreate, edit: DirectorEdit, icon: PersonIcon },
@@ -83,7 +86,6 @@ const RESOURCES = {
     { key: "Settings", name: "Settings", options: { label: "Settings" }, list: UpdatePasswordEdit, icon: SettingsIcon },
   ],
   teacher: [
-    { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, list: TeacherDashboard, icon: DashboardIcon },
     { key: "CourseMaterial", name: "CourseMaterial", options: { label: "CourseMaterial" }, list: CourseMaterialList, create: CourseMaterialCreate, edit: CourseMaterialEdit, icon: LibraryBooksIcon },
     { key: "courseEnrollments", name: "courseEnrollments", options: { label: "Course Enrollments" }, icon: HowToRegIcon, list: PendingEnrollments },
     { key: "Assessment", name: "Assessment", options: { label: "Assessment" }, icon: AssessmentIcon, list: Assessment.AssessmentList, create: Assessment.AssessmentCreate, edit: Assessment.AssessmentEdit },
@@ -91,26 +93,24 @@ const RESOURCES = {
     { key: "grade", name: "grade", options: { label: "grade" }, list: GradeList, create: GradeEdit, edit: GradeEdit, icon: AssessmentIcon },
     { key: "notifications", name: "notifications", options: { label: "notifications" }, list: NotificationTeacher, icon: NotificationsIcon },
     { key: "settings", name: "settings", options: { label: "settings" }, list: UpdatePasswordEditTeacher, icon: SettingsIcon },
+    { key: "Question", name: "Question", options: { label: "Questions" }, list: QuestionList, create: QuestionCreate, edit: QuestionEdit, icon: AssignmentIcon },
   ],
   student: [
-    { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, list: StudentDashboard, icon: DashboardIcon },
     { key: "CourseMaterial", name: "CourseMaterial", options: { label: "My Course Material" }, icon: MenuBookIcon, list: StudentCourseMaterial },
-    { key: "myAssessment", name: "myAssessment", options: { label: "My Assessment" }, icon: AssignmentIcon, list: StudentAssessmentList },
+    { key: "myAssessment", name: "myAssessment", options: { label: "My Assessment" }, icon: AssignmentIcon, list: StudentAssessmentList, show: StudentAssessmentDetail },
+    { key: "exam", name: "exam", options: { label: "Exam" }, icon: AssessmentIcon, list: StudentAssessmentList, show: StudentAssessmentDetail },
     { key: "Notifcation", name: "Notifcation", options: { label: "Notifcation" }, icon: NotificationsIcon, list: NotificationList },
     { key: "settings", name: "settings", options: { label: "settings" }, list: UpdatePasswordEditTeacher, icon: SettingsIcon },
   ],
   parent: [
-    { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, list: ParentDashboard, icon: DashboardIcon },
     { key: "students", name: "students", options: { label: "My Children" }, icon: SchoolIcon },
     { key: "Notifcation", name: "Notifcation", options: { label: "Notifcation" }, icon: NotificationsIcon, list: ParentNotificationList },
     { key: "settings", name: "settings", options: { label: "settings" }, list: UpdatePasswordEditTeacher, icon: SettingsIcon },
   ],
   user: [
-    { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, list: UserDashboard, icon: DashboardIcon },
     { key: "announcements", name: "announcements", options: { label: "Announcements" }, icon: AnnouncementIcon }
   ],
   director: [
-    { key: "dashboard", name: "dashboard", options: { label: "Dashboard" }, icon: DashboardIcon },
     {
       key: "director-grade-manager",
       name: "director-grade-manager",
@@ -126,17 +126,77 @@ const RESOURCES = {
 
 
 export const getResources = (role) => {
-  const roleConfig = RESOURCES[role];
-
-  return roleConfig.map(resource => (
-    <Resource
-      key={resource.key}
-      name={resource.name}
-      options={resource.options}
-      list={resource.list}
-      create={resource.create}
-      edit={resource.edit}
-      icon={resource.icon}
-    />
-  ));
+  if (!role) return [];
+  if (role === 'admin') {
+    return RESOURCES.admin.map(resource => (
+      <Resource
+        key={resource.key}
+        name={resource.name}
+        options={resource.options}
+        list={resource.list}
+        create={resource.create}
+        edit={resource.edit}
+        show={resource.show}
+        icon={resource.icon}
+      />
+    ));
+  }
+  if (role === 'teacher') {
+    return RESOURCES.teacher.map(resource => (
+      <Resource
+        key={resource.key}
+        name={resource.name}
+        options={resource.options}
+        list={resource.list}
+        create={resource.create}
+        edit={resource.edit}
+        show={resource.show}
+        icon={resource.icon}
+      />
+    ));
+  }
+  if (role === 'student') {
+    return RESOURCES.student.map(resource => (
+      <Resource
+        key={resource.key}
+        name={resource.name}
+        options={resource.options}
+        list={resource.list}
+        create={resource.create}
+        edit={resource.edit}
+        show={resource.show}
+        icon={resource.icon}
+      />
+    ));
+  }
+  if (role === 'parent') {
+    return RESOURCES.parent.map(resource => (
+      <Resource
+        key={resource.key}
+        name={resource.name}
+        options={resource.options}
+        list={resource.list}
+        create={resource.create}
+        edit={resource.edit}
+        show={resource.show}
+        icon={resource.icon}
+      />
+    ));
+  }
+  if (role === 'director') {
+    return RESOURCES.director.map(resource => (
+      <Resource
+        key={resource.key}
+        name={resource.name}
+        options={resource.options}
+        list={resource.list}
+        create={resource.create}
+        edit={resource.edit}
+        show={resource.show}
+        icon={resource.icon}
+      />
+    ));
+  }
+  // fallback: no resources
+  return [];
 };

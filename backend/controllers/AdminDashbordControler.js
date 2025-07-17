@@ -1,20 +1,19 @@
-const { Student, Teacher,Parent } = require('../models');
+const { Student, Teacher, Parent, Course, Assessment } = require('../models');
 
 exports.getDashboard = async (req, res, next) => {
   try {
     const [
       studentCount,
       teacherCount,
-      parentCount
-      // courseCount,
-      // assignmentCount,
-      // announcementCount
+      parentCount,
+      courseCount,
+      assignmentCount
     ] = await Promise.all([
       Student.count(),
       Teacher.count(),
-      Parent.count() 
-      // Course.count(),
-      // Assignment.count(),
+      Parent.count(),
+      Course.count(),
+      Assessment.count()
     ]);
 
     const recentActivities = [
@@ -37,10 +36,10 @@ exports.getDashboard = async (req, res, next) => {
         stats: {
           students: studentCount,
           teachers: teacherCount,
-          courses: 0,
-          assignments: 0,
-          announcements: 0,
-          parents:parentCount
+          courses: courseCount,
+          assignments: assignmentCount,
+          announcements: 0, // No Announcement model, keep as 0
+          parents: parentCount
         },
         recentActivities,
         systemNotifications

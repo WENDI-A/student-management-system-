@@ -73,6 +73,10 @@ export const AdminDashboard = () => {
         );
     }
 
+    if (!dashboardData || !dashboardData.stats) {
+        return <div>No dashboard data available or you are not authorized to view this page.</div>;
+    }
+
     return (
         <Box p={3}>
             <Title title="Admin Dashboard" />

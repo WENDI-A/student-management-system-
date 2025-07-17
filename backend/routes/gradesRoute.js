@@ -7,12 +7,12 @@ const { route } = require("./authRoutes");
 router.use(authenticateJWT.protect);
 router.get(
   "/courses",
-  authenticateJWT.authorize("teacher"),
+  authenticateJWT.authorize("admin", "teacher"),
   GrradeController.getPublishedAssessmentsAndGrades
 );
 router.post(
   "/",
-  authenticateJWT.authorize("teacher"),
+  authenticateJWT.authorize("admin", "teacher"),
   GrradeController.setStudentGrade
 );
 router.get(

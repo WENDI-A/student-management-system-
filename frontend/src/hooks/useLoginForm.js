@@ -1,12 +1,15 @@
 import { useState } from "react";
 import authProvider from "./authProvider";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * Handles the login form state and submission.
  */
 export const useLoginForm = () => {
   const [activeTab, setActiveTab] = useState("student");
+  // Add staffType for staff login
+  const [staffType, setStaffType] = useState("teacher");
   const [formData, setFormData] = useState({
     studentId: "",
     username: "",
@@ -16,6 +19,7 @@ export const useLoginForm = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
+  const { setRole } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -80,7 +84,7 @@ export const useLoginForm = () => {
     try {
       setLoading(true);
       const loginData = {
-        userType: activeTab,
+        userType: activeTab === "student" ? "student" : staffType,
         password: formData.password,
         username:
           activeTab === "student" ? formData.studentId : formData.username,
@@ -89,6 +93,9 @@ export const useLoginForm = () => {
       const response = await authProvider.login(loginData);
 
       if (response && response.message) {
+        // Set role in AuthContext after login
+        const auth = JSON.parse(localStorage.getItem("auth"));
+        setRole(auth?.user?.role || null);
         setSuccessMessage(response.message);
         navigate("/");
       }
@@ -108,6 +115,8 @@ export const useLoginForm = () => {
   return {
     activeTab,
     setActiveTab,
+    staffType,
+    setStaffType,
     formData,
     setFormData,
     errors,

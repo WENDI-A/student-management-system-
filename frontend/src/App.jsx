@@ -10,7 +10,7 @@ import { Loading } from "./components/Loading";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 
 const AppContent = () => {
-  const { role } = useAuth();
+  const { role, setRole } = useAuth();
   const [key, setKey] = useState(Date.now());
   
   const getUserRole = () => {
@@ -35,7 +35,7 @@ const AppContent = () => {
           setRole(userRole);
         }
       } catch (error) {
-        console.error("Auth check failed:", error);
+        console.error("Auth check failed:", error, error?.message);
         setRole(null);
       }
     };
@@ -82,11 +82,10 @@ const AppContent = () => {
     >
       {() => {
         const currentRole = role || getUserRole();
-        
         if (!currentRole) {
+          // Optionally, show a loading spinner
           return null;
         }
-        
         return (
           <>
             <RefreshOnNavigate />

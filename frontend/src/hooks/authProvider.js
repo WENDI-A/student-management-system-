@@ -82,7 +82,7 @@ const authProvider = {
     
     const authTime = localStorage.getItem("authTime");
     if (authTime) {
-      const sessionDuration = 2 * 60 * 60 * 1000; // 2 hours
+      const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
       const currentTime = Date.now();
       
       if (currentTime - parseInt(authTime, 10) > sessionDuration) {

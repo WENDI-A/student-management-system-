@@ -57,7 +57,8 @@ exports.addCourseMaterial = async (req, res) => {
       }
 
       try {
-        const teacherId = req.user.id;
+        const userId = req.user.id;
+        const userRole = req.user.role;
         const { title, content, course_id } = req.body;
 
         if (!title || (!content && !req.file)) {
@@ -74,34 +75,59 @@ exports.addCourseMaterial = async (req, res) => {
         let courseId = course_id;
 
         if (!courseId) {
-          const courses = await Course.findAll({
-            where: {
-              teacher_id: teacherId,
-              isActive: true
-            },
-            attributes: ['id', 'Course_name']
-          });
+          if (userRole === 'teacher') {
+            const courses = await Course.findAll({
+              where: {
+                teacher_id: userId,
+                isActive: true
+              },
+              attributes: ['id', 'Course_name']
+            });
 
-          if (!courses || courses.length === 0) {
-            if (req.file) {
-              fs.unlinkSync(req.file.path);
+            if (!courses || courses.length === 0) {
+              if (req.file) {
+                fs.unlinkSync(req.file.path);
+              }
+
+              return res.status(404).json({
+                success: false,
+                message: "No active courses found for this teacher"
+              });
             }
 
-            return res.status(404).json({
+            courseId = courses[0].id;
+          } else if (userRole === 'admin') {
+            // Admin must specify course_id
+            return res.status(400).json({
               success: false,
-              message: "No active courses found for this teacher"
+              message: "Admin must specify course_id"
+            });
+          } else {
+            return res.status(403).json({
+              success: false,
+              message: "You are not authorized to add course material"
             });
           }
-
-          courseId = courses[0].id;
         } else {
-          const course = await Course.findOne({
-            where: {
-              id: courseId,
-              teacher_id: teacherId,
-              isActive: true
-            }
-          });
+          let course;
+          if (userRole === 'teacher') {
+            course = await Course.findOne({
+              where: {
+                id: courseId,
+                teacher_id: userId,
+                isActive: true
+              }
+            });
+          } else if (userRole === 'admin') {
+            course = await Course.findOne({
+              where: {
+                id: courseId,
+                isActive: true
+              }
+            });
+          } else {
+            course = null;
+          }
 
           if (!course) {
             if (req.file) {

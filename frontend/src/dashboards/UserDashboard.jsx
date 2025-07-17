@@ -1,15 +1,33 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Title, useGetIdentity } from 'react-admin';
 import { Box, Card, CardContent, Typography, Grid, List, ListItem, ListItemText, Divider, Paper } from '@mui/material';
 import { Announcement, EventNote, Info, School, CalendarMonth } from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import AdminDashboard from '../Admin/AdminDashboard';
 
 export const UserDashboard = () => {
     const { identity } = useGetIdentity();
+    const { role } = useAuth();
+    const navigate = useNavigate();
     const currentDate = new Date().toLocaleDateString('en-US', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
     });
+
+    useEffect(() => {
+        if (role === 'teacher') {
+            navigate('/teacher');
+        }
+        // Add more role-based redirects as needed
+    }, [role, navigate]);
+
+    if (role === 'admin') {
+        return <AdminDashboard />;
+    }
+    // Optionally, show a loading spinner or message
+    return null;
 
     // School information
     const schoolInfo = {
