@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const { Admin, Teacher, Student, Parent, Guest, Director } = require('../models');  // Importing Director model
+const { PrismaClient } = require('../prismaClient');
+const prisma = new PrismaClient();
 
 exports.protect = async (req, res, next) => {
   try {
@@ -22,26 +23,26 @@ exports.protect = async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Check if user exists based on role
+      // Check if user exists based on role using Prisma
       let currentUser;
       switch (decoded.role) {
         case 'admin':
-          currentUser = await Admin.findByPk(decoded.id);
+          currentUser = await prisma.admin.findUnique({ where: { id: decoded.id } });
           break;
         case 'teacher':
-          currentUser = await Teacher.findByPk(decoded.id);
+          currentUser = await prisma.teacher.findUnique({ where: { id: decoded.id } });
           break;
         case 'student':
-          currentUser = await Student.findByPk(decoded.id);
+          currentUser = await prisma.student.findUnique({ where: { id: decoded.id } });
           break;
         case 'parent':
-          currentUser = await Parent.findByPk(decoded.id);
+          currentUser = await prisma.parent.findUnique({ where: { id: decoded.id } });
           break;
-        case 'guest':  // Handling guest role
-          currentUser = await Guest.findByPk(decoded.id);
+        case 'guest':
+          currentUser = await prisma.guest.findUnique({ where: { id: decoded.id } });
           break;
         case 'director':
-          currentUser = await Director.findByPk(decoded.id);
+          currentUser = await prisma.director.findUnique({ where: { id: decoded.id } });
           break;
       }
       
@@ -52,7 +53,7 @@ exports.protect = async (req, res, next) => {
         });
       }
       
-      if (!currentUser.isActive &&  decoded.role != 'director') {
+      if (currentUser.isActive === false && decoded.role != 'director') {
         return res.status(403).json({
           success: false,
           message: 'Your account has been deactivated. Please contact administrator.'
@@ -109,42 +110,30 @@ exports.isLoggedIn = async (req, res, next) => {
       try {
         const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
         
-        // Check user based on role
+        // Check user based on role using Prisma
         let currentUser;
         switch (decoded.role) {
           case 'admin':
-            currentUser = await Admin.findByPk(decoded.id, {
-              attributes: { exclude: ['password'] }
-            });
+            currentUser = await prisma.admin.findUnique({ where: { id: decoded.id } });
             break;
           case 'teacher':
-            currentUser = await Teacher.findByPk(decoded.id, {
-              attributes: { exclude: ['password'] }
-            });
+            currentUser = await prisma.teacher.findUnique({ where: { id: decoded.id } });
             break;
           case 'student':
-            currentUser = await Student.findByPk(decoded.id, {
-              attributes: { exclude: ['password'] }
-            });
+            currentUser = await prisma.student.findUnique({ where: { id: decoded.id } });
             break;
           case 'parent':
-            currentUser = await Parent.findByPk(decoded.id, {
-              attributes: { exclude: ['password'] }
-            });
+            currentUser = await prisma.parent.findUnique({ where: { id: decoded.id } });
             break;
-          case 'guest':  // Handling guest role
-            currentUser = await Guest.findByPk(decoded.id, {
-              attributes: { exclude: ['password'] }
-            });
+          case 'guest':
+            currentUser = await prisma.guest.findUnique({ where: { id: decoded.id } });
             break;
           case 'director':
-            currentUser = await Director.findByPk(decoded.id, {
-              attributes: { exclude: ['password'] }
-            });
+            currentUser = await prisma.director.findUnique({ where: { id: decoded.id } });
             break;
         }
         
-        if (currentUser && currentUser.isActive) {
+        if (currentUser && currentUser.isActive !== false) {
           res.locals.user = currentUser;
         }
       } catch (error) {

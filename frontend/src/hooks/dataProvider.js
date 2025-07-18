@@ -37,9 +37,9 @@ const create_path = {
 };
 
 const get_one_path = {  
-    students: "/students/profile",
-    teachers : "/teachers/profile",
-    parents : "/parents/profile",
+    students: "/students",
+    teachers : "/teachers",
+    parents : "/parents",
     course : "/courses",
     courses : "/courses", // added plural
     CourseMaterial : "/CourseMaterial",
