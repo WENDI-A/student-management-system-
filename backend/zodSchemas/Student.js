@@ -1,7 +1,8 @@
 const { z } = require("zod");
 
 const StudentSchema = z.object({
-  id: z.string().cuid().optional(),
+  // Student ID must match format like 1378/14
+  id: z.string().regex(/^\d{1,10}\/\d{1,10}$/).optional(),
   firstName: z.string(),
   lastName: z.string(),
   email: z.string().email(),
