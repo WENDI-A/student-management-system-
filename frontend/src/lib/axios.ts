@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { useAuthStore } from './auth-store';
 import { BASE_URL } from './apiPaths';
+import { getHeader } from './getHeader';
+import type { AxiosRequestHeaders } from 'axios';
 
 // This will be set by the glass overlay logic
 let onUnauthorized: (() => void) | null = null;
@@ -11,13 +13,13 @@ const instance = axios.create({
   withCredentials: true,
 });
 
-// Attach JWT token from Zustand
+// Attach JWT token and identity-aware headers
 instance.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers['Authorization'] = `Bearer ${token}`;
+  let baseHeaders = {};
+  if (config.headers && typeof config.headers === 'object' && !(config.headers instanceof Array)) {
+    baseHeaders = { ...config.headers };
   }
+  config.headers = { ...baseHeaders, ...getHeader() } as AxiosRequestHeaders;
   return config;
 });
 
