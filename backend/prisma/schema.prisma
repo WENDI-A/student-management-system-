@@ -1,0 +1,266 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../prismaClient"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id          String    @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String    @unique
+  password    String
+  classId     String?
+  class       Class?    @relation(fields: [classId], references: [id])
+  enrollments CourseEnrollment[]
+  grades      Grade[]
+  attendances Attendance[]
+  parentLinks ParentStudent[]
+  gradeSummaries GradeSummary[]
+  studentAnswers StudentAnswer[]
+  notifications Notification[] @relation("StudentNotifications")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Teacher {
+  id          String    @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String    @unique
+  password    String
+  courses     CourseTeacher[]
+  assessments Assessment[]
+  materials   CourseMaterial[]
+  notifications Notification[] @relation("TeacherNotifications")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Parent {
+  id          String    @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String    @unique
+  password    String
+  parentLinks ParentStudent[]
+  notifications Notification[] @relation("ParentNotifications")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Admin {
+  id          String    @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String    @unique
+  password    String
+  notifications Notification[] @relation("AdminNotifications")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Director {
+  id          String    @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String    @unique
+  password    String
+  notifications Notification[] @relation("DirectorNotifications")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Guest {
+  id          String    @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String    @unique
+  password    String
+  notifications Notification[] @relation("GuestNotifications")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Class {
+  id          String    @id @default(cuid())
+  name        String
+  section     String?
+  students    Student[]
+  courses     Course[]
+}
+
+model Course {
+  id          String    @id @default(cuid())
+  name        String
+  code        String    @unique
+  classId     String?
+  class       Class?    @relation(fields: [classId], references: [id])
+  enrollments CourseEnrollment[]
+  teachers    CourseTeacher[]
+  assessments Assessment[]
+  materials   CourseMaterial[]
+  attendances Attendance[]
+  schedules   Schedule[]
+  gradeSummaries GradeSummary[]
+}
+
+model CourseEnrollment {
+  id          String    @id @default(cuid())
+  studentId   String
+  courseId    String
+  enrolledAt  DateTime  @default(now())
+  student     Student   @relation(fields: [studentId], references: [id])
+  course      Course    @relation(fields: [courseId], references: [id])
+  @@unique([studentId, courseId])
+}
+
+model CourseTeacher {
+  id          String    @id @default(cuid())
+  teacherId   String
+  courseId    String
+  teacher     Teacher   @relation(fields: [teacherId], references: [id])
+  course      Course    @relation(fields: [courseId], references: [id])
+  @@unique([teacherId, courseId])
+}
+
+model Assessment {
+  id          String    @id @default(cuid())
+  title       String
+  type        AssessmentType
+  courseId    String
+  teacherId   String
+  date        DateTime
+  course      Course    @relation(fields: [courseId], references: [id])
+  teacher     Teacher   @relation(fields: [teacherId], references: [id])
+  grades      Grade[]
+  questions   Question[]
+}
+
+enum AssessmentType {
+  EXAM
+  QUIZ
+  ASSIGNMENT
+  PROJECT
+  OTHER
+}
+
+model Question {
+  id            String    @id @default(cuid())
+  assessmentId  String
+  text          String
+  assessment    Assessment @relation(fields: [assessmentId], references: [id])
+  studentAnswers StudentAnswer[]
+}
+
+model StudentAnswer {
+  id          String    @id @default(cuid())
+  questionId  String
+  studentId   String
+  answer      String
+  question    Question  @relation(fields: [questionId], references: [id])
+  student     Student   @relation(fields: [studentId], references: [id])
+}
+
+model Grade {
+  id          String    @id @default(cuid())
+  assessmentId String
+  studentId   String
+  value       Float
+  assessment  Assessment @relation(fields: [assessmentId], references: [id])
+  student     Student    @relation(fields: [studentId], references: [id])
+}
+
+model GradeSummary {
+  id          String    @id @default(cuid())
+  studentId   String
+  courseId    String
+  average     Float
+  student     Student   @relation(fields: [studentId], references: [id])
+  course      Course    @relation(fields: [courseId], references: [id])
+}
+
+model Attendance {
+  id          String    @id @default(cuid())
+  studentId   String
+  courseId    String
+  date        DateTime
+  status      AttendanceStatus
+  student     Student   @relation(fields: [studentId], references: [id])
+  course      Course    @relation(fields: [courseId], references: [id])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+model CourseMaterial {
+  id          String    @id @default(cuid())
+  courseId    String
+  teacherId   String
+  title       String
+  description String?
+  url         String?
+  course      Course    @relation(fields: [courseId], references: [id])
+  teacher     Teacher   @relation(fields: [teacherId], references: [id])
+}
+
+model Notification {
+  id            String    @id @default(cuid())
+  studentId     String?
+  teacherId     String?
+  parentId      String?
+  adminId       String?
+  directorId    String?
+  guestId       String?
+  type          NotificationType
+  content       String
+  fileUrl       String?
+  createdAt     DateTime  @default(now())
+  // Relations
+  student       Student?  @relation("StudentNotifications", fields: [studentId], references: [id])
+  teacher       Teacher?  @relation("TeacherNotifications", fields: [teacherId], references: [id])
+  parent        Parent?   @relation("ParentNotifications", fields: [parentId], references: [id])
+  admin         Admin?    @relation("AdminNotifications", fields: [adminId], references: [id])
+  director      Director? @relation("DirectorNotifications", fields: [directorId], references: [id])
+  guest         Guest?    @relation("GuestNotifications", fields: [guestId], references: [id])
+}
+
+enum NotificationType {
+  TEXT
+  IMAGE
+  FILE
+  ALERT
+  OTHER
+}
+
+model ParentStudent {
+  id          String    @id @default(cuid())
+  parentId    String
+  studentId   String
+  parent      Parent    @relation(fields: [parentId], references: [id])
+  student     Student   @relation(fields: [studentId], references: [id])
+  @@unique([parentId, studentId])
+}
+
+model Schedule {
+  id          String    @id @default(cuid())
+  courseId    String
+  startTime   DateTime
+  endTime     DateTime
+  location    String?
+  course      Course    @relation(fields: [courseId], references: [id])
+} 
