@@ -128,15 +128,15 @@ export function Sidebar({ role }: SidebarProps) {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <button
-            className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-md bg-white dark:bg-background shadow border border-gray-200 dark:border-border"
+            className="md:hidden fixed bottom-4 right-4 z-40 p-3 rounded-full bg-white dark:bg-background shadow-lg border border-gray-200 dark:border-border"
             aria-label="Open sidebar"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-7 h-7" />
           </button>
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="p-0 w-64 bg-gray-100 dark:bg-sidebar h-full shadow-lg rounded-r-2xl"
+          className="p-0 w-64 bg-gray-100 dark:bg-sidebar h-full shadow-lg rounded-r-2xl overflow-y-auto max-h-screen"
         >
           <DialogTitle asChild>
             <VisuallyHidden>Sidebar Navigation</VisuallyHidden>
@@ -146,7 +146,7 @@ export function Sidebar({ role }: SidebarProps) {
       </Sheet>
       {/* Desktop: Sidebar */}
       <aside className="hidden md:flex flex-col h-screen w-64 bg-gray-100 dark:bg-sidebar shadow-lg rounded-r-2xl border-r border-gray-200 dark:border-border sticky top-0">
-        {SidebarContent}
+        <div className="flex-1 overflow-y-auto max-h-screen">{SidebarContent}</div>
       </aside>
     </>
   );

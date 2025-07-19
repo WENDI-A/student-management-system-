@@ -18,6 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { TableHeader } from "@/components/ui/TableHeader";
+import { TableRow } from "@/components/ui/TableRow";
 
 function getToday() {
   const d = new Date();
@@ -48,7 +51,15 @@ export default function AdminStudent() {
   const [editStudent, setEditStudent] = useState<null | (typeof students)[0]>(
     null
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const studentsPerPage = 10;
   const today = getToday();
+
+  // Calculate pagination
+  const totalPages = Math.ceil(students.length / studentsPerPage);
+  const startIndex = (currentPage - 1) * studentsPerPage;
+  const endIndex = startIndex + studentsPerPage;
+  const currentStudents = students.slice(startIndex, endIndex);
 
   function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -68,6 +79,8 @@ export default function AdminStudent() {
       setDob("");
       setEnrollment(today);
       setGrade("");
+      // Reset to first page when adding new student
+      setCurrentPage(1);
     }, 1200);
   }
 
@@ -80,9 +93,18 @@ export default function AdminStudent() {
     setEditIndex(null);
     setEditStudent(null);
   }
+
   function handleDelete(idx: number) {
     setStudents((prev) => prev.filter((_, i) => i !== idx));
+    // Adjust current page if we're on the last page and it becomes empty
+    if (currentStudents.length === 1 && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   }
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
 
   return (
     <div className="w-full px-2 sm:px-4">
@@ -91,95 +113,130 @@ export default function AdminStudent() {
           <CardTitle className="text-2xl">Students</CardTitle>
           <Button
             onClick={() => setOpen(true)}
-            className="bg-blue-700 hover:bg-blue-600 w-full sm:w-auto"
+            variant="link"
+            className="text-blue-700 dark:text-blue-400 w-full sm:w-auto"
           >
-            Create Student
+            + Create
           </Button>
         </CardHeader>
+
         <CardContent>
           {students.length === 0 ? (
             <div className="text-gray-500 text-center py-8">
               No students yet.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-sm">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      First Name
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Last Name
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Email
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Date of Birth
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Enrollment
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Grade
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map((s, i) => (
-                    <tr
-                      key={i}
-                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
+            <div className="overflow-x-auto scroll-smooth rounded-lg">
+              <div className="min-w-[900px]">
+                {" "}
+                {/* 👈 Forces table to be scrollable on smaller screens */}
+                <table className="w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-sm">
+                  <TableHeader
+                    headers={[
+                      "ID",
+                      "First Name",
+                      "Last Name",
+                      "Email",
+                      "Date of Birth",
+                      "Enrollment",
+                      "Grade",
+                      "Actions",
+                    ]}
+                  />
+                  <tbody>
+                    {currentStudents.map((s, i) => (
+                      <TableRow
+                        key={startIndex + i}
+                        cells={[
+                          <span className="font-medium text-gray-600 dark:text-gray-400">
+                            {startIndex + i + 1}
+                          </span>,
+                          s.firstName,
+                          s.lastName,
+                          s.email,
+                          s.dob,
+                          s.enrollment,
+                          s.grade,
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full sm:w-auto"
+                              onClick={() => {
+                                setEditIndex(startIndex + i);
+                                setEditStudent(s);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="w-full sm:w-auto"
+                              onClick={() => handleDelete(startIndex + i)}
+                            >
+                              Delete
+                            </Button>
+                          </div>,
+                        ]}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 px-2 sm:px-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Showing {startIndex + 1} to{" "}
+                    {Math.min(endIndex, students.length)} of {students.length}{" "}
+                    students
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1"
                     >
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {s.firstName}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {s.lastName}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {s.email}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {s.dob}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {s.enrollment}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {s.grade}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 flex flex-col sm:flex-row gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full sm:w-auto"
-                          onClick={() => {
-                            setEditIndex(i);
-                            setEditStudent(s);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="w-full sm:w-auto"
-                          onClick={() => handleDelete(i)}
-                        >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      <ChevronLeft className="w-4 h-4" />
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <Button
+                            key={page}
+                            variant={
+                              currentPage === page ? "default" : "outline"
+                            }
+                            size="sm"
+                            onClick={() => goToPage(page)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        )
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
           {success && (
             <div className="text-emerald-500 text-center mt-2">
               Student created!
@@ -187,6 +244,7 @@ export default function AdminStudent() {
           )}
         </CardContent>
       </Card>
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg w-full px-2 sm:px-6">
           <DialogHeader>
