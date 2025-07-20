@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useStudentAdminState, getToday, Student } from './adminstudent';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,89 +22,29 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TableHeader } from "@/components/ui/TableHeader";
 import { TableRow } from "@/components/ui/TableRow";
 
-function getToday() {
-  const d = new Date();
-  return d.toISOString().split("T")[0];
-}
 
 export default function AdminStudent() {
-  const [open, setOpen] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [dob, setDob] = useState("");
-  const [enrollment, setEnrollment] = useState(getToday());
-  const [grade, setGrade] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [students, setStudents] = useState<
-    Array<{
-      firstName: string;
-      lastName: string;
-      email: string;
-      dob: string;
-      enrollment: string;
-      grade: string;
-    }>
-  >([]);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [editStudent, setEditStudent] = useState<null | (typeof students)[0]>(
-    null
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const studentsPerPage = 10;
-  const today = getToday();
+  const state = useStudentAdminState();
 
-  // Calculate pagination
-  const totalPages = Math.ceil(students.length / studentsPerPage);
-  const startIndex = (currentPage - 1) * studentsPerPage;
-  const endIndex = startIndex + studentsPerPage;
-  const currentStudents = students.slice(startIndex, endIndex);
-
-  function handleSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      setSuccess(true);
-      setOpen(false);
-      setStudents((prev) => [
-        ...prev,
-        { firstName, lastName, email, dob, enrollment, grade },
-      ]);
-      setTimeout(() => setSuccess(false), 2000);
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setDob("");
-      setEnrollment(today);
-      setGrade("");
-      // Reset to first page when adding new student
-      setCurrentPage(1);
-    }, 1200);
-  }
-
-  function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (editIndex === null || !editStudent) return;
-    setStudents((prev) =>
-      prev.map((s, i) => (i === editIndex ? editStudent : s))
-    );
-    setEditIndex(null);
-    setEditStudent(null);
-  }
-
-  function handleDelete(idx: number) {
-    setStudents((prev) => prev.filter((_, i) => i !== idx));
-    // Adjust current page if we're on the last page and it becomes empty
-    if (currentStudents.length === 1 && currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  }
-
-  const goToPage = (page: number) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  };
+  // Destructure all needed state/handlers from the hook
+  const {
+    open, setOpen,
+    firstName, setFirstName,
+    lastName, setLastName,
+    email, setEmail,
+    code, setCode,
+    classId, setClassId,
+    editId, setEditId,
+    editStudent, setEditStudent,
+    currentPage, setCurrentPage,
+    studentsPerPage,
+    today,
+    isLoading, error,
+    createStudent, updateStudent, deleteStudent,
+    classLoading, classes,
+    students, total, totalPages, startIndex, endIndex,
+    handleSave, handleEditSave, handleDelete, goToPage,
+  } = state;
 
   return (
     <div className="w-full px-2 sm:px-4">
@@ -119,34 +59,31 @@ export default function AdminStudent() {
             + Create
           </Button>
         </CardHeader>
-
         <CardContent>
-          {students.length === 0 ? (
-            <div className="text-gray-500 text-center py-8">
-              No students yet.
-            </div>
+          {isLoading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : error ? (
+            <div className="text-red-500 text-center py-8">Error loading students.</div>
+          ) : students.length === 0 ? (
+            <div className="text-gray-500 text-center py-8">No students yet.</div>
           ) : (
             <div className="overflow-x-auto scroll-smooth rounded-lg">
-              <div className="min-w-[900px]">
-                {" "}
-                {/* 👈 Forces table to be scrollable on smaller screens */}
-                <table className="w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-sm">
+              <div className="min-w-[600px] sm:min-w-[700px]">
+                <table className="w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-xs sm:text-sm">
                   <TableHeader
                     headers={[
-                      "ID",
+                      "No",
                       "First Name",
                       "Last Name",
                       "Email",
-                      "Date of Birth",
-                      "Enrollment",
-                      "Grade",
+                      "Code",
                       "Actions",
                     ]}
                   />
                   <tbody>
-                    {currentStudents.map((s, i) => (
+                    {students.map((s, i) => (
                       <TableRow
-                        key={startIndex + i}
+                        key={s.id || i}
                         cells={[
                           <span className="font-medium text-gray-600 dark:text-gray-400">
                             {startIndex + i + 1}
@@ -154,16 +91,14 @@ export default function AdminStudent() {
                           s.firstName,
                           s.lastName,
                           s.email,
-                          s.dob,
-                          s.enrollment,
-                          s.grade,
-                          <div className="flex flex-col sm:flex-row gap-2">
+                          s.code,
+                          <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 w-full min-w-[100px]">
                             <Button
                               size="sm"
                               variant="outline"
                               className="w-full sm:w-auto"
                               onClick={() => {
-                                setEditIndex(startIndex + i);
+                                setEditId(s.id || "");
                                 setEditStudent(s);
                               }}
                             >
@@ -173,7 +108,7 @@ export default function AdminStudent() {
                               size="sm"
                               variant="destructive"
                               className="w-full sm:w-auto"
-                              onClick={() => handleDelete(startIndex + i)}
+                              onClick={() => handleDelete(s.id || "")}
                             >
                               Delete
                             </Button>
@@ -184,14 +119,11 @@ export default function AdminStudent() {
                   </tbody>
                 </table>
               </div>
-
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4 px-2 sm:px-4">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {startIndex + 1} to{" "}
-                    {Math.min(endIndex, students.length)} of {students.length}{" "}
-                    students
+                    Showing {startIndex + 1} to {Math.min(endIndex, total)} of {total} students
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -209,9 +141,7 @@ export default function AdminStudent() {
                         (page) => (
                           <Button
                             key={page}
-                            variant={
-                              currentPage === page ? "default" : "outline"
-                            }
+                            variant={currentPage === page ? "default" : "outline"}
                             size="sm"
                             onClick={() => goToPage(page)}
                             className="w-8 h-8 p-0"
@@ -236,21 +166,27 @@ export default function AdminStudent() {
               )}
             </div>
           )}
-
-          {success && (
-            <div className="text-emerald-500 text-center mt-2">
-              Student created!
-            </div>
-          )}
         </CardContent>
       </Card>
-
+      {/* Create Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg w-full px-2 sm:px-6">
           <DialogHeader>
             <DialogTitle>Add New Student</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Student Code
+              </label>
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+                placeholder="1378/14"
+                className="w-full"
+              />
+            </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -260,6 +196,7 @@ export default function AdminStudent() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
+                  className="w-full"
                 />
               </div>
               <div className="flex-1 space-y-2">
@@ -270,6 +207,7 @@ export default function AdminStudent() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
+                  className="w-full"
                 />
               </div>
             </div>
@@ -282,47 +220,22 @@ export default function AdminStudent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="w-full"
               />
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Date of Birth
-                </label>
-                <Input
-                  type="date"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex-1 space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Date of Enrollment
-                </label>
-                <Input
-                  type="date"
-                  value={enrollment}
-                  min={today}
-                  onChange={(e) => setEnrollment(e.target.value)}
-                  required
-                />
-              </div>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Grade
+                Class
               </label>
-              <Select value={grade} onValueChange={setGrade} required>
+              <Select value={classId} onValueChange={setClassId} required disabled={classLoading}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select grade" />
+                  <SelectValue placeholder={classLoading ? "Loading classes..." : "Select class"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {[...Array(12)].map((_, i) => (
-                    <SelectItem
-                      key={i + 1}
-                      value={(i + 1).toString()}
-                    >{`Grade ${i + 1}`}</SelectItem>
+                  {classes.map((cls: any) => (
+                    <SelectItem key={cls.id} value={cls.id}>
+                      {cls.name}{cls.section ? ` (${cls.section})` : ""}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -340,19 +253,20 @@ export default function AdminStudent() {
               <Button
                 type="submit"
                 className="bg-blue-700 hover:bg-blue-600 w-full sm:w-auto"
-                disabled={saving}
+                disabled={createStudent.isPending}
               >
-                {saving ? "Saving..." : "Save"}
+                {createStudent.isPending ? "Saving..." : "Save"}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      {/* Edit Dialog */}
       <Dialog
-        open={editIndex !== null}
+        open={editId !== null}
         onOpenChange={(v) => {
           if (!v) {
-            setEditIndex(null);
+            setEditId(null);
             setEditStudent(null);
           }
         }}
@@ -363,6 +277,18 @@ export default function AdminStudent() {
           </DialogHeader>
           {editStudent && (
             <form onSubmit={handleEditSave} className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Student Code
+                </label>
+                <Input
+                  value={editStudent.code || ""}
+                  onChange={(e) => setEditStudent({ ...editStudent, code: e.target.value })}
+                  required
+                  placeholder="1378/14"
+                  className="w-full"
+                />
+              </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -370,13 +296,9 @@ export default function AdminStudent() {
                   </label>
                   <Input
                     value={editStudent.firstName}
-                    onChange={(e) =>
-                      setEditStudent({
-                        ...editStudent,
-                        firstName: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setEditStudent({ ...editStudent, firstName: e.target.value })}
                     required
+                    className="w-full"
                   />
                 </div>
                 <div className="flex-1 space-y-2">
@@ -385,13 +307,9 @@ export default function AdminStudent() {
                   </label>
                   <Input
                     value={editStudent.lastName}
-                    onChange={(e) =>
-                      setEditStudent({
-                        ...editStudent,
-                        lastName: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setEditStudent({ ...editStudent, lastName: e.target.value })}
                     required
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -402,64 +320,29 @@ export default function AdminStudent() {
                 <Input
                   type="email"
                   value={editStudent.email}
-                  onChange={(e) =>
-                    setEditStudent({ ...editStudent, email: e.target.value })
-                  }
+                  onChange={(e) => setEditStudent({ ...editStudent, email: e.target.value })}
                   required
+                  className="w-full"
                 />
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Date of Birth
-                  </label>
-                  <Input
-                    type="date"
-                    value={editStudent.dob}
-                    onChange={(e) =>
-                      setEditStudent({ ...editStudent, dob: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Date of Enrollment
-                  </label>
-                  <Input
-                    type="date"
-                    value={editStudent.enrollment}
-                    min={today}
-                    onChange={(e) =>
-                      setEditStudent({
-                        ...editStudent,
-                        enrollment: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Grade
+                  Class
                 </label>
                 <Select
-                  value={editStudent.grade}
-                  onValueChange={(v) =>
-                    setEditStudent({ ...editStudent, grade: v })
-                  }
+                  value={editStudent.classId || ""}
+                  onValueChange={(v) => setEditStudent({ ...editStudent, classId: v })}
                   required
+                  disabled={classLoading}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select grade" />
+                    <SelectValue placeholder={classLoading ? "Loading classes..." : "Select class"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {[...Array(12)].map((_, i) => (
-                      <SelectItem
-                        key={i + 1}
-                        value={(i + 1).toString()}
-                      >{`Grade ${i + 1}`}</SelectItem>
+                    {classes.map((cls: any) => (
+                      <SelectItem key={cls.id} value={cls.id}>
+                        {cls.name}{cls.section ? ` (${cls.section})` : ""}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -477,8 +360,9 @@ export default function AdminStudent() {
                 <Button
                   type="submit"
                   className="bg-blue-700 hover:bg-blue-600 w-full sm:w-auto"
+                  disabled={updateStudent.isPending}
                 >
-                  Save
+                  {updateStudent.isPending ? "Saving..." : "Save"}
                 </Button>
               </DialogFooter>
             </form>
