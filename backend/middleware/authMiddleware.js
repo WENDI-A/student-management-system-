@@ -22,6 +22,13 @@ exports.protect = async (req, res, next) => {
     
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('DEBUG protect decoded:', decoded); // Debug log
+      if (!decoded.role) {
+        return res.status(401).json({
+          success: false,
+          message: 'Token does not include a user role. Please log in again.'
+        });
+      }
       
       // Check if user exists based on role using Prisma
       let currentUser;
@@ -65,7 +72,7 @@ exports.protect = async (req, res, next) => {
         role: decoded.role,
         email: currentUser.email
       };
-      
+      console.log('DEBUG protect req.user:', req.user); // Debug log
       next();
     } catch (error) {
       if (error.name === 'JsonWebTokenError') {
@@ -93,6 +100,7 @@ exports.protect = async (req, res, next) => {
 
 exports.authorize = (...roles) => {
   return (req, res, next) => {
+    console.log('DEBUG authorize req.user:', req.user); // Debug log
     if (!req.user || !roles.map(role => role.toLowerCase()).includes(req.user.role.toLowerCase())) {
       return res.status(403).json({
         success: false,

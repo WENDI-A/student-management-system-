@@ -478,7 +478,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/cala/Documents/code/finalproject/student-management-system/backend/prismaClient",
+      "value": "C:\\Users\\amiye\\Desktop\\student-management-system\\backend\\prismaClient",
       "fromEnvVar": null
     },
     "config": {
@@ -487,12 +487,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "windows",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/cala/Documents/code/finalproject/student-management-system/backend/prisma/schema.prisma",
+    "sourceFilePath": "C:\\Users\\amiye\\Desktop\\student-management-system\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
