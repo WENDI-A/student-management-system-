@@ -38,7 +38,7 @@ const hashPassword = async (data) => {
 };
 
 module.exports = {
-  // middleware: [auth.authorize("admin")],
+  middleware: [auth.protect,auth.authorize("admin")],
   validation: {
     create: validateStudent,
     update: validateStudent
