@@ -5,9 +5,9 @@ const validateGuest = (data, req) => {
   try {
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
-      validatedData = GuestSchema.omit({ id: true }).parse(data);
+      validatedData = GuestSchema.parse(data);
     } else {
-      validatedData = GuestSchema.omit({ id: true }).partial().parse(data);
+      validatedData = GuestSchema.partial().parse(data);
     }
     return {
       isValid: true,

@@ -6,9 +6,9 @@ const validateDirector = (data, req) => {
   try {
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
-      validatedData = DirectorSchema.omit({ id: true }).parse(data);
+      validatedData = DirectorSchema.parse(data);
     } else {
-      validatedData = DirectorSchema.omit({ id: true }).partial().parse(data);
+      validatedData = DirectorSchema.partial().parse(data);
     }
     return {
       isValid: true,

@@ -54,7 +54,7 @@ model Parent {
   notifications Notification[] @relation("ParentNotifications")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? @default(now())
+  deletedAt   DateTime? 
 }
 
 model Admin {
@@ -66,7 +66,7 @@ model Admin {
   notifications Notification[] @relation("AdminNotifications")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? @default(now())
+  deletedAt   DateTime? 
 }
 
 model Director {
@@ -78,7 +78,7 @@ model Director {
   notifications Notification[] @relation("DirectorNotifications")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? @default(now())
+  deletedAt   DateTime? 
 }
 
 model Guest {
@@ -90,7 +90,7 @@ model Guest {
   notifications Notification[] @relation("GuestNotifications")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? @default(now())
+  deletedAt   DateTime? 
 }
 
 model Class {

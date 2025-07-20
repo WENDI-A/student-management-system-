@@ -44,7 +44,7 @@ exports.login = async (req, res, next) => {
 
     // Try Student (by email)
     if (!user) {
-      user = await prisma.student.findFirst({ where: { email: identifier, deletedAt: null } });
+      user = await prisma.student.findFirst({ where: { code: identifier, deletedAt: null } });
       if (user) role = 'student';
     }
 
