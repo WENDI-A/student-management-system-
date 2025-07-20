@@ -2,9 +2,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavigationMenu } from "@/components/ui/navigation-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Book,
   FileText,
@@ -17,9 +20,11 @@ import {
   CheckCircle,
   FileQuestion,
   GraduationCap,
-  Menu,
   LogOut,
   LayoutDashboard,
+  User as UserIcon,
+  Pencil,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as React from "react";
@@ -73,19 +78,46 @@ const sidebarConfig = {
 
 type SidebarProps = {
   role: keyof typeof sidebarConfig;
+  sidebarOpen: boolean;
+  onSidebarToggle: () => void;
 };
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
   const pathname = usePathname();
   const items = sidebarConfig[role];
-  const [open, setOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = React.useState(false);
+  const [editOpen, setEditOpen] = React.useState(false);
+  const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  
+  // Edit profile state
+  const [editName, setEditName] = React.useState(user?.firstName || "");
+  const [editEmail, setEditEmail] = React.useState(user?.email || "");
+  const [currentPassword, setCurrentPassword] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+
+  // Handle edit profile form submit (mock)
+  function handleEditProfile(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+      setEditOpen(false);
+      setProfileOpen(false);
+      // Here you would update the user in your store/backend
+    }, 1200);
+  }
 
   const SidebarContent = (
     <nav className="flex flex-col h-full justify-between">
       {/* Navigation - top and left-aligned */}
-      <div className="flex-1 mt-10">
-        <NavigationMenu className="flex flex-col items-start gap-2 w-full px-2 mt-0">
+      <div className="flex-1 mt-8">
+        <NavigationMenu className="flex flex-col items-start gap-1 w-full px-4 mt-0">
           {items.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
@@ -94,49 +126,132 @@ export function Sidebar({ role }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2 rounded-lg transition-colors font-medium text-gray-900 dark:text-sidebar-foreground hover:bg-blue-50 dark:hover:bg-blue-900/30 w-full",
+                  "flex items-center gap-3 px-4 py-3 transition-all duration-200 font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300 w-full group",
                   active &&
-                    "bg-white dark:bg-background text-blue-700 font-semibold shadow border border-blue-100 dark:border-blue-900"
+                    "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border-l-4 border-blue-600 dark:border-blue-400 shadow-sm"
                 )}
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  // Close mobile sidebar when clicking a link
+                  if (window.innerWidth < 768) {
+                    onSidebarToggle();
+                  }
+                }}
               >
-                <Icon className="w-5 h-5 opacity-80" />
-                <span className="text-base">{item.label}</span>
+                <Icon className={cn(
+                  "w-5 h-5 transition-colors duration-200",
+                  active ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                )} />
+                <span className="text-sm font-medium">{item.label}</span>
               </Link>
             );
           })}
         </NavigationMenu>
       </div>
-      {/* Footer/Logout */}
-      <div className="px-4 py-6 mt-2 border-t border-gray-200 dark:border-border flex flex-col gap-2">
-        <button
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors font-medium justify-center"
-          onClick={() => {
-            logout();
-            window.location.href = "/login";
-          }}
-        >
-          <LogOut className="w-5 h-5" /> Logout
-        </button>
+      
+      {/* Profile Section - bottom */}
+      <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="relative">
+          <button
+            className="flex items-center gap-3 w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 group"
+            onClick={() => setProfileOpen(!profileOpen)}
+          >
+            <Avatar className="w-10 h-10">
+              <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold">
+                {user?.firstName?.[0]?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 text-left">
+              <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                {user?.firstName} {user?.lastName}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                {user?.role}
+              </div>
+            </div>
+            <ChevronDown className={cn(
+              "w-4 h-4 text-gray-400 transition-transform duration-200",
+              profileOpen && "rotate-180"
+            )} />
+          </button>
+          
+          {/* Profile Dropdown */}
+          {profileOpen && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+              <div className="p-3 border-b border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-2">
+                  <UserIcon className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                    {user?.firstName} {user?.lastName}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 capitalize mt-1">
+                  {user?.role}
+                </div>
+              </div>
+              <div className="p-2">
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 transition-colors duration-200"
+                  onClick={() => { setEditOpen(true); setProfileOpen(false); }}
+                >
+                  <Pencil className="w-4 h-4" /> Edit Profile
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 transition-colors duration-200"
+                  onClick={() => { logout(); setProfileOpen(false); window.location.href = "/login"; }}
+                >
+                  <LogOut className="w-4 h-4" /> Logout
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        {editOpen && (
+          <DialogContent showCloseButton>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <form className="space-y-4" onSubmit={handleEditProfile}>
+              <div>
+                <label className="block text-sm font-medium mb-1">First Name</label>
+                <Input value={editName} onChange={e => setEditName(e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <Input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Current Password</label>
+                <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">New Password</label>
+                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Confirm New Password</label>
+                <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 justify-end mt-4">
+                <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setEditOpen(false)}>Cancel</Button>
+                <Button type="submit" className="bg-blue-700 hover:bg-blue-600 w-full sm:w-auto" disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
+              </div>
+              {success && <div className="text-emerald-500 text-center mt-2">Profile updated!</div>}
+            </form>
+          </DialogContent>
+        )}
+      </Dialog>
     </nav>
   );
 
   return (
     <>
       {/* Mobile: Sheet sidebar */}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <button
-            className="md:hidden fixed bottom-4 right-4 z-40 p-3 rounded-full bg-white dark:bg-background shadow-lg border border-gray-200 dark:border-border"
-            aria-label="Open sidebar"
-          >
-            <Menu className="w-7 h-7" />
-          </button>
-        </SheetTrigger>
+      <Sheet open={sidebarOpen} onOpenChange={onSidebarToggle}>
         <SheetContent
           side="left"
-          className="p-0 w-64 bg-gray-100 dark:bg-sidebar h-full shadow-lg rounded-r-2xl overflow-y-auto max-h-screen"
+          className="p-0 w-72 bg-white dark:bg-gray-900 h-full shadow-xl border-r border-gray-200 dark:border-gray-700 overflow-y-auto max-h-screen"
         >
           <DialogTitle asChild>
             <VisuallyHidden>Sidebar Navigation</VisuallyHidden>
@@ -144,8 +259,9 @@ export function Sidebar({ role }: SidebarProps) {
           {SidebarContent}
         </SheetContent>
       </Sheet>
+      
       {/* Desktop: Sidebar */}
-      <aside className="hidden md:flex flex-col h-screen w-64 bg-gray-100 dark:bg-sidebar shadow-lg rounded-r-2xl border-r border-gray-200 dark:border-border sticky top-0">
+      <aside className="hidden md:flex flex-col h-screen w-72 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-700 sticky top-0">
         <div className="flex-1 overflow-y-auto max-h-screen">{SidebarContent}</div>
       </aside>
     </>

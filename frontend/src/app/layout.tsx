@@ -8,6 +8,10 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { PageTransition } from "@/components/PageTransition";
 import { useEffect } from 'react';
 import { setOnUnauthorized } from '../lib/axios';
+import { initializeAuth } from '../lib/auth-store';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SnackbarProvider } from 'notistack';
+import { useState } from 'react';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +28,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [queryClient] = useState(() => new QueryClient());
+
   useEffect(() => {
+    // Initialize auth from localStorage
+    initializeAuth();
+    
     setOnUnauthorized(() => {
       window.dispatchEvent(new CustomEvent('show-glass-overlay'));
       setTimeout(() => {
@@ -37,11 +46,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-smooth text-base`}
       >
-        <ThemeProvider>
-          <AuthProvider>
-            <PageTransition>{children}</PageTransition>
-          </AuthProvider>
-        </ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <SnackbarProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <PageTransition>{children}</PageTransition>
+              </AuthProvider>
+            </ThemeProvider>
+          </SnackbarProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );

@@ -6,9 +6,9 @@ const validateTeacher = (data, req) => {
   try {
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
-      validatedData = TeacherSchema.omit({ id: true }).parse(data);
+      validatedData = TeacherSchema.parse(data);
     } else {
-      validatedData = TeacherSchema.omit({ id: true }).partial().parse(data);
+      validatedData = TeacherSchema.partial().parse(data);
     }
     return {
       isValid: true,

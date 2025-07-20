@@ -6,9 +6,9 @@ const validateParent = (data, req) => {
   try {
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
-      validatedData = ParentSchema.omit({ id: true }).parse(data);
+      validatedData = ParentSchema.parse(data);
     } else {
-      validatedData = ParentSchema.omit({ id: true }).partial().parse(data);
+      validatedData = ParentSchema.partial().parse(data);
     }
     return {
       isValid: true,

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLogin, validateLoginInput } from "@/hooks/auth/useLogin";
 import { useSnackbar } from "notistack";
+import { ROLE_REDIRECTS } from "@/lib/roleRedirects";
 
 const roleTabs = [
   { value: "student", label: "Student" },
@@ -52,7 +53,14 @@ export default function LoginPage() {
       { identifier, password, tab },
       {
         onSuccess: (data) => {
-          router.push(tab === "student" ? "/student" : "/admin");
+          const userRole = data.user?.role;
+          if (userRole) {
+            ROLE_REDIRECTS.redirectToRole(userRole, router);
+          } else {
+            // Show error for unknown role instead of fallback
+            enqueueSnackbar('Login successful but user role is unknown. Please contact administrator.', { variant: 'warning' });
+            // Stay on login page instead of redirecting
+          }
         },
       }
     );

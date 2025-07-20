@@ -139,6 +139,15 @@ class DatabaseAnalyzer {
    * @returns {string} Model name
    */
   getModelName(model) {
+    // If this.models is set (as in PrismaCrudRouter), find the key for the model object
+    if (this.models && typeof this.models === 'object') {
+      for (const [key, value] of Object.entries(this.models)) {
+        if (value === model) {
+          return key;
+        }
+      }
+    }
+    // fallback
     return model.constructor.name || 'Unknown';
   }
 

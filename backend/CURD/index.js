@@ -376,7 +376,7 @@ class PrismaCrudRouter {
           // 7. Filter include (only allow relations or valid fields)
           let includeObject = {};
           if (!hasSelect) { // Only process include if select is NOT present
-            if (includeRelations && structure && structure.hasRelations) {
+            if (includeRelations && structure) {
               for (const fk of structure.foreignKeys) {
                 if (!excludeRelations.includes(fk.field)) {
                   includeObject[fk.field] = true;
