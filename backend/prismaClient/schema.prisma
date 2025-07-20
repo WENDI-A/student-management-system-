@@ -10,6 +10,7 @@ datasource db {
 
 model Student {
   id             String             @id @default(cuid())
+  code           String             @unique
   firstName      String
   lastName       String
   email          String             @unique
@@ -53,7 +54,7 @@ model Parent {
   notifications Notification[]  @relation("ParentNotifications")
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  deletedAt     DateTime?
+  deletedAt     DateTime?       @default(now())
 }
 
 model Admin {
@@ -65,7 +66,7 @@ model Admin {
   notifications Notification[] @relation("AdminNotifications")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
+  deletedAt     DateTime?      @default(now())
 }
 
 model Director {
@@ -77,7 +78,7 @@ model Director {
   notifications Notification[] @relation("DirectorNotifications")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
+  deletedAt     DateTime?      @default(now())
 }
 
 model Guest {
@@ -89,7 +90,7 @@ model Guest {
   notifications Notification[] @relation("GuestNotifications")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
+  deletedAt     DateTime?      @default(now())
 }
 
 model Class {
