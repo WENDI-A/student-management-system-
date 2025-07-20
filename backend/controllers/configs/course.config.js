@@ -5,9 +5,9 @@ const validateCourse = (data, req) => {
   try {
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
-      validatedData = CourseSchema.omit({ id: true }).parse(data);
+      validatedData = CourseSchema.parse(data);
     } else {
-      validatedData = CourseSchema.omit({ id: true }).partial().parse(data);
+      validatedData = CourseSchema.partial().parse(data);
     }
     return {
       isValid: true,
