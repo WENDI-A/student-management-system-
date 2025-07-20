@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,47 +22,30 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function AdminSchedule() {
   const [open, setOpen] = useState(false);
-  const [course, setCourse] = useState("");
-  const [dayOfWeek, setDayOfWeek] = useState("");
+  const [courseId, setCourseId] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [grade, setGrade] = useState("");
+  const [location, setLocation] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [schedules, setSchedules] = useState<
-    Array<{
-      course: string;
-      dayOfWeek: string;
-      startTime: string;
-      endTime: string;
-      grade: string;
-    }>
-  >([]);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [editSchedule, setEditSchedule] = useState<null | (typeof schedules)[0]>(
-    null
-  );
+  const [schedules, setSchedules] = useState<Array<any>>([]);
+  const [courses, setCourses] = useState<Array<any>>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const schedulesPerPage = 10;
 
-  // Mock courses and grades
-  const mockCourses = [
-    "Mathematics",
-    "English",
-    "Science",
-    "History",
-    "Art",
-  ];
-  const mockGrades = Array.from({ length: 12 }, (_, i) => `Grade ${i + 1}`);
-  const daysOfWeek = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  // Fetch schedules from backend
+  useEffect(() => {
+    fetch("/api/schedules")
+      .then((res) => res.json())
+      .then((data) => {
+        setSchedules(data.data || []);
+      });
+    fetch("/api/courses")
+      .then((res) => res.json())
+      .then((data) => {
+        setCourses(data.data || []);
+      });
+  }, []);
 
   // Calculate pagination
   const totalPages = Math.ceil(schedules.length / schedulesPerPage);
@@ -70,37 +53,37 @@ export default function AdminSchedule() {
   const endIndex = startIndex + schedulesPerPage;
   const currentSchedules = schedules.slice(startIndex, endIndex);
 
-  function handleSave(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSaving(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId,
+          startTime: new Date(startTime).toISOString(),
+          endTime: new Date(endTime).toISOString(),
+          location,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSchedules((prev) => [data.data, ...prev]);
+        setSuccess(true);
+        setOpen(false);
+        setCourseId("");
+        setStartTime("");
+        setEndTime("");
+        setLocation("");
+        setCurrentPage(1);
+        setTimeout(() => setSuccess(false), 2000);
+      }
+    } finally {
       setSaving(false);
-      setSuccess(true);
-      setOpen(false);
-      setSchedules((prev) => [
-        ...prev,
-        { course, dayOfWeek, startTime, endTime, grade },
-      ]);
-      setTimeout(() => setSuccess(false), 2000);
-      setCourse("");
-      setDayOfWeek("");
-      setStartTime("");
-      setEndTime("");
-      setGrade("");
-      setCurrentPage(1);
-    }, 1200);
+    }
   }
 
-  function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (editIndex === null || !editSchedule) return;
-    setSchedules((prev) =>
-      prev.map((s, i) => (i === editIndex ? editSchedule : s))
-    );
-    setEditIndex(null);
-    setEditSchedule(null);
-  }
-  
   function handleDelete(idx: number) {
     setSchedules((prev) => prev.filter((_, i) => i !== idx));
     if (currentSchedules.length === 1 && currentPage > 1) {
@@ -164,8 +147,8 @@ export default function AdminSchedule() {
                           variant="outline"
                           className="w-full sm:w-auto"
                           onClick={() => {
-                            setEditIndex(startIndex + i);
-                            setEditSchedule(s);
+                            // setEditIndex(startIndex + i); // Removed
+                            // setEditSchedule(s); // Removed
                           }}
                         >
                           Edit
@@ -247,34 +230,17 @@ export default function AdminSchedule() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Course
                 </label>
-                <Select value={course} onValueChange={setCourse} required>
+                <Select value={courseId} onValueChange={setCourseId} required>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select course" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockCourses.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    {courses.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex-1 space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Day of Week
-                </label>
-                <Select value={dayOfWeek} onValueChange={setDayOfWeek} required>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select day" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {daysOfWeek.map((d) => (
-                      <SelectItem key={d} value={d}>{d}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Start Time
@@ -286,6 +252,8 @@ export default function AdminSchedule() {
                   required
                 />
               </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   End Time
@@ -297,21 +265,17 @@ export default function AdminSchedule() {
                   required
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Grade
-              </label>
-              <Select value={grade} onValueChange={setGrade} required>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select grade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockGrades.map((g) => (
-                    <SelectItem key={g} value={g}>{g}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex-1 space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Location
+                </label>
+                <Input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g., Room 101"
+                />
+              </div>
             </div>
             <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-end">
               <DialogClose asChild>
@@ -336,135 +300,7 @@ export default function AdminSchedule() {
       </Dialog>
 
       {/* Edit Schedule Dialog */}
-      <Dialog
-        open={editIndex !== null}
-        onOpenChange={(v) => {
-          if (!v) {
-            setEditIndex(null);
-            setEditSchedule(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-lg w-full px-2 sm:px-6">
-          <DialogHeader>
-            <DialogTitle>Edit Schedule</DialogTitle>
-          </DialogHeader>
-          {editSchedule && (
-            <form onSubmit={handleEditSave} className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Course
-                  </label>
-                  <Select
-                    value={editSchedule.course}
-                    onValueChange={(v) =>
-                      setEditSchedule({ ...editSchedule, course: v })
-                    }
-                    required
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select course" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {mockCourses.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Day of Week
-                  </label>
-                  <Select
-                    value={editSchedule.dayOfWeek}
-                    onValueChange={(v) =>
-                      setEditSchedule({ ...editSchedule, dayOfWeek: v })
-                    }
-                    required
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select day" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {daysOfWeek.map((d) => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Start Time
-                  </label>
-                  <Input
-                    type="time"
-                    value={editSchedule.startTime}
-                    onChange={(e) =>
-                      setEditSchedule({ ...editSchedule, startTime: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    End Time
-                  </label>
-                  <Input
-                    type="time"
-                    value={editSchedule.endTime}
-                    onChange={(e) =>
-                      setEditSchedule({ ...editSchedule, endTime: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Grade
-                </label>
-                <Select
-                  value={editSchedule.grade}
-                  onValueChange={(v) =>
-                    setEditSchedule({ ...editSchedule, grade: v })
-                  }
-                  required
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select grade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mockGrades.map((g) => (
-                      <SelectItem key={g} value={g}>{g}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-end">
-                <DialogClose asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button
-                  type="submit"
-                  className="bg-blue-700 hover:bg-blue-600 w-full sm:w-auto"
-                >
-                  Save
-                </Button>
-              </DialogFooter>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Removed edit dialog */}
     </div>
   );
 } 
