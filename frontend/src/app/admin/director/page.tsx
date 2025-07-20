@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,16 +12,22 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import axios from '@/lib/axios';
+import { getHeader } from '@/lib/getHeader';
+import { useAuthStore } from '@/lib/auth-store';
+import { useRouter } from 'next/navigation';
 
 export default function AdminDirector() {
   const [open, setOpen] = useState(false);
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [directors, setDirectors] = useState<
     Array<{
-      fullName: string;
+      firstName: string;
+      lastName: string;
       email: string;
     }>
   >([]);
@@ -32,29 +38,59 @@ export default function AdminDirector() {
   const [currentPage, setCurrentPage] = useState(1);
   const directorsPerPage = 10;
 
+  const user = useAuthStore((s) => s.user);
+  const router = useRouter();
+
   // Calculate pagination
   const totalPages = Math.ceil(directors.length / directorsPerPage);
   const startIndex = (currentPage - 1) * directorsPerPage;
   const endIndex = startIndex + directorsPerPage;
   const currentDirectors = directors.slice(startIndex, endIndex);
 
-  function handleSave(e: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    async function fetchDirectors() {
+      try {
+        const headers = getHeader();
+        const res = await axios.get('/directors', { headers });
+        // Defensive: filter out any undefined/null or malformed entries
+        const validDirectors = Array.isArray(res.data.data)
+          ? res.data.data.filter((d: any) => d && d.firstName && d.lastName && d.email)
+          : [];
+        setDirectors(validDirectors);
+      } catch (err) {
+        // Optionally handle error (e.g., show a message)
+        setDirectors([]);
+      }
+    }
+    fetchDirectors();
+  }, []);
+
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Check if user is admin
+    if (!user || user.role !== 'admin') {
+      alert('You must be logged in as an admin to register a director.');
+      router.push('/login');
+      return;
+    }
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      const headers = getHeader();
+      console.log('DEBUG: Authorization header for director registration:', headers);
+      const res = await axios.post('/directors', { firstName, lastName, email }, { headers });
+      setDirectors((prev) => [...prev, res.data.data]);
       setSuccess(true);
       setOpen(false);
-      setDirectors((prev) => [
-        ...prev,
-        { fullName, email },
-      ]);
-      setTimeout(() => setSuccess(false), 2000);
-      setFullName("");
+      setFirstName("");
+      setLastName("");
       setEmail("");
-      // Reset to first page when adding new director
       setCurrentPage(1);
-    }, 1200);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err: any) {
+      alert("Error: " + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
@@ -106,7 +142,10 @@ export default function AdminDirector() {
                       ID
                     </th>
                     <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Full Name
+                      First Name
+                    </th>
+                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
+                      Last Name
                     </th>
                     <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
                       Email
@@ -117,43 +156,49 @@ export default function AdminDirector() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentDirectors.map((d, i) => (
-                    <tr
-                      key={startIndex + i}
-                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
-                    >
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap font-medium text-gray-600 dark:text-gray-400">
-                        {startIndex + i + 1}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {d.fullName}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {d.email}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 flex flex-col sm:flex-row gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full sm:w-auto"
-                          onClick={() => {
-                            setEditIndex(startIndex + i);
-                            setEditDirector(d);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="w-full sm:w-auto"
-                          onClick={() => handleDelete(startIndex + i)}
-                        >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {currentDirectors.map((d, i) => {
+                    if (!d || !d.firstName || !d.lastName || !d.email) return null;
+                    return (
+                      <tr
+                        key={startIndex + i}
+                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
+                      >
+                        <td className="px-2 sm:px-4 py-2 whitespace-nowrap font-medium text-gray-600 dark:text-gray-400">
+                          {startIndex + i + 1}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
+                          {d.firstName}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
+                          {d.lastName}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
+                          {d.email}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 flex flex-col sm:flex-row gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full sm:w-auto"
+                            onClick={() => {
+                              setEditIndex(startIndex + i);
+                              setEditDirector(d);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="w-full sm:w-auto"
+                            onClick={() => handleDelete(startIndex + i)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               
@@ -219,15 +264,27 @@ export default function AdminDirector() {
             <DialogTitle>Add New Director</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Full Name
-              </label>
-              <Input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-              />
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  First Name
+                </label>
+                <Input
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex-1 space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Last Name
+                </label>
+                <Input
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -278,20 +335,37 @@ export default function AdminDirector() {
           </DialogHeader>
           {editDirector && (
             <form onSubmit={handleEditSave} className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Full Name
-                </label>
-                <Input
-                  value={editDirector.fullName}
-                  onChange={(e) =>
-                    setEditDirector({
-                      ...editDirector,
-                      fullName: e.target.value,
-                    })
-                  }
-                  required
-                />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    First Name
+                  </label>
+                  <Input
+                    value={editDirector.firstName}
+                    onChange={(e) =>
+                      setEditDirector({
+                        ...editDirector,
+                        firstName: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Last Name
+                  </label>
+                  <Input
+                    value={editDirector.lastName}
+                    onChange={(e) =>
+                      setEditDirector({
+                        ...editDirector,
+                        lastName: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
