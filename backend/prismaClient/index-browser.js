@@ -122,6 +122,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.StudentScalarFieldEnum = {
   id: 'id',
+  code: 'code',
   firstName: 'firstName',
   lastName: 'lastName',
   email: 'email',
@@ -306,6 +307,7 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.StudentOrderByRelevanceFieldEnum = {
   id: 'id',
+  code: 'code',
   firstName: 'firstName',
   lastName: 'lastName',
   email: 'email',
