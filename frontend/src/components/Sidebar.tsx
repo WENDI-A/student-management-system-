@@ -73,6 +73,7 @@ const sidebarConfig = {
   director: [
     { label: "Dashboard", icon: LayoutDashboard, href: "/director" },
     { label: "Grade", icon: GraduationCap, href: "/director/grade" },
+    { label: "Transcript", icon: FileText, href: "/director/transcript" },
   ],
 };
 
