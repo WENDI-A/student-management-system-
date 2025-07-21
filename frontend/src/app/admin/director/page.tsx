@@ -108,8 +108,8 @@ export default function AdminDirector() {
       const headers = getHeader();
       const id = directors[editIndex]?.id;
       if (!id) return;
-      const updateData = { ...editDirector };
-      if (!updateData.password) delete updateData.password;
+      // Remove password from updateData if present
+      const { password, ...updateData } = editDirector;
       await axios.put(`/directors/${id}`, updateData, { headers });
       setEditIndex(null);
       setEditDirector(null);
@@ -407,17 +407,6 @@ export default function AdminDirector() {
                     setEditDirector({ ...editDirector, email: e.target.value })
                   }
                   required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Password (leave blank to keep unchanged)
-                </label>
-                <Input
-                  type="password"
-                  value={editDirector?.password || ""}
-                  onChange={e => setEditDirector({ ...editDirector, password: e.target.value })}
-                  placeholder="New password"
                 />
               </div>
               <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-end">

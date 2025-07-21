@@ -94,7 +94,7 @@ export function useTeacherAdminState() {
     };
     if (editTeacher.courses && editTeacher.courses.length > 0) {
       updateData.courses = {
-        connect: editTeacher.courses.map((c: any) => ({ id: c.id })),
+        create: editTeacher.courses.map((c: any) => ({ courseId: c.id })),
       };
     }
     updateTeacher.mutate({

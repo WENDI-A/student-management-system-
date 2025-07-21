@@ -1,6 +1,8 @@
 const { TeacherSchema } = require("../../zodSchemas/Teacher");
 const auth = require("../../middleware/authMiddleware");
 const bcrypt = require("bcrypt");
+const { PrismaClient } = require("../../prismaClient");
+const prisma = new PrismaClient();
 
 const validateTeacher = (data, req) => {
   try {
@@ -38,6 +40,67 @@ const hashPassword = async (data) => {
     return data;
 };
 
+// Custom POST (create teacher with courses)
+async function customCreateTeacher(req, res, next) {
+  try {
+    const { firstName, lastName, email, courses } = req.body;
+    const value = await hashPassword({})
+    const data = { firstName, lastName, email, password : value.password };
+    if (courses && Array.isArray(courses)) {
+      data.courses = {
+        create: courses.map((c) => ({ courseId: c.courseId })),
+      };
+    }
+    const teacher = await prisma.teacher.create({
+      data,
+      include: { courses: true },
+    });
+    res.status(201).json(teacher);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Custom PUT (update teacher with courses)
+async function customUpdateTeacher(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, email, password, courses } = req.body;
+    const data = { firstName, lastName, email, password };
+    if (courses && Array.isArray(courses)) {
+      data.courses = {
+        create: courses.map((c) => ({ courseId: c.courseId })),
+      };
+    }
+    const teacher = await prisma.teacher.update({
+      where: { id },
+      data,
+      include: { courses: true },
+    });
+    res.status(200).json(teacher);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Custom DELETE (delete teacher)
+async function customDeleteTeacher(req, res, next) {
+  try {
+    const { id } = req.params;
+    // Remove all CourseTeacher join records for this teacher
+    await prisma.courseTeacher.deleteMany({
+      where: { teacherId: id }
+    });
+    // Now delete the teacher
+    const teacher = await prisma.teacher.delete({
+      where: { id },
+    });
+    res.status(200).json(teacher);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   middleware: [auth.protect,auth.authorize("admin")],
   validation: {
@@ -49,5 +112,10 @@ module.exports = {
     update : hashPassword
   },
   excludeFields : ["password"],
-  includeRelations : true
+  includeRelations : true,
+  customActions: {
+    post: customCreateTeacher,
+    put: customUpdateTeacher,
+    delete: customDeleteTeacher,
+  }
 }; 

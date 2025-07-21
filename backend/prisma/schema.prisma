@@ -142,7 +142,7 @@ model Assessment {
   courseId    String
   teacherId   String
   date        DateTime
-  mark        Float     // Added mark column
+  totalMarks  Float     @default(0)
   course      Course    @relation(fields: [courseId], references: [id])
   teacher     Teacher   @relation(fields: [teacherId], references: [id])
   grades      Grade[]
@@ -158,11 +158,23 @@ enum AssessmentType {
 }
 
 model Question {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   assessmentId  String
   text          String
-  assessment    Assessment @relation(fields: [assessmentId], references: [id])
+  type          QuestionType
+  marks         Float         @default(1)
+  options       Json?         // For multiple choice questions
+  correctAnswer String?       // For TRUE_FALSE, MULTIPLE_CHOICE, FILL_BLANK
+  order         Int           @default(0)
+  assessment    Assessment    @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   studentAnswers StudentAnswer[]
+}
+
+enum QuestionType {
+  TRUE_FALSE
+  MULTIPLE_CHOICE
+  FILL_BLANK
+  ESSAY
 }
 
 model StudentAnswer {

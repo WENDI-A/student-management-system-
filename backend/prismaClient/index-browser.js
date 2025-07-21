@@ -221,13 +221,18 @@ exports.Prisma.AssessmentScalarFieldEnum = {
   courseId: 'courseId',
   teacherId: 'teacherId',
   date: 'date',
-  mark: 'mark'
+  totalMarks: 'totalMarks'
 };
 
 exports.Prisma.QuestionScalarFieldEnum = {
   id: 'id',
   assessmentId: 'assessmentId',
-  text: 'text'
+  text: 'text',
+  type: 'type',
+  marks: 'marks',
+  options: 'options',
+  correctAnswer: 'correctAnswer',
+  order: 'order'
 };
 
 exports.Prisma.StudentAnswerScalarFieldEnum = {
@@ -300,6 +305,11 @@ exports.Prisma.ScheduleScalarFieldEnum = {
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.NullsOrder = {
@@ -389,10 +399,22 @@ exports.Prisma.AssessmentOrderByRelevanceFieldEnum = {
   teacherId: 'teacherId'
 };
 
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.QuestionOrderByRelevanceFieldEnum = {
   id: 'id',
   assessmentId: 'assessmentId',
-  text: 'text'
+  text: 'text',
+  correctAnswer: 'correctAnswer'
 };
 
 exports.Prisma.StudentAnswerOrderByRelevanceFieldEnum = {
@@ -459,6 +481,13 @@ exports.AssessmentType = exports.$Enums.AssessmentType = {
   ASSIGNMENT: 'ASSIGNMENT',
   PROJECT: 'PROJECT',
   OTHER: 'OTHER'
+};
+
+exports.QuestionType = exports.$Enums.QuestionType = {
+  TRUE_FALSE: 'TRUE_FALSE',
+  MULTIPLE_CHOICE: 'MULTIPLE_CHOICE',
+  FILL_BLANK: 'FILL_BLANK',
+  ESSAY: 'ESSAY'
 };
 
 exports.AttendanceStatus = exports.$Enums.AttendanceStatus = {

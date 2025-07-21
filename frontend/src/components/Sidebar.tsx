@@ -131,19 +131,11 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
   const SidebarContent = (
     <nav
       className={cn(
-        "relative flex flex-col h-full transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-700",
-        // Remove collapsed state and collapse/expand button logic
-        // Sidebar should always be expanded on desktop, only toggled on mobile via hamburger
-        // Remove all references to 'collapsed', 'setCollapsed', and the arrow button
-        // Sidebar width: w-60 min-w-[12rem] always on desktop
+        "relative flex flex-col h-full justify-between transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-700",
         sidebarWidths.expanded
       )}
     >
-      {/* Collapse/Expand Button and First Link (Dashboard) */}
-      {/* Remove the Dashboard link rendering at the top (inside <div className={cn("flex items-center", "pt-2 pb-1")}> ... ) */}
-      {/* Only render all links in the NavigationMenu below */}
-      {/* Navigation - rest of the links */}
-      <div className={cn("flex-1 flex flex-col justify-start")}> 
+      <div className="pt-4">
         <NavigationMenu
           className={cn(
             "flex flex-col gap-1 w-full transition-all duration-300",

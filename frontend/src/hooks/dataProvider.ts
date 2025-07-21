@@ -9,6 +9,10 @@ const get_path_list: Record<string, string> = {
     teachers: "/teachers",
     courses: "/courses",
     parents: "/parents",
+    coursematerial : "/course-materials",
+    attendances: "/attendances",
+    assessments: "/assessments",
+    questions: "/questions",
 };
 
 const create_path: Record<string, string> = {
@@ -16,6 +20,10 @@ const create_path: Record<string, string> = {
     teachers: "/teachers",
     courses: "/courses",
     parents: "/parents",
+    coursematerial: "/course-materials",
+    attendances: "/attendances",
+    assessments: "/assessments",
+    questions: "/questions",
 };
 
 const get_one_path: Record<string, string> = {  
@@ -23,6 +31,10 @@ const get_one_path: Record<string, string> = {
     teachers: "/teachers",
     courses: "/courses",
     parents: "/parents",
+    coursematerial: "/course-materials",
+    attendances: "/attendances",
+    assessments: "/assessments",
+    questions: "/questions",
 };
 
 
@@ -31,6 +43,10 @@ const delete_path: Record<string, string> = {
     teachers: "/teachers",
     courses: "/courses",
     parents: "/parents",
+    coursematerial : "/course-materials",
+    attendances: "/attendances",
+    assessments: "/assessments",
+    questions: "/questions",
 };
 
 const update_path: Record<string, string> = {
@@ -38,6 +54,10 @@ const update_path: Record<string, string> = {
     teachers: "/teachers",
     courses: "/courses",
     parents: "/parents",
+    coursematerial : "/course-materials",
+    attendances: "/attendances",
+    assessments: "/assessments",
+    questions: "/questions",
 };
 
 const get_one_dashboard_path: Record<string, string> = {

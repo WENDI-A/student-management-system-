@@ -10,13 +10,16 @@ const validateDirector = (data, req) => {
         isValid: false,
         message: 'Invalid input: expected object, received ' + typeof data,
         errors: ['Invalid input: expected object, received ' + typeof data],
+        status: 400
       };
     }
-    // Set default password if not provided (for admin-created directors)
-    if (req.method && req.method.toLowerCase() === "post" && !data.password) {
-      data.password = "director123";
+    // REMOVED: Set default password if not provided (for admin-created directors)
+    // if (req.method && req.method.toLowerCase() === "post" && !data.password) {
+    //   data.password = "director123";
+    // }
+    if (req.method && req.method.toLowerCase() === "put") {
+      console.log("[Director Update] Received body:", data);
     }
-    console.log("[Director Registration] Incoming data:", data);
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
       validatedData = DirectorSchema.parse(data);
@@ -36,17 +39,23 @@ const validateDirector = (data, req) => {
         isValid: false,
         message: errors.join(", "),
         errors: errors,
+        status: 400
       };
     }
     return {
       isValid: false,
       message: "Validation failed",
       errors: [error.message],
+      status: 400
     };
   }
 };
 
 const hashPassword = async (data, req) => {
+  // Set default password if not provided (for admin-created directors)
+  if (req && req.method && req.method.toLowerCase() === "post" && !data.password) {
+    data.password = "director123";
+  }
   if (data.password) {
     const saltRounds = 10;
     data.password = await bcrypt.hash(data.password, saltRounds);

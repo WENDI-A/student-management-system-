@@ -1,7 +1,6 @@
 const { z } = require("zod");
 
 const CourseMaterialSchema = z.object({
-  id: z.string().cuid().optional(),
   courseId: z.string(),
   teacherId: z.string(),
   title: z.string(),

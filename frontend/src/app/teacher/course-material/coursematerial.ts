@@ -11,7 +11,7 @@ export function useCreateCourseMaterial(options: any) {
   // Accept FormData and send as multipart/form-data
   return {
     mutate: (formData: FormData) =>
-      api.post('/coursematerial', formData, {
+      api.post('/course-materials', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       }).then(res => options?.onSuccess?.(res.data)).catch(options?.onError),
     isPending: false // You can wire up loading state if needed
@@ -21,7 +21,7 @@ export function useUpdateCourseMaterial(options: any) {
   // Accept FormData and send as multipart/form-data
   return {
     mutate: ({ id, data }: { id: string, data: FormData }) =>
-      api.put(`/coursematerial/${id}`, data, {
+      api.put(`/course-materials/${id}`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       }).then(res => options?.onSuccess?.(res.data)).catch(options?.onError),
     isPending: false
