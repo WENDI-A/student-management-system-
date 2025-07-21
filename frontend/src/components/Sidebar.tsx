@@ -54,7 +54,7 @@ const sidebarConfig = {
     // { label: "Setting", icon: Settings, href: "/teacher/setting" }, // TEMPORARILY COMMENTED OUT
   ],
   admin: [
-    { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+    { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
     { label: "Student", icon: User, href: "/admin/student" },
     { label: "Teacher", icon: Users, href: "/admin/teacher" },
     { label: "Parent", icon: User, href: "/admin/parent" },
@@ -66,12 +66,9 @@ const sidebarConfig = {
   ],
   parent: [
     { label: "Dashboard", icon: LayoutDashboard, href: "/parent" },
-    { label: "Course", icon: Book, href: "/parent/course" },
     { label: "Assessment", icon: ClipboardList, href: "/parent/assessment" },
-    { label: "Exam", icon: FileText, href: "/parent/exam" },
     { label: "Grade", icon: GraduationCap, href: "/parent/grade" },
-    { label: "Notification", icon: Bell, href: "/parent/notification" },
-    { label: "Setting", icon: Settings, href: "/parent/setting" },
+    // Removed: Course, Exam, Notification, Setting
   ],
   director: [
     { label: "Dashboard", icon: LayoutDashboard, href: "/director" },

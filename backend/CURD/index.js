@@ -550,7 +550,7 @@ class PrismaCrudRouter {
           if (!id) throw new Error('ID is required for update operation');
           if (!data || typeof data !== 'object') throw new Error('Invalid data provided for update');
           if (beforeActions.update) {
-            const result = await beforeActions.update(id, data, req);
+            const result = await beforeActions.update(data, req);
             if (typeof result !== 'undefined') data = result;
           }
           if (validation && validation.update) {
