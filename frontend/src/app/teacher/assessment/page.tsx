@@ -32,7 +32,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useSnackbar } from "notistack";
-import { useIdentity } from "@/hooks/auth/useIdentity";
 import {
   Plus,
   Edit,
@@ -149,10 +148,6 @@ export default function AssessmentPage() {
     const error = validateAssessment();
     if (error) {
       enqueueSnackbar(error, { variant: "error" });
-      return;
-    }
-    if (questions.length === 0) {
-      enqueueSnackbar('At least one question is required', { variant: 'error' });
       return;
     }
 

@@ -281,8 +281,6 @@ export function useAssessmentBuilder() {
     if (!assessment.title.trim()) return 'Assessment title is required';
     if (!assessment.courseId) return 'Please select a course';
     if (!assessment.date) return 'Please select a date';
-    if (questions.length === 0) return 'At least one question is required';
-    
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.text.trim()) return `Question ${i + 1} text is required`;
