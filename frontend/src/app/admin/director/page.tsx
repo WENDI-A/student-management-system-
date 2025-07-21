@@ -26,9 +26,11 @@ export default function AdminDirector() {
   const [success, setSuccess] = useState(false);
   const [directors, setDirectors] = useState<
     Array<{
+      id: string;
       firstName: string;
       lastName: string;
       email: string;
+      password?: string;
     }>
   >([]);
   const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -37,6 +39,10 @@ export default function AdminDirector() {
   );
   const [currentPage, setCurrentPage] = useState(1);
   const directorsPerPage = 10;
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
 
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
@@ -47,21 +53,22 @@ export default function AdminDirector() {
   const endIndex = startIndex + directorsPerPage;
   const currentDirectors = directors.slice(startIndex, endIndex);
 
-  useEffect(() => {
-    async function fetchDirectors() {
-      try {
-        const headers = getHeader();
-        const res = await axios.get('/directors', { headers });
-        // Defensive: filter out any undefined/null or malformed entries
-        const validDirectors = Array.isArray(res.data.data)
-          ? res.data.data.filter((d: any) => d && d.firstName && d.lastName && d.email)
-          : [];
-        setDirectors(validDirectors);
-      } catch (err) {
-        // Optionally handle error (e.g., show a message)
-        setDirectors([]);
-      }
+  async function fetchDirectors() {
+    try {
+      const headers = getHeader();
+      const res = await axios.get('/directors', { headers });
+      // Defensive: filter out any undefined/null or malformed entries
+      const validDirectors = Array.isArray(res.data.data)
+        ? res.data.data.filter((d: any) => d && d.firstName && d.lastName && d.email)
+        : [];
+      setDirectors(validDirectors);
+    } catch (err) {
+      // Optionally handle error (e.g., show a message)
+      setDirectors([]);
     }
+  }
+
+  useEffect(() => {
     fetchDirectors();
   }, []);
 
@@ -93,21 +100,43 @@ export default function AdminDirector() {
     }
   }
 
-  function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
+  async function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (editIndex === null || !editDirector) return;
-    setDirectors((prev) =>
-      prev.map((s, i) => (i === editIndex ? editDirector : s))
-    );
-    setEditIndex(null);
-    setEditDirector(null);
+    if (editIndex === null || !editDirector || typeof editDirector !== 'object') return;
+    setEditLoading(true);
+    try {
+      const headers = getHeader();
+      const id = directors[editIndex]?.id;
+      if (!id) return;
+      // Remove password from updateData if present
+      const { password, ...updateData } = editDirector;
+      await axios.put(`/directors/${id}`, updateData, { headers });
+      setEditIndex(null);
+      setEditDirector(null);
+      fetchDirectors();
+    } finally {
+      setEditLoading(false);
+    }
   }
   
   function handleDelete(idx: number) {
-    setDirectors((prev) => prev.filter((_, i) => i !== idx));
-    // Adjust current page if we're on the last page and it becomes empty
-    if (currentDirectors.length === 1 && currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+    setDeleteIndex(idx);
+    setDeleteDialogOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (deleteIndex === null) return;
+    setDeleteLoading(true);
+    try {
+      const headers = getHeader();
+      const id = directors[deleteIndex]?.id;
+      if (!id) return;
+      await axios.delete(`/directors/${id}`, { headers });
+      setDeleteDialogOpen(false);
+      setDeleteIndex(null);
+      fetchDirectors();
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -182,7 +211,7 @@ export default function AdminDirector() {
                             className="w-full sm:w-auto"
                             onClick={() => {
                               setEditIndex(startIndex + i);
-                              setEditDirector(d);
+                              setEditDirector({ ...d, password: "" });
                             }}
                           >
                             Edit
@@ -399,6 +428,20 @@ export default function AdminDirector() {
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div>Are you sure you want to delete this director?</div>
+          <DialogFooter className="flex flex-row gap-2 justify-end mt-4">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleteLoading}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Delete'}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

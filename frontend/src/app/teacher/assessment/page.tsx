@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   useAssessmentBuilder,
   useAssessmentsByTeacher,
@@ -28,10 +28,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { useSnackbar } from 'notistack';
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useSnackbar } from "notistack";
+import { useIdentity } from "@/hooks/auth/useIdentity";
 import {
   Plus,
   Edit,
@@ -54,8 +55,10 @@ export default function AssessmentPage() {
   const { data: identity } = useIdentity();
   const teacherId = typeof identity === 'object' && identity !== null && 'id' in identity ? (identity as any).id : undefined;
   const [isCreating, setIsCreating] = useState(false);
-  const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
-  
+  const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(
+    null
+  );
+
   const {
     assessment,
     questions,
@@ -77,45 +80,55 @@ export default function AssessmentPage() {
     resetCurrentQuestion,
     validateAssessment,
     loadAssessment,
-    resetForm
+    resetForm,
   } = useAssessmentBuilder();
 
-  const { data: assessmentsData, isLoading: assessmentsLoading, refetch } = useAssessmentsByTeacher();
+  const {
+    data: assessmentsData,
+    isLoading: assessmentsLoading,
+    refetch,
+  } = useAssessmentsByTeacher();
   const { data: coursesData, isLoading: coursesLoading } = useTeacherCourses();
-  
+
   const createMutation = useCreateAssessment({
     onSuccess: () => {
-      enqueueSnackbar('Assessment created successfully!', { variant: 'success' });
+      enqueueSnackbar("Assessment created successfully!", {
+        variant: "success",
+      });
       setIsCreating(false);
       resetForm();
       refetch();
     },
     onError: (error: any) => {
-      enqueueSnackbar('Failed to create assessment', { variant: 'error' });
-    }
+      enqueueSnackbar("Failed to create assessment", { variant: "error" });
+    },
   });
 
   const updateMutation = useUpdateAssessment({
     onSuccess: () => {
-      enqueueSnackbar('Assessment updated successfully!', { variant: 'success' });
+      enqueueSnackbar("Assessment updated successfully!", {
+        variant: "success",
+      });
       setIsCreating(false);
       setEditingAssessment(null);
       resetForm();
       refetch();
     },
     onError: (error: any) => {
-      enqueueSnackbar('Failed to update assessment', { variant: 'error' });
-    }
+      enqueueSnackbar("Failed to update assessment", { variant: "error" });
+    },
   });
 
   const deleteMutation = useDeleteAssessment({
     onSuccess: () => {
-      enqueueSnackbar('Assessment deleted successfully!', { variant: 'success' });
+      enqueueSnackbar("Assessment deleted successfully!", {
+        variant: "success",
+      });
       refetch();
     },
     onError: (error: any) => {
-      enqueueSnackbar('Failed to delete assessment', { variant: 'error' });
-    }
+      enqueueSnackbar("Failed to delete assessment", { variant: "error" });
+    },
   });
 
   const assessments = assessmentsData?.data || [];
@@ -135,7 +148,7 @@ export default function AssessmentPage() {
   const handleSaveAssessment = async () => {
     const error = validateAssessment();
     if (error) {
-      enqueueSnackbar(error, { variant: 'error' });
+      enqueueSnackbar(error, { variant: "error" });
       return;
     }
     if (questions.length === 0) {
@@ -148,14 +161,14 @@ export default function AssessmentPage() {
       teacherId,
       questions: questions.map((q, index) => ({
         ...q,
-        order: index
-      }))
+        order: index,
+      })),
     };
 
     if (editingAssessment) {
       await updateMutation.mutateAsync({
         id: editingAssessment.id!,
-        data: assessmentData
+        data: assessmentData,
       });
     } else {
       await createMutation.mutateAsync({ data: assessmentData });
@@ -169,28 +182,38 @@ export default function AssessmentPage() {
   };
 
   const handleDeleteAssessment = async (id: string) => {
-    if (confirm('Are you sure you want to delete this assessment?')) {
+    if (confirm("Are you sure you want to delete this assessment?")) {
       await deleteMutation.mutateAsync({ id });
     }
   };
 
   const getQuestionTypeIcon = (type: string) => {
     switch (type) {
-      case 'TRUE_FALSE': return <CheckCircle className="w-4 h-4" />;
-      case 'MULTIPLE_CHOICE': return <AlertCircle className="w-4 h-4" />;
-      case 'FILL_BLANK': return <Hash className="w-4 h-4" />;
-      case 'ESSAY': return <FileText className="w-4 h-4" />;
-      default: return <Type className="w-4 h-4" />;
+      case "TRUE_FALSE":
+        return <CheckCircle className="w-4 h-4" />;
+      case "MULTIPLE_CHOICE":
+        return <AlertCircle className="w-4 h-4" />;
+      case "FILL_BLANK":
+        return <Hash className="w-4 h-4" />;
+      case "ESSAY":
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <Type className="w-4 h-4" />;
     }
   };
 
   const getQuestionTypeColor = (type: string) => {
     switch (type) {
-      case 'TRUE_FALSE': return 'bg-green-100 text-green-800';
-      case 'MULTIPLE_CHOICE': return 'bg-blue-100 text-blue-800';
-      case 'FILL_BLANK': return 'bg-yellow-100 text-yellow-800';
-      case 'ESSAY': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "TRUE_FALSE":
+        return "bg-green-100 text-green-800";
+      case "MULTIPLE_CHOICE":
+        return "bg-blue-100 text-blue-800";
+      case "FILL_BLANK":
+        return "bg-yellow-100 text-yellow-800";
+      case "ESSAY":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -199,7 +222,7 @@ export default function AssessmentPage() {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">
-            {editingAssessment ? 'Edit Assessment' : 'Create New Assessment'}
+            {editingAssessment ? "Edit Assessment" : "Create New Assessment"}
           </h1>
           <Button
             variant="outline"
@@ -226,7 +249,9 @@ export default function AssessmentPage() {
                 <Input
                   id="title"
                   value={assessment.title}
-                  onChange={(e) => setAssessment({ ...assessment, title: e.target.value })}
+                  onChange={(e) =>
+                    setAssessment({ ...assessment, title: e.target.value })
+                  }
                   placeholder="Enter assessment title"
                 />
               </div>
@@ -234,7 +259,9 @@ export default function AssessmentPage() {
                 <Label htmlFor="type">Type</Label>
                 <Select
                   value={assessment.type}
-                  onValueChange={(value: any) => setAssessment({ ...assessment, type: value })}
+                  onValueChange={(value: any) =>
+                    setAssessment({ ...assessment, type: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -252,17 +279,21 @@ export default function AssessmentPage() {
                 <Label htmlFor="course">Course</Label>
                 <Select
                   value={assessment.courseId}
-                  onValueChange={(value) => setAssessment({ ...assessment, courseId: value })}
+                  onValueChange={(value) =>
+                    setAssessment({ ...assessment, courseId: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a course" />
                   </SelectTrigger>
                   <SelectContent>
-                    {courses.filter((course: any) => course.id && course.name).map((course: any) => (
-                      <SelectItem key={course.id} value={course.id}>
-                        {course.name}
-                      </SelectItem>
-                    ))}
+                    {courses
+                      .filter((course: any) => course.id && course.name)
+                      .map((course: any) => (
+                        <SelectItem key={course.id} value={course.id}>
+                          {course.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -272,7 +303,9 @@ export default function AssessmentPage() {
                   id="date"
                   type="date"
                   value={assessment.date}
-                  onChange={(e) => setAssessment({ ...assessment, date: e.target.value })}
+                  onChange={(e) =>
+                    setAssessment({ ...assessment, date: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -295,15 +328,21 @@ export default function AssessmentPage() {
                 <Label htmlFor="questionType">Question Type</Label>
                 <Select
                   value={currentQuestion.type}
-                  onValueChange={(value: any) => updateCurrentQuestion('type', value)}
+                  onValueChange={(value: any) =>
+                    updateCurrentQuestion("type", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MULTIPLE_CHOICE">Multiple Choice</SelectItem>
+                    <SelectItem value="MULTIPLE_CHOICE">
+                      Multiple Choice
+                    </SelectItem>
                     <SelectItem value="TRUE_FALSE">True/False</SelectItem>
-                    <SelectItem value="FILL_BLANK">Fill in the Blank</SelectItem>
+                    <SelectItem value="FILL_BLANK">
+                      Fill in the Blank
+                    </SelectItem>
                     <SelectItem value="ESSAY">Essay</SelectItem>
                   </SelectContent>
                 </Select>
@@ -315,16 +354,25 @@ export default function AssessmentPage() {
                   type="number"
                   min="1"
                   value={currentQuestion.marks}
-                  onChange={(e) => updateCurrentQuestion('marks', parseFloat(e.target.value) || 1)}
+                  onChange={(e) =>
+                    updateCurrentQuestion(
+                      "marks",
+                      parseFloat(e.target.value) || 1
+                    )
+                  }
                 />
               </div>
               <div className="flex items-end">
                 <Button
-                  onClick={isEditing ? () => updateQuestion(editingQuestionIndex!) : addQuestion}
+                  onClick={
+                    isEditing
+                      ? () => updateQuestion(editingQuestionIndex!)
+                      : addQuestion
+                  }
                   className="w-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  {isEditing ? 'Update Question' : 'Add Question'}
+                  {isEditing ? "Update Question" : "Add Question"}
                 </Button>
               </div>
             </div>
@@ -334,21 +382,23 @@ export default function AssessmentPage() {
               <Textarea
                 id="questionText"
                 value={currentQuestion.text}
-                onChange={(e) => updateCurrentQuestion('text', e.target.value)}
+                onChange={(e) => updateCurrentQuestion("text", e.target.value)}
                 placeholder="Enter your question here..."
                 rows={3}
               />
             </div>
 
             {/* Question Type Specific Fields */}
-            {currentQuestion.type === 'MULTIPLE_CHOICE' && (
+            {currentQuestion.type === "MULTIPLE_CHOICE" && (
               <div className="space-y-3">
                 <Label>Options</Label>
                 {currentQuestion.options?.map((option, index) => (
                   <div key={index} className="flex items-center space-x-2">
                     <Input
                       value={option}
-                      onChange={(e) => updateQuestionOption(index, e.target.value)}
+                      onChange={(e) =>
+                        updateQuestionOption(index, e.target.value)
+                      }
                       placeholder={`Option ${index + 1}`}
                     />
                     <Button
@@ -365,51 +415,66 @@ export default function AssessmentPage() {
                   <Plus className="w-4 h-4 mr-2" />
                   Add Option
                 </Button>
-                {currentQuestion.options && currentQuestion.options.filter(option => option.trim() !== '').length >= 2 && (
-                  <div>
-                    <Label htmlFor="correctAnswer">Correct Answer</Label>
-                    <Select
-                      value={currentQuestion.correctAnswer}
-                      onValueChange={(value) => updateCurrentQuestion('correctAnswer', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select correct answer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {currentQuestion.options?.filter(option => option.trim() !== '').map((option, index) => (
-                          <SelectItem key={index} value={option}>
-                            <div className="flex items-center space-x-2">
-                              <span>{option}</span>
-                              {option === currentQuestion.correctAnswer && (
-                                <CheckCircle className="w-4 h-4 text-green-600" />
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {currentQuestion.correctAnswer && (
-                      <div className="mt-2 flex items-center space-x-2 text-sm text-green-600">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Correct answer selected: <strong>{currentQuestion.correctAnswer}</strong></span>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {currentQuestion.options && currentQuestion.options.filter(option => option.trim() !== '').length < 2 && (
-                  <p className="text-sm text-amber-600">
-                    Add at least 2 options to select a correct answer
-                  </p>
-                )}
+                {currentQuestion.options &&
+                  currentQuestion.options.filter(
+                    (option) => option.trim() !== ""
+                  ).length >= 2 && (
+                    <div>
+                      <Label htmlFor="correctAnswer">Correct Answer</Label>
+                      <Select
+                        value={currentQuestion.correctAnswer}
+                        onValueChange={(value) =>
+                          updateCurrentQuestion("correctAnswer", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select correct answer" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currentQuestion.options
+                            ?.filter((option) => option.trim() !== "")
+                            .map((option, index) => (
+                              <SelectItem key={index} value={option}>
+                                <div className="flex items-center space-x-2">
+                                  <span>{option}</span>
+                                  {option === currentQuestion.correctAnswer && (
+                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      {currentQuestion.correctAnswer && (
+                        <div className="mt-2 flex items-center space-x-2 text-sm text-green-600">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>
+                            Correct answer selected:{" "}
+                            <strong>{currentQuestion.correctAnswer}</strong>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                {currentQuestion.options &&
+                  currentQuestion.options.filter(
+                    (option) => option.trim() !== ""
+                  ).length < 2 && (
+                    <p className="text-sm text-amber-600">
+                      Add at least 2 options to select a correct answer
+                    </p>
+                  )}
               </div>
             )}
 
-            {currentQuestion.type === 'TRUE_FALSE' && (
+            {currentQuestion.type === "TRUE_FALSE" && (
               <div>
                 <Label htmlFor="correctAnswer">Correct Answer</Label>
                 <Select
                   value={currentQuestion.correctAnswer}
-                  onValueChange={(value) => updateCurrentQuestion('correctAnswer', value)}
+                  onValueChange={(value) =>
+                    updateCurrentQuestion("correctAnswer", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select correct answer" />
@@ -422,25 +487,33 @@ export default function AssessmentPage() {
                 {currentQuestion.correctAnswer && (
                   <div className="mt-2 flex items-center space-x-2 text-sm text-green-600">
                     <CheckCircle className="w-4 h-4" />
-                    <span>Correct answer selected: <strong>{currentQuestion.correctAnswer}</strong></span>
+                    <span>
+                      Correct answer selected:{" "}
+                      <strong>{currentQuestion.correctAnswer}</strong>
+                    </span>
                   </div>
                 )}
               </div>
             )}
 
-            {(currentQuestion.type === 'FILL_BLANK' || currentQuestion.type === 'ESSAY') && (
+            {(currentQuestion.type === "FILL_BLANK" ||
+              currentQuestion.type === "ESSAY") && (
               <div>
                 <Label htmlFor="correctAnswer">
-                  {currentQuestion.type === 'FILL_BLANK' ? 'Correct Answer' : 'Sample Answer (Optional)'}
+                  {currentQuestion.type === "FILL_BLANK"
+                    ? "Correct Answer"
+                    : "Sample Answer (Optional)"}
                 </Label>
                 <Textarea
                   id="correctAnswer"
-                  value={currentQuestion.correctAnswer || ''}
-                  onChange={(e) => updateCurrentQuestion('correctAnswer', e.target.value)}
+                  value={currentQuestion.correctAnswer || ""}
+                  onChange={(e) =>
+                    updateCurrentQuestion("correctAnswer", e.target.value)
+                  }
                   placeholder={
-                    currentQuestion.type === 'FILL_BLANK' 
-                      ? 'Enter the correct answer' 
-                      : 'Enter a sample answer for reference'
+                    currentQuestion.type === "FILL_BLANK"
+                      ? "Enter the correct answer"
+                      : "Enter a sample answer for reference"
                   }
                   rows={2}
                 />
@@ -571,7 +644,9 @@ export default function AssessmentPage() {
             disabled={createMutation.isPending || updateMutation.isPending}
           >
             <Save className="w-4 h-4 mr-2" />
-            {createMutation.isPending || updateMutation.isPending ? 'Saving...' : 'Save Assessment'}
+            {createMutation.isPending || updateMutation.isPending
+              ? "Saving..."
+              : "Save Assessment"}
           </Button>
         </div>
       </div>
@@ -591,9 +666,11 @@ export default function AssessmentPage() {
       {assessmentsLoading ? (
         <div className="text-center py-8">Loading assessments...</div>
       ) : assessments.length === 0 ? (
-    <Card>
+        <Card>
           <CardContent className="text-center py-8">
-            <p className="text-gray-500">No assessments found. Create your first assessment!</p>
+            <p className="text-gray-500">
+              No assessments found. Create your first assessment!
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -655,4 +732,4 @@ export default function AssessmentPage() {
       )}
     </div>
   );
-} 
+}
