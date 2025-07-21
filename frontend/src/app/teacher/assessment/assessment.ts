@@ -21,7 +21,7 @@ export interface Assessment {
   teacherId?: string;
   date: string;
   totalMarks: number;
-  questions: Question[];
+  questions?: Question[];
 }
 
 // Get assessments by teacher
@@ -32,7 +32,8 @@ export function useAssessmentsByTeacher(page = 1, perPage = 10) {
   return dataProvider.useListQuery('assessments', {
     page,
     perPage,
-    filter: teacherId ? { teacherId } : {}
+    filter: teacherId ? { teacherId } : {},
+    include: JSON.stringify({ course: true, questions: true }),
   });
 }
 
@@ -69,6 +70,24 @@ export function useUpdateQuestion(options: any) {
 // Delete question
 export function useDeleteQuestion(options: any) {
   return dataProvider.useDeleteMutation('questions', options);
+}
+
+// Get questions by assessment ID
+export function useQuestionsByAssessmentId(assessmentId: string) {
+  return dataProvider.useListQuery('questions', {
+    page: 1,
+    perPage: 100,
+    filter: { assessmentId },
+  });
+}
+
+// Get all questions for a list of assessment IDs
+export function useAllQuestionsForTeacherAssessments(assessmentIds: string[]) {
+  return dataProvider.useListQuery('questions', {
+    page: 1,
+    perPage: 1000,
+    filter: assessmentIds && assessmentIds.length > 0 ? { assessmentId: { in: assessmentIds } } : {},
+  });
 }
 
 // Get teacher's courses
@@ -262,8 +281,6 @@ export function useAssessmentBuilder() {
     if (!assessment.title.trim()) return 'Assessment title is required';
     if (!assessment.courseId) return 'Please select a course';
     if (!assessment.date) return 'Please select a date';
-    if (questions.length === 0) return 'At least one question is required';
-    
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.text.trim()) return `Question ${i + 1} text is required`;

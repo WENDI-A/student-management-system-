@@ -37,9 +37,10 @@ const sidebarConfig = {
     { label: "Dashboard", icon: LayoutDashboard, href: "/student" },
     { label: "Course Material", icon: Book, href: "/student/course-material" },
     { label: "Assessment", icon: ClipboardList, href: "/student/assessment" },
-    { label: "Exam", icon: FileText, href: "/student/exam" },
-    { label: "Notification", icon: Bell, href: "/student/notification" },
-    { label: "Setting", icon: Settings, href: "/student/setting" },
+    // { label: "Exam", icon: FileText, href: "/student/exam" }, // TEMPORARILY COMMENTED OUT
+    // { label: "Notification", icon: Bell, href: "/student/notification" }, // TEMPORARILY COMMENTED OUT
+    // { label: "Setting", icon: Settings, href: "/student/setting" }, // TEMPORARILY COMMENTED OUT
+    { label: "Grades", icon: GraduationCap, href: "/student/grade" },
   ],
   teacher: [
     { label: "Dashboard", icon: LayoutDashboard, href: "/teacher" },
