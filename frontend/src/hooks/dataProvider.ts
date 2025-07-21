@@ -75,6 +75,7 @@ interface UseListQueryOptions {
   page?: number;
   perPage?: number;
   filter?: Record<string, any>;
+  include?: string;
 }
 
 interface UseGetOneQueryOptions {
@@ -95,16 +96,20 @@ const dataProvider = {
         params: {
             pagination?: { page: number; perPage: number };
             filter?: Record<string, any>;
+            include?: string;
         } = {}
     ): Promise<{ data: any[]; total: number }> => {
         const url = get_path_list[resource];
         const { page = 1, perPage = 10 } = params.pagination || {};
         const filter = params.filter || {};
-        const query = new URLSearchParams({
-            page: String(page),
-            perPage: String(perPage),
-            ...Object.fromEntries(Object.entries(filter).map(([k, v]) => [k, String(v)])),
-        }).toString();
+        const include = params.include;
+        const queryObj: Record<string, string> = {
+          page: String(page),
+          perPage: String(perPage),
+          ...Object.fromEntries(Object.entries(filter).map(([k, v]) => [k, String(v)])),
+        };
+        if (include) queryObj.include = include;
+        const query = new URLSearchParams(queryObj).toString();
         const response = await api.get(`${url}?${query}`);
         return {
             data: response.data.data,
@@ -161,7 +166,7 @@ const dataProvider = {
         } = {}
     ): UseQueryResult<{ data: any[]; total: number }, unknown> => {
         const { enqueueSnackbar } = useSnackbar();
-        const { page = 1, perPage = 10, filter = {} } = options;
+        const { page = 1, perPage = 10, filter = {}, include } = options;
         const onSuccess = (data: { data: any[]; total: number }) => {
             if (queryOptions.onSuccess) queryOptions.onSuccess(data);
             else enqueueSnackbar('Data loaded successfully!', { variant: 'success' });
@@ -171,8 +176,8 @@ const dataProvider = {
             else enqueueSnackbar('Failed to load data.', { variant: 'error' });
         };
         const queryOptionsObject = {
-            queryKey: [resource, page, perPage, filter] as const,
-            queryFn: () => dataProvider.getList(resource, { pagination: { page, perPage }, filter }),
+            queryKey: [resource, page, perPage, filter, include] as const,
+            queryFn: () => dataProvider.getList(resource, { pagination: { page, perPage }, filter, include }),
             onSuccess,
             onError,
         };
