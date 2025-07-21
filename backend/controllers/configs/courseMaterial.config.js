@@ -6,9 +6,9 @@ const validateCourseMaterial = (data, req) => {
   try {
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
-      validatedData = CourseMaterialSchema.omit({ id: true }).parse(data);
+      validatedData = CourseMaterialSchema.parse(data);
     } else {
-      validatedData = CourseMaterialSchema.omit({ id: true }).partial().parse(data);
+      validatedData = CourseMaterialSchema.partial().parse(data);
     }
     return {
       isValid: true,
@@ -32,10 +32,29 @@ const validateCourseMaterial = (data, req) => {
   }
 };
 
+// Before action to fix data structure
+const fixDataStructure = (data, req) => {
+  if (data && data['data[file]']) {
+    data.data.url = data['data[file]'];
+    delete data['data[file]'];
+    data.data.teacherId = req.user.id
+  }
+  
+  if (data && data['data[file]Details']) {
+    delete data['data[file]Details'];
+  }
+  
+  return data.data;
+};
+
 module.exports = {
-  middleware: [auth.protect , file.single("url" , {allowedTypes :  ['application/pdf']})],
+  middleware: [auth.protect, file.single("data[file]", { allowedTypes: ['application/pdf'] })],
   validation: {
     create: validateCourseMaterial,
     update: validateCourseMaterial
   },
+  beforeActions: {
+    create: fixDataStructure,
+    update: fixDataStructure
+  }
 }; 

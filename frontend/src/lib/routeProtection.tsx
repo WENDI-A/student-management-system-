@@ -55,14 +55,30 @@ export function RouteProtection({
   const { user, isInitialized } = useRouteProtection();
   const { enqueueSnackbar } = useSnackbar();
   
+  // Always call useEffect hooks in the same order
+  React.useEffect(() => {
+    if (!isInitialized) return; // Don't show snackbar while loading
+    
+    if (!user) {
+      enqueueSnackbar('Please log in to access this page', { variant: 'error' });
+    }
+  }, [isInitialized, user, enqueueSnackbar]);
+
+  React.useEffect(() => {
+    if (!isInitialized) return; // Don't show snackbar while loading
+    
+    if (requiredRole && user && user.role !== requiredRole) {
+      enqueueSnackbar(`Access denied. This page is only for ${requiredRole}s.`, { variant: 'error' });
+    }
+  }, [isInitialized, requiredRole, user, enqueueSnackbar]);
+  
   // Show loading while auth is being initialized
   if (!isInitialized) {
     return <LoadingSpinner />;
   }
   
+  // Show login required page
   if (!user) {
-    // Show login required page
-    enqueueSnackbar('Please log in to access this page', { variant: 'error' });
     return (
       <LoginRequired 
         onAction={() => window.location.href = fallbackRoute}
@@ -70,9 +86,8 @@ export function RouteProtection({
     );
   }
   
+  // Show role access denied page
   if (requiredRole && user.role !== requiredRole) {
-    // Show role access denied page
-    enqueueSnackbar(`Access denied. This page is only for ${requiredRole}s.`, { variant: 'error' });
     return (
       <RoleAccessDenied 
         requiredRole={requiredRole}
