@@ -7,9 +7,9 @@ const validateAssessment = (data, req) => {
   try {
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
-      validatedData = AssessmentSchema.omit({ id: true }).parse(data);
+      validatedData = AssessmentSchema.parse(data);
     } else {
-      validatedData = AssessmentSchema.omit({ id: true }).partial().parse(data);
+      validatedData = AssessmentSchema.partial().parse(data);
     }
     return {
       isValid: true,
