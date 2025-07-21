@@ -309,9 +309,26 @@ class PrismaCrudRouter {
       { method: 'DELETE',   label: 'DELETE',   path: `${routePath}/:id`, excluded: isExcluded('delete') },
     ];
 
-    // Register CRUD routes directly on the Express app
-    // GET /: get all
-    if (!isExcluded('get')) {
+    // Register custom actions first
+    const customActionMethods = customActions ? Object.keys(customActions).map(m => m.toLowerCase()) : [];
+    if (customActions && typeof customActions === 'object') {
+      Object.entries(customActions).forEach(([method, handler]) => {
+        const methodLower = method.toLowerCase();
+        if (["get", "post", "put", "delete", "patch"].includes(methodLower) && typeof handler === 'function') {
+          // For PUT and DELETE, use the /:id path
+          if (methodLower === 'put' || methodLower === 'delete') {
+            this.app[methodLower](`${routePath}/:id`, ...composeMiddleware(methodLower), handler);
+            console.log(`Registered custom ${methodLower.toUpperCase()} for ${routePath}/:id`);
+          } else {
+            this.app[methodLower](routePath, ...composeMiddleware(methodLower), handler);
+            console.log(`Registered custom ${methodLower.toUpperCase()} for ${routePath}`);
+          }
+        }
+      });
+    }
+
+    // Then register default CRUD routes, but skip if a custom action exists for that method
+    if (!isExcluded('get') && !customActionMethods.includes('get')) {
       this.app.get(routePath, ...composeMiddleware('get'), async (req, res) => {
         try {
           let query = req.query;
@@ -451,7 +468,7 @@ class PrismaCrudRouter {
     }
 
     // GET /:id: get by id
-    if (!isExcluded('getById')) {
+    if (!isExcluded('getById') && !customActionMethods.includes('getbyid')) {
       this.app.get(`${routePath}/:id`, ...composeMiddleware('getById'), async (req, res) => {
         try {
           const id = req.params.id;
@@ -487,7 +504,7 @@ class PrismaCrudRouter {
     }
 
     // POST /: create
-    if (!isExcluded('post')) {
+    if (!isExcluded('post') && !customActionMethods.includes('post')) {
       this.app.post(routePath, ...composeMiddleware('create'), async (req, res) => {
         try {
           let data = req.body;
@@ -525,7 +542,7 @@ class PrismaCrudRouter {
     }
 
     // PUT /:id: update
-    if (!isExcluded('put')) {
+    if (!isExcluded('put') && !customActionMethods.includes('put')) {
       this.app.put(`${routePath}/:id`, ...composeMiddleware('update'), async (req, res) => {
         try {
           const id = req.params.id;
@@ -574,7 +591,7 @@ class PrismaCrudRouter {
     }
 
     // DELETE /:id: delete
-    if (!isExcluded('delete')) {
+    if (!isExcluded('delete') && !customActionMethods.includes('delete')) {
       this.app.delete(`${routePath}/:id`, ...composeMiddleware('delete'), async (req, res) => {
         try {
           const id = req.params.id;
@@ -606,17 +623,6 @@ class PrismaCrudRouter {
           const errResp = this.handleError(error, 'delete', errorHandler);
           this.apiResponse.setResponseHeaders(res, errResp);
           res.status(errResp.statusCode || 500).json(errResp.body);
-        }
-      });
-    }
-
-    // Custom actions (if any)
-    if (customActions && typeof customActions === 'object') {
-      Object.entries(customActions).forEach(([method, handler]) => {
-        // Only allow safe HTTP methods
-        const methodLower = method.toLowerCase();
-        if (["get", "post", "put", "delete", "patch"].includes(methodLower) && typeof handler === 'function') {
-          this.app[methodLower](routePath, ...composeMiddleware(methodLower), handler);
         }
       });
     }

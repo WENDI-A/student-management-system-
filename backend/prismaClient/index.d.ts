@@ -129,6 +129,16 @@ export namespace $Enums {
 export type AssessmentType = (typeof AssessmentType)[keyof typeof AssessmentType]
 
 
+export const QuestionType: {
+  TRUE_FALSE: 'TRUE_FALSE',
+  MULTIPLE_CHOICE: 'MULTIPLE_CHOICE',
+  FILL_BLANK: 'FILL_BLANK',
+  ESSAY: 'ESSAY'
+};
+
+export type QuestionType = (typeof QuestionType)[keyof typeof QuestionType]
+
+
 export const AttendanceStatus: {
   PRESENT: 'PRESENT',
   ABSENT: 'ABSENT',
@@ -154,6 +164,10 @@ export type NotificationType = (typeof NotificationType)[keyof typeof Notificati
 export type AssessmentType = $Enums.AssessmentType
 
 export const AssessmentType: typeof $Enums.AssessmentType
+
+export type QuestionType = $Enums.QuestionType
+
+export const QuestionType: typeof $Enums.QuestionType
 
 export type AttendanceStatus = $Enums.AttendanceStatus
 
@@ -13146,8 +13160,18 @@ export namespace Prisma {
 
   export type AggregateAssessment = {
     _count: AssessmentCountAggregateOutputType | null
+    _avg: AssessmentAvgAggregateOutputType | null
+    _sum: AssessmentSumAggregateOutputType | null
     _min: AssessmentMinAggregateOutputType | null
     _max: AssessmentMaxAggregateOutputType | null
+  }
+
+  export type AssessmentAvgAggregateOutputType = {
+    totalMarks: number | null
+  }
+
+  export type AssessmentSumAggregateOutputType = {
+    totalMarks: number | null
   }
 
   export type AssessmentMinAggregateOutputType = {
@@ -13157,6 +13181,7 @@ export namespace Prisma {
     courseId: string | null
     teacherId: string | null
     date: Date | null
+    totalMarks: number | null
   }
 
   export type AssessmentMaxAggregateOutputType = {
@@ -13166,6 +13191,7 @@ export namespace Prisma {
     courseId: string | null
     teacherId: string | null
     date: Date | null
+    totalMarks: number | null
   }
 
   export type AssessmentCountAggregateOutputType = {
@@ -13175,9 +13201,18 @@ export namespace Prisma {
     courseId: number
     teacherId: number
     date: number
+    totalMarks: number
     _all: number
   }
 
+
+  export type AssessmentAvgAggregateInputType = {
+    totalMarks?: true
+  }
+
+  export type AssessmentSumAggregateInputType = {
+    totalMarks?: true
+  }
 
   export type AssessmentMinAggregateInputType = {
     id?: true
@@ -13186,6 +13221,7 @@ export namespace Prisma {
     courseId?: true
     teacherId?: true
     date?: true
+    totalMarks?: true
   }
 
   export type AssessmentMaxAggregateInputType = {
@@ -13195,6 +13231,7 @@ export namespace Prisma {
     courseId?: true
     teacherId?: true
     date?: true
+    totalMarks?: true
   }
 
   export type AssessmentCountAggregateInputType = {
@@ -13204,6 +13241,7 @@ export namespace Prisma {
     courseId?: true
     teacherId?: true
     date?: true
+    totalMarks?: true
     _all?: true
   }
 
@@ -13245,6 +13283,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: AssessmentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AssessmentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: AssessmentMinAggregateInputType
@@ -13275,6 +13325,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: AssessmentCountAggregateInputType | true
+    _avg?: AssessmentAvgAggregateInputType
+    _sum?: AssessmentSumAggregateInputType
     _min?: AssessmentMinAggregateInputType
     _max?: AssessmentMaxAggregateInputType
   }
@@ -13286,7 +13338,10 @@ export namespace Prisma {
     courseId: string
     teacherId: string
     date: Date
+    totalMarks: number
     _count: AssessmentCountAggregateOutputType | null
+    _avg: AssessmentAvgAggregateOutputType | null
+    _sum: AssessmentSumAggregateOutputType | null
     _min: AssessmentMinAggregateOutputType | null
     _max: AssessmentMaxAggregateOutputType | null
   }
@@ -13312,6 +13367,7 @@ export namespace Prisma {
     courseId?: boolean
     teacherId?: boolean
     date?: boolean
+    totalMarks?: boolean
     course?: boolean | CourseDefaultArgs<ExtArgs>
     teacher?: boolean | TeacherDefaultArgs<ExtArgs>
     grades?: boolean | Assessment$gradesArgs<ExtArgs>
@@ -13328,9 +13384,10 @@ export namespace Prisma {
     courseId?: boolean
     teacherId?: boolean
     date?: boolean
+    totalMarks?: boolean
   }
 
-  export type AssessmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "type" | "courseId" | "teacherId" | "date", ExtArgs["result"]["assessment"]>
+  export type AssessmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "type" | "courseId" | "teacherId" | "date" | "totalMarks", ExtArgs["result"]["assessment"]>
   export type AssessmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     course?: boolean | CourseDefaultArgs<ExtArgs>
     teacher?: boolean | TeacherDefaultArgs<ExtArgs>
@@ -13354,6 +13411,7 @@ export namespace Prisma {
       courseId: string
       teacherId: string
       date: Date
+      totalMarks: number
     }, ExtArgs["result"]["assessment"]>
     composites: {}
   }
@@ -13733,6 +13791,7 @@ export namespace Prisma {
     readonly courseId: FieldRef<"Assessment", 'String'>
     readonly teacherId: FieldRef<"Assessment", 'String'>
     readonly date: FieldRef<"Assessment", 'DateTime'>
+    readonly totalMarks: FieldRef<"Assessment", 'Float'>
   }
     
 
@@ -14148,46 +14207,94 @@ export namespace Prisma {
 
   export type AggregateQuestion = {
     _count: QuestionCountAggregateOutputType | null
+    _avg: QuestionAvgAggregateOutputType | null
+    _sum: QuestionSumAggregateOutputType | null
     _min: QuestionMinAggregateOutputType | null
     _max: QuestionMaxAggregateOutputType | null
+  }
+
+  export type QuestionAvgAggregateOutputType = {
+    marks: number | null
+    order: number | null
+  }
+
+  export type QuestionSumAggregateOutputType = {
+    marks: number | null
+    order: number | null
   }
 
   export type QuestionMinAggregateOutputType = {
     id: string | null
     assessmentId: string | null
     text: string | null
+    type: $Enums.QuestionType | null
+    marks: number | null
+    correctAnswer: string | null
+    order: number | null
   }
 
   export type QuestionMaxAggregateOutputType = {
     id: string | null
     assessmentId: string | null
     text: string | null
+    type: $Enums.QuestionType | null
+    marks: number | null
+    correctAnswer: string | null
+    order: number | null
   }
 
   export type QuestionCountAggregateOutputType = {
     id: number
     assessmentId: number
     text: number
+    type: number
+    marks: number
+    options: number
+    correctAnswer: number
+    order: number
     _all: number
   }
 
+
+  export type QuestionAvgAggregateInputType = {
+    marks?: true
+    order?: true
+  }
+
+  export type QuestionSumAggregateInputType = {
+    marks?: true
+    order?: true
+  }
 
   export type QuestionMinAggregateInputType = {
     id?: true
     assessmentId?: true
     text?: true
+    type?: true
+    marks?: true
+    correctAnswer?: true
+    order?: true
   }
 
   export type QuestionMaxAggregateInputType = {
     id?: true
     assessmentId?: true
     text?: true
+    type?: true
+    marks?: true
+    correctAnswer?: true
+    order?: true
   }
 
   export type QuestionCountAggregateInputType = {
     id?: true
     assessmentId?: true
     text?: true
+    type?: true
+    marks?: true
+    options?: true
+    correctAnswer?: true
+    order?: true
     _all?: true
   }
 
@@ -14229,6 +14336,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: QuestionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: QuestionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: QuestionMinAggregateInputType
@@ -14259,6 +14378,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: QuestionCountAggregateInputType | true
+    _avg?: QuestionAvgAggregateInputType
+    _sum?: QuestionSumAggregateInputType
     _min?: QuestionMinAggregateInputType
     _max?: QuestionMaxAggregateInputType
   }
@@ -14267,7 +14388,14 @@ export namespace Prisma {
     id: string
     assessmentId: string
     text: string
+    type: $Enums.QuestionType
+    marks: number
+    options: JsonValue | null
+    correctAnswer: string | null
+    order: number
     _count: QuestionCountAggregateOutputType | null
+    _avg: QuestionAvgAggregateOutputType | null
+    _sum: QuestionSumAggregateOutputType | null
     _min: QuestionMinAggregateOutputType | null
     _max: QuestionMaxAggregateOutputType | null
   }
@@ -14290,6 +14418,11 @@ export namespace Prisma {
     id?: boolean
     assessmentId?: boolean
     text?: boolean
+    type?: boolean
+    marks?: boolean
+    options?: boolean
+    correctAnswer?: boolean
+    order?: boolean
     assessment?: boolean | AssessmentDefaultArgs<ExtArgs>
     studentAnswers?: boolean | Question$studentAnswersArgs<ExtArgs>
     _count?: boolean | QuestionCountOutputTypeDefaultArgs<ExtArgs>
@@ -14301,9 +14434,14 @@ export namespace Prisma {
     id?: boolean
     assessmentId?: boolean
     text?: boolean
+    type?: boolean
+    marks?: boolean
+    options?: boolean
+    correctAnswer?: boolean
+    order?: boolean
   }
 
-  export type QuestionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "assessmentId" | "text", ExtArgs["result"]["question"]>
+  export type QuestionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "assessmentId" | "text" | "type" | "marks" | "options" | "correctAnswer" | "order", ExtArgs["result"]["question"]>
   export type QuestionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     assessment?: boolean | AssessmentDefaultArgs<ExtArgs>
     studentAnswers?: boolean | Question$studentAnswersArgs<ExtArgs>
@@ -14320,6 +14458,11 @@ export namespace Prisma {
       id: string
       assessmentId: string
       text: string
+      type: $Enums.QuestionType
+      marks: number
+      options: Prisma.JsonValue | null
+      correctAnswer: string | null
+      order: number
     }, ExtArgs["result"]["question"]>
     composites: {}
   }
@@ -14694,6 +14837,11 @@ export namespace Prisma {
     readonly id: FieldRef<"Question", 'String'>
     readonly assessmentId: FieldRef<"Question", 'String'>
     readonly text: FieldRef<"Question", 'String'>
+    readonly type: FieldRef<"Question", 'QuestionType'>
+    readonly marks: FieldRef<"Question", 'Float'>
+    readonly options: FieldRef<"Question", 'Json'>
+    readonly correctAnswer: FieldRef<"Question", 'String'>
+    readonly order: FieldRef<"Question", 'Int'>
   }
     
 
@@ -22903,7 +23051,8 @@ export namespace Prisma {
     type: 'type',
     courseId: 'courseId',
     teacherId: 'teacherId',
-    date: 'date'
+    date: 'date',
+    totalMarks: 'totalMarks'
   };
 
   export type AssessmentScalarFieldEnum = (typeof AssessmentScalarFieldEnum)[keyof typeof AssessmentScalarFieldEnum]
@@ -22912,7 +23061,12 @@ export namespace Prisma {
   export const QuestionScalarFieldEnum: {
     id: 'id',
     assessmentId: 'assessmentId',
-    text: 'text'
+    text: 'text',
+    type: 'type',
+    marks: 'marks',
+    options: 'options',
+    correctAnswer: 'correctAnswer',
+    order: 'order'
   };
 
   export type QuestionScalarFieldEnum = (typeof QuestionScalarFieldEnum)[keyof typeof QuestionScalarFieldEnum]
@@ -23014,6 +23168,14 @@ export namespace Prisma {
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const NullsOrder: {
@@ -23139,10 +23301,28 @@ export namespace Prisma {
   export type AssessmentOrderByRelevanceFieldEnum = (typeof AssessmentOrderByRelevanceFieldEnum)[keyof typeof AssessmentOrderByRelevanceFieldEnum]
 
 
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const QueryMode: {
+    default: 'default',
+    insensitive: 'insensitive'
+  };
+
+  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
   export const QuestionOrderByRelevanceFieldEnum: {
     id: 'id',
     assessmentId: 'assessmentId',
-    text: 'text'
+    text: 'text',
+    correctAnswer: 'correctAnswer'
   };
 
   export type QuestionOrderByRelevanceFieldEnum = (typeof QuestionOrderByRelevanceFieldEnum)[keyof typeof QuestionOrderByRelevanceFieldEnum]
@@ -23264,6 +23444,34 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'QuestionType'
+   */
+  export type EnumQuestionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QuestionType'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'Int'
+   */
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+  /**
    * Reference to a field of type 'AttendanceStatus'
    */
   export type EnumAttendanceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AttendanceStatus'>
@@ -23274,13 +23482,6 @@ export namespace Prisma {
    * Reference to a field of type 'NotificationType'
    */
   export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType'>
-    
-
-
-  /**
-   * Reference to a field of type 'Int'
-   */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
     
   /**
    * Deep Input Types
@@ -23992,6 +24193,7 @@ export namespace Prisma {
     courseId?: StringFilter<"Assessment"> | string
     teacherId?: StringFilter<"Assessment"> | string
     date?: DateTimeFilter<"Assessment"> | Date | string
+    totalMarks?: FloatFilter<"Assessment"> | number
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
     teacher?: XOR<TeacherScalarRelationFilter, TeacherWhereInput>
     grades?: GradeListRelationFilter
@@ -24005,6 +24207,7 @@ export namespace Prisma {
     courseId?: SortOrder
     teacherId?: SortOrder
     date?: SortOrder
+    totalMarks?: SortOrder
     course?: CourseOrderByWithRelationInput
     teacher?: TeacherOrderByWithRelationInput
     grades?: GradeOrderByRelationAggregateInput
@@ -24022,6 +24225,7 @@ export namespace Prisma {
     courseId?: StringFilter<"Assessment"> | string
     teacherId?: StringFilter<"Assessment"> | string
     date?: DateTimeFilter<"Assessment"> | Date | string
+    totalMarks?: FloatFilter<"Assessment"> | number
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
     teacher?: XOR<TeacherScalarRelationFilter, TeacherWhereInput>
     grades?: GradeListRelationFilter
@@ -24035,9 +24239,12 @@ export namespace Prisma {
     courseId?: SortOrder
     teacherId?: SortOrder
     date?: SortOrder
+    totalMarks?: SortOrder
     _count?: AssessmentCountOrderByAggregateInput
+    _avg?: AssessmentAvgOrderByAggregateInput
     _max?: AssessmentMaxOrderByAggregateInput
     _min?: AssessmentMinOrderByAggregateInput
+    _sum?: AssessmentSumOrderByAggregateInput
   }
 
   export type AssessmentScalarWhereWithAggregatesInput = {
@@ -24050,6 +24257,7 @@ export namespace Prisma {
     courseId?: StringWithAggregatesFilter<"Assessment"> | string
     teacherId?: StringWithAggregatesFilter<"Assessment"> | string
     date?: DateTimeWithAggregatesFilter<"Assessment"> | Date | string
+    totalMarks?: FloatWithAggregatesFilter<"Assessment"> | number
   }
 
   export type QuestionWhereInput = {
@@ -24059,6 +24267,11 @@ export namespace Prisma {
     id?: StringFilter<"Question"> | string
     assessmentId?: StringFilter<"Question"> | string
     text?: StringFilter<"Question"> | string
+    type?: EnumQuestionTypeFilter<"Question"> | $Enums.QuestionType
+    marks?: FloatFilter<"Question"> | number
+    options?: JsonNullableFilter<"Question">
+    correctAnswer?: StringNullableFilter<"Question"> | string | null
+    order?: IntFilter<"Question"> | number
     assessment?: XOR<AssessmentScalarRelationFilter, AssessmentWhereInput>
     studentAnswers?: StudentAnswerListRelationFilter
   }
@@ -24067,6 +24280,11 @@ export namespace Prisma {
     id?: SortOrder
     assessmentId?: SortOrder
     text?: SortOrder
+    type?: SortOrder
+    marks?: SortOrder
+    options?: SortOrderInput | SortOrder
+    correctAnswer?: SortOrderInput | SortOrder
+    order?: SortOrder
     assessment?: AssessmentOrderByWithRelationInput
     studentAnswers?: StudentAnswerOrderByRelationAggregateInput
     _relevance?: QuestionOrderByRelevanceInput
@@ -24079,6 +24297,11 @@ export namespace Prisma {
     NOT?: QuestionWhereInput | QuestionWhereInput[]
     assessmentId?: StringFilter<"Question"> | string
     text?: StringFilter<"Question"> | string
+    type?: EnumQuestionTypeFilter<"Question"> | $Enums.QuestionType
+    marks?: FloatFilter<"Question"> | number
+    options?: JsonNullableFilter<"Question">
+    correctAnswer?: StringNullableFilter<"Question"> | string | null
+    order?: IntFilter<"Question"> | number
     assessment?: XOR<AssessmentScalarRelationFilter, AssessmentWhereInput>
     studentAnswers?: StudentAnswerListRelationFilter
   }, "id">
@@ -24087,9 +24310,16 @@ export namespace Prisma {
     id?: SortOrder
     assessmentId?: SortOrder
     text?: SortOrder
+    type?: SortOrder
+    marks?: SortOrder
+    options?: SortOrderInput | SortOrder
+    correctAnswer?: SortOrderInput | SortOrder
+    order?: SortOrder
     _count?: QuestionCountOrderByAggregateInput
+    _avg?: QuestionAvgOrderByAggregateInput
     _max?: QuestionMaxOrderByAggregateInput
     _min?: QuestionMinOrderByAggregateInput
+    _sum?: QuestionSumOrderByAggregateInput
   }
 
   export type QuestionScalarWhereWithAggregatesInput = {
@@ -24099,6 +24329,11 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Question"> | string
     assessmentId?: StringWithAggregatesFilter<"Question"> | string
     text?: StringWithAggregatesFilter<"Question"> | string
+    type?: EnumQuestionTypeWithAggregatesFilter<"Question"> | $Enums.QuestionType
+    marks?: FloatWithAggregatesFilter<"Question"> | number
+    options?: JsonNullableWithAggregatesFilter<"Question">
+    correctAnswer?: StringNullableWithAggregatesFilter<"Question"> | string | null
+    order?: IntWithAggregatesFilter<"Question"> | number
   }
 
   export type StudentAnswerWhereInput = {
@@ -25354,6 +25589,7 @@ export namespace Prisma {
     title: string
     type: $Enums.AssessmentType
     date: Date | string
+    totalMarks?: number
     course: CourseCreateNestedOneWithoutAssessmentsInput
     teacher: TeacherCreateNestedOneWithoutAssessmentsInput
     grades?: GradeCreateNestedManyWithoutAssessmentInput
@@ -25367,6 +25603,7 @@ export namespace Prisma {
     courseId: string
     teacherId: string
     date: Date | string
+    totalMarks?: number
     grades?: GradeUncheckedCreateNestedManyWithoutAssessmentInput
     questions?: QuestionUncheckedCreateNestedManyWithoutAssessmentInput
   }
@@ -25376,6 +25613,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     course?: CourseUpdateOneRequiredWithoutAssessmentsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutAssessmentsNestedInput
     grades?: GradeUpdateManyWithoutAssessmentNestedInput
@@ -25389,6 +25627,7 @@ export namespace Prisma {
     courseId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     grades?: GradeUncheckedUpdateManyWithoutAssessmentNestedInput
     questions?: QuestionUncheckedUpdateManyWithoutAssessmentNestedInput
   }
@@ -25400,6 +25639,7 @@ export namespace Prisma {
     courseId: string
     teacherId: string
     date: Date | string
+    totalMarks?: number
   }
 
   export type AssessmentUpdateManyMutationInput = {
@@ -25407,6 +25647,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
   }
 
   export type AssessmentUncheckedUpdateManyInput = {
@@ -25416,11 +25657,17 @@ export namespace Prisma {
     courseId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
   }
 
   export type QuestionCreateInput = {
     id?: string
     text: string
+    type: $Enums.QuestionType
+    marks?: number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: string | null
+    order?: number
     assessment: AssessmentCreateNestedOneWithoutQuestionsInput
     studentAnswers?: StudentAnswerCreateNestedManyWithoutQuestionInput
   }
@@ -25429,12 +25676,22 @@ export namespace Prisma {
     id?: string
     assessmentId: string
     text: string
+    type: $Enums.QuestionType
+    marks?: number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: string | null
+    order?: number
     studentAnswers?: StudentAnswerUncheckedCreateNestedManyWithoutQuestionInput
   }
 
   export type QuestionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     assessment?: AssessmentUpdateOneRequiredWithoutQuestionsNestedInput
     studentAnswers?: StudentAnswerUpdateManyWithoutQuestionNestedInput
   }
@@ -25443,6 +25700,11 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     assessmentId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     studentAnswers?: StudentAnswerUncheckedUpdateManyWithoutQuestionNestedInput
   }
 
@@ -25450,17 +25712,32 @@ export namespace Prisma {
     id?: string
     assessmentId: string
     text: string
+    type: $Enums.QuestionType
+    marks?: number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: string | null
+    order?: number
   }
 
   export type QuestionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
   }
 
   export type QuestionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     assessmentId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
   }
 
   export type StudentAnswerCreateInput = {
@@ -26536,6 +26813,17 @@ export namespace Prisma {
     not?: NestedEnumAssessmentTypeFilter<$PrismaModel> | $Enums.AssessmentType
   }
 
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
   export type QuestionListRelationFilter = {
     every?: QuestionWhereInput
     some?: QuestionWhereInput
@@ -26559,6 +26847,11 @@ export namespace Prisma {
     courseId?: SortOrder
     teacherId?: SortOrder
     date?: SortOrder
+    totalMarks?: SortOrder
+  }
+
+  export type AssessmentAvgOrderByAggregateInput = {
+    totalMarks?: SortOrder
   }
 
   export type AssessmentMaxOrderByAggregateInput = {
@@ -26568,6 +26861,7 @@ export namespace Prisma {
     courseId?: SortOrder
     teacherId?: SortOrder
     date?: SortOrder
+    totalMarks?: SortOrder
   }
 
   export type AssessmentMinOrderByAggregateInput = {
@@ -26577,6 +26871,11 @@ export namespace Prisma {
     courseId?: SortOrder
     teacherId?: SortOrder
     date?: SortOrder
+    totalMarks?: SortOrder
+  }
+
+  export type AssessmentSumOrderByAggregateInput = {
+    totalMarks?: SortOrder
   }
 
   export type EnumAssessmentTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -26587,6 +26886,63 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAssessmentTypeFilter<$PrismaModel>
     _max?: NestedEnumAssessmentTypeFilter<$PrismaModel>
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type EnumQuestionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.QuestionType | EnumQuestionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.QuestionType[]
+    notIn?: $Enums.QuestionType[]
+    not?: NestedEnumQuestionTypeFilter<$PrismaModel> | $Enums.QuestionType
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type AssessmentScalarRelationFilter = {
@@ -26604,18 +26960,93 @@ export namespace Prisma {
     id?: SortOrder
     assessmentId?: SortOrder
     text?: SortOrder
+    type?: SortOrder
+    marks?: SortOrder
+    options?: SortOrder
+    correctAnswer?: SortOrder
+    order?: SortOrder
+  }
+
+  export type QuestionAvgOrderByAggregateInput = {
+    marks?: SortOrder
+    order?: SortOrder
   }
 
   export type QuestionMaxOrderByAggregateInput = {
     id?: SortOrder
     assessmentId?: SortOrder
     text?: SortOrder
+    type?: SortOrder
+    marks?: SortOrder
+    correctAnswer?: SortOrder
+    order?: SortOrder
   }
 
   export type QuestionMinOrderByAggregateInput = {
     id?: SortOrder
     assessmentId?: SortOrder
     text?: SortOrder
+    type?: SortOrder
+    marks?: SortOrder
+    correctAnswer?: SortOrder
+    order?: SortOrder
+  }
+
+  export type QuestionSumOrderByAggregateInput = {
+    marks?: SortOrder
+    order?: SortOrder
+  }
+
+  export type EnumQuestionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.QuestionType | EnumQuestionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.QuestionType[]
+    notIn?: $Enums.QuestionType[]
+    not?: NestedEnumQuestionTypeWithAggregatesFilter<$PrismaModel> | $Enums.QuestionType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumQuestionTypeFilter<$PrismaModel>
+    _max?: NestedEnumQuestionTypeFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type QuestionScalarRelationFilter = {
@@ -26648,17 +27079,6 @@ export namespace Prisma {
     questionId?: SortOrder
     studentId?: SortOrder
     answer?: SortOrder
-  }
-
-  export type FloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type GradeOrderByRelevanceInput = {
@@ -26694,22 +27114,6 @@ export namespace Prisma {
 
   export type GradeSumOrderByAggregateInput = {
     value?: SortOrder
-  }
-
-  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type GradeSummaryOrderByRelevanceInput = {
@@ -28184,6 +28588,14 @@ export namespace Prisma {
     set?: $Enums.AssessmentType
   }
 
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type CourseUpdateOneRequiredWithoutAssessmentsNestedInput = {
     create?: XOR<CourseCreateWithoutAssessmentsInput, CourseUncheckedCreateWithoutAssessmentsInput>
     connectOrCreate?: CourseCreateOrConnectWithoutAssessmentsInput
@@ -28276,6 +28688,18 @@ export namespace Prisma {
     connect?: StudentAnswerWhereUniqueInput | StudentAnswerWhereUniqueInput[]
   }
 
+  export type EnumQuestionTypeFieldUpdateOperationsInput = {
+    set?: $Enums.QuestionType
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type AssessmentUpdateOneRequiredWithoutQuestionsNestedInput = {
     create?: XOR<AssessmentCreateWithoutQuestionsInput, AssessmentUncheckedCreateWithoutQuestionsInput>
     connectOrCreate?: AssessmentCreateOrConnectWithoutQuestionsInput
@@ -28350,14 +28774,6 @@ export namespace Prisma {
     create?: XOR<StudentCreateWithoutGradesInput, StudentUncheckedCreateWithoutGradesInput>
     connectOrCreate?: StudentCreateOrConnectWithoutGradesInput
     connect?: StudentWhereUniqueInput
-  }
-
-  export type FloatFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type AssessmentUpdateOneRequiredWithoutGradesNestedInput = {
@@ -28751,16 +29167,6 @@ export namespace Prisma {
     not?: NestedEnumAssessmentTypeFilter<$PrismaModel> | $Enums.AssessmentType
   }
 
-  export type NestedEnumAssessmentTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.AssessmentType | EnumAssessmentTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.AssessmentType[]
-    notIn?: $Enums.AssessmentType[]
-    not?: NestedEnumAssessmentTypeWithAggregatesFilter<$PrismaModel> | $Enums.AssessmentType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumAssessmentTypeFilter<$PrismaModel>
-    _max?: NestedEnumAssessmentTypeFilter<$PrismaModel>
-  }
-
   export type NestedFloatFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[]
@@ -28770,6 +29176,16 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedEnumAssessmentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AssessmentType | EnumAssessmentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.AssessmentType[]
+    notIn?: $Enums.AssessmentType[]
+    not?: NestedEnumAssessmentTypeWithAggregatesFilter<$PrismaModel> | $Enums.AssessmentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAssessmentTypeFilter<$PrismaModel>
+    _max?: NestedEnumAssessmentTypeFilter<$PrismaModel>
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -28786,6 +29202,62 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type NestedEnumQuestionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.QuestionType | EnumQuestionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.QuestionType[]
+    notIn?: $Enums.QuestionType[]
+    not?: NestedEnumQuestionTypeFilter<$PrismaModel> | $Enums.QuestionType
+  }
+
+  export type NestedEnumQuestionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.QuestionType | EnumQuestionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.QuestionType[]
+    notIn?: $Enums.QuestionType[]
+    not?: NestedEnumQuestionTypeWithAggregatesFilter<$PrismaModel> | $Enums.QuestionType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumQuestionTypeFilter<$PrismaModel>
+    _max?: NestedEnumQuestionTypeFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type NestedEnumAttendanceStatusFilter<$PrismaModel = never> = {
@@ -29248,6 +29720,7 @@ export namespace Prisma {
     title: string
     type: $Enums.AssessmentType
     date: Date | string
+    totalMarks?: number
     course: CourseCreateNestedOneWithoutAssessmentsInput
     grades?: GradeCreateNestedManyWithoutAssessmentInput
     questions?: QuestionCreateNestedManyWithoutAssessmentInput
@@ -29259,6 +29732,7 @@ export namespace Prisma {
     type: $Enums.AssessmentType
     courseId: string
     date: Date | string
+    totalMarks?: number
     grades?: GradeUncheckedCreateNestedManyWithoutAssessmentInput
     questions?: QuestionUncheckedCreateNestedManyWithoutAssessmentInput
   }
@@ -29386,6 +29860,7 @@ export namespace Prisma {
     courseId?: StringFilter<"Assessment"> | string
     teacherId?: StringFilter<"Assessment"> | string
     date?: DateTimeFilter<"Assessment"> | Date | string
+    totalMarks?: FloatFilter<"Assessment"> | number
   }
 
   export type CourseMaterialUpsertWithWhereUniqueWithoutTeacherInput = {
@@ -29884,6 +30359,7 @@ export namespace Prisma {
     title: string
     type: $Enums.AssessmentType
     date: Date | string
+    totalMarks?: number
     teacher: TeacherCreateNestedOneWithoutAssessmentsInput
     grades?: GradeCreateNestedManyWithoutAssessmentInput
     questions?: QuestionCreateNestedManyWithoutAssessmentInput
@@ -29895,6 +30371,7 @@ export namespace Prisma {
     type: $Enums.AssessmentType
     teacherId: string
     date: Date | string
+    totalMarks?: number
     grades?: GradeUncheckedCreateNestedManyWithoutAssessmentInput
     questions?: QuestionUncheckedCreateNestedManyWithoutAssessmentInput
   }
@@ -30542,12 +31019,22 @@ export namespace Prisma {
   export type QuestionCreateWithoutAssessmentInput = {
     id?: string
     text: string
+    type: $Enums.QuestionType
+    marks?: number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: string | null
+    order?: number
     studentAnswers?: StudentAnswerCreateNestedManyWithoutQuestionInput
   }
 
   export type QuestionUncheckedCreateWithoutAssessmentInput = {
     id?: string
     text: string
+    type: $Enums.QuestionType
+    marks?: number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: string | null
+    order?: number
     studentAnswers?: StudentAnswerUncheckedCreateNestedManyWithoutQuestionInput
   }
 
@@ -30676,6 +31163,11 @@ export namespace Prisma {
     id?: StringFilter<"Question"> | string
     assessmentId?: StringFilter<"Question"> | string
     text?: StringFilter<"Question"> | string
+    type?: EnumQuestionTypeFilter<"Question"> | $Enums.QuestionType
+    marks?: FloatFilter<"Question"> | number
+    options?: JsonNullableFilter<"Question">
+    correctAnswer?: StringNullableFilter<"Question"> | string | null
+    order?: IntFilter<"Question"> | number
   }
 
   export type AssessmentCreateWithoutQuestionsInput = {
@@ -30683,6 +31175,7 @@ export namespace Prisma {
     title: string
     type: $Enums.AssessmentType
     date: Date | string
+    totalMarks?: number
     course: CourseCreateNestedOneWithoutAssessmentsInput
     teacher: TeacherCreateNestedOneWithoutAssessmentsInput
     grades?: GradeCreateNestedManyWithoutAssessmentInput
@@ -30695,6 +31188,7 @@ export namespace Prisma {
     courseId: string
     teacherId: string
     date: Date | string
+    totalMarks?: number
     grades?: GradeUncheckedCreateNestedManyWithoutAssessmentInput
   }
 
@@ -30741,6 +31235,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     course?: CourseUpdateOneRequiredWithoutAssessmentsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutAssessmentsNestedInput
     grades?: GradeUpdateManyWithoutAssessmentNestedInput
@@ -30753,6 +31248,7 @@ export namespace Prisma {
     courseId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     grades?: GradeUncheckedUpdateManyWithoutAssessmentNestedInput
   }
 
@@ -30775,6 +31271,11 @@ export namespace Prisma {
   export type QuestionCreateWithoutStudentAnswersInput = {
     id?: string
     text: string
+    type: $Enums.QuestionType
+    marks?: number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: string | null
+    order?: number
     assessment: AssessmentCreateNestedOneWithoutQuestionsInput
   }
 
@@ -30782,6 +31283,11 @@ export namespace Prisma {
     id?: string
     assessmentId: string
     text: string
+    type: $Enums.QuestionType
+    marks?: number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: string | null
+    order?: number
   }
 
   export type QuestionCreateOrConnectWithoutStudentAnswersInput = {
@@ -30846,6 +31352,11 @@ export namespace Prisma {
   export type QuestionUpdateWithoutStudentAnswersInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     assessment?: AssessmentUpdateOneRequiredWithoutQuestionsNestedInput
   }
 
@@ -30853,6 +31364,11 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     assessmentId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
   }
 
   export type StudentUpsertWithoutStudentAnswersInput = {
@@ -30909,6 +31425,7 @@ export namespace Prisma {
     title: string
     type: $Enums.AssessmentType
     date: Date | string
+    totalMarks?: number
     course: CourseCreateNestedOneWithoutAssessmentsInput
     teacher: TeacherCreateNestedOneWithoutAssessmentsInput
     questions?: QuestionCreateNestedManyWithoutAssessmentInput
@@ -30921,6 +31438,7 @@ export namespace Prisma {
     courseId: string
     teacherId: string
     date: Date | string
+    totalMarks?: number
     questions?: QuestionUncheckedCreateNestedManyWithoutAssessmentInput
   }
 
@@ -30988,6 +31506,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     course?: CourseUpdateOneRequiredWithoutAssessmentsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutAssessmentsNestedInput
     questions?: QuestionUpdateManyWithoutAssessmentNestedInput
@@ -31000,6 +31519,7 @@ export namespace Prisma {
     courseId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     questions?: QuestionUncheckedUpdateManyWithoutAssessmentNestedInput
   }
 
@@ -32351,6 +32871,7 @@ export namespace Prisma {
     type: $Enums.AssessmentType
     courseId: string
     date: Date | string
+    totalMarks?: number
   }
 
   export type CourseMaterialCreateManyTeacherInput = {
@@ -32394,6 +32915,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     course?: CourseUpdateOneRequiredWithoutAssessmentsNestedInput
     grades?: GradeUpdateManyWithoutAssessmentNestedInput
     questions?: QuestionUpdateManyWithoutAssessmentNestedInput
@@ -32405,6 +32927,7 @@ export namespace Prisma {
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     courseId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     grades?: GradeUncheckedUpdateManyWithoutAssessmentNestedInput
     questions?: QuestionUncheckedUpdateManyWithoutAssessmentNestedInput
   }
@@ -32415,6 +32938,7 @@ export namespace Prisma {
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     courseId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
   }
 
   export type CourseMaterialUpdateWithoutTeacherInput = {
@@ -32825,6 +33349,7 @@ export namespace Prisma {
     type: $Enums.AssessmentType
     teacherId: string
     date: Date | string
+    totalMarks?: number
   }
 
   export type CourseMaterialCreateManyCourseInput = {
@@ -32893,6 +33418,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     teacher?: TeacherUpdateOneRequiredWithoutAssessmentsNestedInput
     grades?: GradeUpdateManyWithoutAssessmentNestedInput
     questions?: QuestionUpdateManyWithoutAssessmentNestedInput
@@ -32904,6 +33430,7 @@ export namespace Prisma {
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     teacherId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
     grades?: GradeUncheckedUpdateManyWithoutAssessmentNestedInput
     questions?: QuestionUncheckedUpdateManyWithoutAssessmentNestedInput
   }
@@ -32914,6 +33441,7 @@ export namespace Prisma {
     type?: EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
     teacherId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalMarks?: FloatFieldUpdateOperationsInput | number
   }
 
   export type CourseMaterialUpdateWithoutCourseInput = {
@@ -33009,6 +33537,11 @@ export namespace Prisma {
   export type QuestionCreateManyAssessmentInput = {
     id?: string
     text: string
+    type: $Enums.QuestionType
+    marks?: number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: string | null
+    order?: number
   }
 
   export type GradeUpdateWithoutAssessmentInput = {
@@ -33032,18 +33565,33 @@ export namespace Prisma {
   export type QuestionUpdateWithoutAssessmentInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     studentAnswers?: StudentAnswerUpdateManyWithoutQuestionNestedInput
   }
 
   export type QuestionUncheckedUpdateWithoutAssessmentInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     studentAnswers?: StudentAnswerUncheckedUpdateManyWithoutQuestionNestedInput
   }
 
   export type QuestionUncheckedUpdateManyWithoutAssessmentInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
+    marks?: FloatFieldUpdateOperationsInput | number
+    options?: NullableJsonNullValueInput | InputJsonValue
+    correctAnswer?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
   }
 
   export type StudentAnswerCreateManyQuestionInput = {

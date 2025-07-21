@@ -88,7 +88,7 @@ export default function AdminParent() {
           >
             + Create
           </Button>
-        </CardHeader>
+      </CardHeader>
         <CardContent>
           {parents.length === 0 ? (
             <div className="text-gray-500 text-center py-8">
@@ -98,53 +98,53 @@ export default function AdminParent() {
             <div className="w-full max-w-full overflow-x-auto">
               <div className="w-full">
                 <table className="w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-xs">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+                <thead>
+                  <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">No</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">First Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Last Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Email</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                  </tr>
+                </thead>
+                <tbody>
                     {parents.map((p, i) => (
-                      <tr
-                        key={startIndex + i}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
-                      >
+                    <tr
+                      key={startIndex + i}
+                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
+                    >
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap font-medium text-gray-600 dark:text-gray-400">
-                          {startIndex + i + 1}
-                        </td>
+                        {startIndex + i + 1}
+                      </td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{p.firstName}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{p.lastName}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{p.email}</td>
                         <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => {
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                          onClick={() => {
                               setEditId(p.id);
-                              setEditParent(p);
+                            setEditParent(p);
                               setOpen(true);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="w-full sm:w-auto"
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="w-full sm:w-auto"
                             onClick={() => handleDelete(p.id)}
-                          >
-                            Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               </div>
               {/* Pagination Controls */}
               {totalPages > 1 && (
@@ -192,7 +192,7 @@ export default function AdminParent() {
             </div>
           )}
         </CardContent>
-      </Card>
+    </Card>
       {/* Create/Edit Parent Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg w-full px-2 sm:px-6">

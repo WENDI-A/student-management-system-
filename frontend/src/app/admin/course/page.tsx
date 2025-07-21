@@ -80,53 +80,53 @@ export default function AdminCourse() {
             <div className="w-full max-w-full overflow-x-auto">
               <div className="w-full">
                 <table className="w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-xs">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+                <thead>
+                  <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">No</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Code</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Class</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                  </tr>
+                </thead>
+                <tbody>
                     {courses.map((c, i) => (
-                      <tr
-                        key={startIndex + i}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
-                      >
+                    <tr
+                      key={startIndex + i}
+                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
+                    >
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap font-medium text-gray-600 dark:text-gray-400">
-                          {startIndex + i + 1}
-                        </td>
+                        {startIndex + i + 1}
+                      </td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{c.name}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{c.code}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{classes.find((cl: any) => cl.id === c.classId)?.name || ''}</td>
                         <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => {
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                          onClick={() => {
                               setEditId(c.id);
-                              setEditCourse(c);
+                            setEditCourse(c);
                               setOpen(true);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="w-full sm:w-auto"
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="w-full sm:w-auto"
                             onClick={() => handleDelete(c.id)}
-                          >
-                            Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               </div>
               {/* Pagination Controls */}
               {totalPages > 1 && (
@@ -211,9 +211,9 @@ export default function AdminCourse() {
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Class
-              </label>
+                </label>
               <Select
                 value={editId ? editCourse?.classId || "" : classId}
                 onValueChange={value =>
@@ -223,17 +223,17 @@ export default function AdminCourse() {
                 }
                 required
               >
-                <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select class" />
-                </SelectTrigger>
-                <SelectContent>
+                  </SelectTrigger>
+                  <SelectContent>
                   {classes.map((cl: any) => (
                     <SelectItem key={cl.id} value={cl.id}>
                       {cl.name}
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    ))}
+                  </SelectContent>
+                </Select>
             </div>
             <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-end">
               <DialogClose asChild>

@@ -27,11 +27,11 @@ export default function AdminTeacher() {
   const {
     open,
     setOpen,
-    firstName,
+        firstName,
     setFirstName,
-    lastName,
+        lastName,
     setLastName,
-    email,
+        email,
     setEmail,
     selectedCourse,
     setSelectedCourse,
@@ -54,34 +54,6 @@ export default function AdminTeacher() {
   } = state;
 
   const courses = state.courses;
-
-  function handleSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    createTeacher.mutate({
-      data: {
-        firstName,
-        lastName,
-        email,
-        courses: {
-          create: selectedCourse ? [{ courseId: selectedCourse }] : [],
-        },
-      },
-    });
-  }
-
-  function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!editId || !editTeacher) return;
-    updateTeacher.mutate({
-      id: editId,
-      data: {
-        ...editTeacher,
-        courses: {
-          set: editTeacher.courses?.map((c: any) => ({ id: c.id })) || [],
-        },
-      },
-    });
-  }
 
   function handleDelete(id: string) {
     deleteTeacher.mutate({ id });
@@ -113,53 +85,53 @@ export default function AdminTeacher() {
             <div className="w-full max-w-full overflow-x-auto">
               <div className="w-full">
                 <table className="w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-xs">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+                <thead>
+                  <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">No</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">First Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Last Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Email</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teachers.map((t, i) => (
-                      <tr
-                        key={startIndex + i}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
-                      >
+                  </tr>
+                </thead>
+                <tbody>
+                  {teachers.map((t, i) => (
+                    <tr
+                      key={startIndex + i}
+                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
+                    >
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap font-medium text-gray-600 dark:text-gray-400">
-                          {startIndex + i + 1}
-                        </td>
+                        {startIndex + i + 1}
+                      </td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.firstName}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.lastName}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.email}</td>
                         <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => {
-                              setEditId(t.id);
-                              setEditTeacher(t);
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                          onClick={() => {
+                            setEditId(t.id);
+                            setEditTeacher(t);
                               setOpen(true);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="w-full sm:w-auto"
-                            onClick={() => handleDelete(t.id)}
-                          >
-                            Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="w-full sm:w-auto"
+                          onClick={() => handleDelete(t.id)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               </div>
               
               {/* Pagination Controls */}
@@ -218,7 +190,7 @@ export default function AdminTeacher() {
           <DialogHeader>
             <DialogTitle>{editId ? "Edit Teacher" : "Add New Teacher"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={editId ? handleEditSave : handleSave} className="space-y-4">
+          <form onSubmit={editId ? state.handleEditSave : state.handleSave} className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">

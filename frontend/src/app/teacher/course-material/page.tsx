@@ -115,8 +115,6 @@ export default function CourseMaterialAdmin() {
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Title</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Description</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">File</th>
-                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Course ID</th>
-                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Teacher ID</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
@@ -138,8 +136,6 @@ export default function CourseMaterialAdmin() {
                             </a>
                           ) : 'N/A'}
                         </td>
-                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{m.courseId}</td>
-                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{m.teacherId}</td>
                         <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
                           <Button
                             size="sm"
