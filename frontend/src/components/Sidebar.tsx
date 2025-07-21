@@ -93,7 +93,10 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
   const items = sidebarConfig[role];
   const [profileOpen, setProfileOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
-  const [collapsed, setCollapsed] = React.useState(false);
+  // Remove collapsed state and collapse/expand button logic
+  // Sidebar should always be expanded on desktop, only toggled on mobile via hamburger
+  // Remove all references to 'collapsed', 'setCollapsed', and the arrow button
+  // Sidebar width: w-60 min-w-[12rem] always on desktop
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
@@ -120,31 +123,31 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
     }, 1200);
   }
 
+  const sidebarWidths = {
+    expanded: "w-60 min-w-[12rem]",
+    collapsed: "w-14 min-w-[3.5rem]",
+  };
+
   const SidebarContent = (
     <nav
       className={cn(
         "relative flex flex-col h-full transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-700",
-        collapsed ? "w-20 min-w-[5rem]" : "w-72 min-w-[16rem]"
+        // Remove collapsed state and collapse/expand button logic
+        // Sidebar should always be expanded on desktop, only toggled on mobile via hamburger
+        // Remove all references to 'collapsed', 'setCollapsed', and the arrow button
+        // Sidebar width: w-60 min-w-[12rem] always on desktop
+        sidebarWidths.expanded
       )}
     >
-      {/* Collapse/Expand Button - fixed at top right inside sidebar */}
-      <div className="absolute top-3 right-3 z-10 md:block hidden">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          onClick={() => setCollapsed((c) => !c)}
-          className="rounded-full"
-        >
-          {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-        </Button>
-      </div>
-      {/* Navigation - starts at the very top, below the button */}
-      <div className={cn("flex-1 flex flex-col justify-start pt-4", collapsed ? "items-center" : "items-stretch")}> 
+      {/* Collapse/Expand Button and First Link (Dashboard) */}
+      {/* Remove the Dashboard link rendering at the top (inside <div className={cn("flex items-center", "pt-2 pb-1")}> ... ) */}
+      {/* Only render all links in the NavigationMenu below */}
+      {/* Navigation - rest of the links */}
+      <div className={cn("flex-1 flex flex-col justify-start")}> 
         <NavigationMenu
           className={cn(
             "flex flex-col gap-1 w-full transition-all duration-300",
-            collapsed ? "px-0" : "px-2"
+            "px-2"
           )}
         >
           {items.map((item) => {
@@ -154,10 +157,10 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                title={collapsed ? item.label : undefined}
+                title={undefined}
                 className={cn(
                   "group flex items-center transition-all duration-200 font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300 w-full",
-                  collapsed ? "justify-center py-3" : "gap-3 px-3 py-3",
+                  "gap-3 px-3 py-3",
                   active &&
                     "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border-l-4 border-blue-600 dark:border-blue-400 shadow-sm"
                 )}
@@ -170,7 +173,7 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
               >
                 <span className={cn(
                   "flex items-center justify-center transition-colors duration-200",
-                  collapsed ? "w-8 h-8" : "w-5 h-5"
+                  "w-5 h-5"
                 )}>
                   <Icon
                     className={cn(
@@ -179,17 +182,17 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
                         ? "text-blue-600 dark:text-blue-400"
                         : "text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
                     )}
-                    style={{ width: collapsed ? 24 : 20, height: collapsed ? 24 : 20 }}
+                    style={{ width: 20, height: 20 } as React.CSSProperties}
                   />
                 </span>
-                {!collapsed && <span className="text-sm font-medium ml-2">{item.label}</span>}
+                <span className="text-sm font-medium ml-2">{item.label}</span>
               </Link>
             );
           })}
         </NavigationMenu>
       </div>
       {/* Profile Section - always at the bottom */}
-      <div className={cn("px-4 py-4 border-t border-gray-200 dark:border-gray-700 transition-all duration-300", collapsed && "px-2")}> 
+      <div className={cn("px-4 py-4 border-t border-gray-200 dark:border-gray-700 transition-all duration-300", "px-2")}> 
         <div className="relative">
           <button
             className="flex items-center gap-3 w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 group"
@@ -374,7 +377,7 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
       <aside
         className={cn(
           "hidden md:flex flex-col h-screen bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-700 sticky top-0 transition-all duration-300",
-          collapsed ? "w-20" : "w-72"
+          "w-60 min-w-[12rem]"
         )}
       >
         <div className="flex-1 overflow-y-auto max-h-screen">

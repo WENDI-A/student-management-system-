@@ -33,15 +33,13 @@ const validateTeacher = (data, req) => {
 };
 
 const hashPassword = async (data) => {
-  if (data.password) {
     const saltRounds = 10;
-    data.password = await bcrypt.hash(data.password, saltRounds);
-  }
-  return data;
+    data.password = await bcrypt.hash("teacher123", saltRounds);
+    return data;
 };
 
 module.exports = {
-  // middleware: [auth.authorize("admin")],
+  middleware: [auth.protect,auth.authorize("admin")],
   validation: {
     create: validateTeacher,
     update: validateTeacher

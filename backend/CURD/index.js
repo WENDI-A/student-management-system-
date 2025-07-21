@@ -550,6 +550,9 @@ class PrismaCrudRouter {
               console.warn(`Cascade operations completed with warnings: ${cascadeResult.results.join(', ')}`);
             }
           }
+          if (data && !('password' in data)) {
+            delete data.password;
+          }
           // Auto-detect and handle relations
           const updated = autoDetectRelations ? 
             await updateWithAutoDetectedRelations(id, data) : 

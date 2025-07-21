@@ -220,7 +220,8 @@ exports.Prisma.AssessmentScalarFieldEnum = {
   type: 'type',
   courseId: 'courseId',
   teacherId: 'teacherId',
-  date: 'date'
+  date: 'date',
+  mark: 'mark'
 };
 
 exports.Prisma.QuestionScalarFieldEnum = {
@@ -292,7 +293,8 @@ exports.Prisma.ScheduleScalarFieldEnum = {
   courseId: 'courseId',
   startTime: 'startTime',
   endTime: 'endTime',
-  location: 'location'
+  location: 'location',
+  day: 'day'
 };
 
 exports.Prisma.SortOrder = {
@@ -448,7 +450,8 @@ exports.Prisma.ParentStudentOrderByRelevanceFieldEnum = {
 exports.Prisma.ScheduleOrderByRelevanceFieldEnum = {
   id: 'id',
   courseId: 'courseId',
-  location: 'location'
+  location: 'location',
+  day: 'day'
 };
 exports.AssessmentType = exports.$Enums.AssessmentType = {
   EXAM: 'EXAM',

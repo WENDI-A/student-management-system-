@@ -5,24 +5,39 @@ import { useSnackbar } from 'notistack';
 
 const get_path_list: Record<string, string> = {
     students: "/students",
-    classes : "/classes"
+    classes : "/classes",
+    teachers: "/teachers",
+    courses: "/courses",
+    parents: "/parents",
 };
 
 const create_path: Record<string, string> = {
     students: "/students",
+    teachers: "/teachers",
+    courses: "/courses",
+    parents: "/parents",
 };
 
 const get_one_path: Record<string, string> = {  
     students: "/students",
+    teachers: "/teachers",
+    courses: "/courses",
+    parents: "/parents",
 };
 
 
 const delete_path: Record<string, string> = {
     students: "/students",
+    teachers: "/teachers",
+    courses: "/courses",
+    parents: "/parents",
 };
 
 const update_path: Record<string, string> = {
     students: "/students",
+    teachers: "/teachers",
+    courses: "/courses",
+    parents: "/parents",
 };
 
 const get_one_dashboard_path: Record<string, string> = {

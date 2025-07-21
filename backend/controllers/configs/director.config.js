@@ -4,6 +4,14 @@ const bcrypt = require("bcrypt");
 
 const validateDirector = (data, req) => {
   try {
+    // Defensive: Only validate if data is an object
+    if (!data || typeof data !== 'object') {
+      return {
+        isValid: false,
+        message: 'Invalid input: expected object, received ' + typeof data,
+        errors: ['Invalid input: expected object, received ' + typeof data],
+      };
+    }
     // Set default password if not provided (for admin-created directors)
     if (req.method && req.method.toLowerCase() === "post" && !data.password) {
       data.password = "director123";
@@ -39,10 +47,11 @@ const validateDirector = (data, req) => {
 };
 
 const hashPassword = async (data, req) => {
-  const saltRounds = 10;
-  // Always hash the password, defaulting to "director123" if not present
-  const passwordToHash = data.password || "director123";
-  return { ...data, password: await bcrypt.hash(passwordToHash, saltRounds) };
+  if (data.password) {
+    const saltRounds = 10;
+    data.password = await bcrypt.hash(data.password, saltRounds);
+  }
+  return data;
 };
 
 module.exports = {

@@ -5,7 +5,7 @@ const DirectorSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   email: z.string().email(),
-  password: z.string(),
+  password: z.string().optional(), // Make password optional
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
   deletedAt: z.date().optional().nullable()

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useTeacherAdminState } from './adminteacher';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,79 +21,71 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function AdminTeacher() {
-  const [open, setOpen] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState("");
-  const [grade, setGrade] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [teachers, setTeachers] = useState<
-    Array<{
-      firstName: string;
-      lastName: string;
-      phoneNumber: string;
-      email: string;
-      grade: string;
-    }>
-  >([]);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [editTeacher, setEditTeacher] = useState<null | (typeof teachers)[0]>(
-    null
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const teachersPerPage = 10;
+  const state = useTeacherAdminState();
 
-  // Calculate pagination
-  const totalPages = Math.ceil(teachers.length / teachersPerPage);
-  const startIndex = (currentPage - 1) * teachersPerPage;
-  const endIndex = startIndex + teachersPerPage;
-  const currentTeachers = teachers.slice(startIndex, endIndex);
+  // Destructure and use state just like in the student admin page
+  const {
+    open,
+    setOpen,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    email,
+    setEmail,
+    selectedCourse,
+    setSelectedCourse,
+    editId,
+    setEditId,
+    editTeacher,
+    setEditTeacher,
+    currentPage,
+    setCurrentPage,
+    teachersPerPage,
+    teachers,
+    total,
+    totalPages,
+    startIndex,
+    endIndex,
+    createTeacher,
+    updateTeacher,
+    deleteTeacher,
+    goToPage,
+  } = state;
+
+  const courses = state.courses;
 
   function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      setSuccess(true);
-      setOpen(false);
-      setTeachers((prev) => [
-        ...prev,
-        { firstName, lastName, phoneNumber, email, grade },
-      ]);
-      setTimeout(() => setSuccess(false), 2000);
-      setFirstName("");
-      setLastName("");
-      setPhoneNumber("");
-      setEmail("");
-      setGrade("");
-      // Reset to first page when adding new teacher
-      setCurrentPage(1);
-    }, 1200);
+    createTeacher.mutate({
+      data: {
+        firstName,
+        lastName,
+        email,
+        courses: {
+          create: selectedCourse ? [{ courseId: selectedCourse }] : [],
+        },
+      },
+    });
   }
 
   function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (editIndex === null || !editTeacher) return;
-    setTeachers((prev) =>
-      prev.map((s, i) => (i === editIndex ? editTeacher : s))
-    );
-    setEditIndex(null);
-    setEditTeacher(null);
-  }
-  
-  function handleDelete(idx: number) {
-    setTeachers((prev) => prev.filter((_, i) => i !== idx));
-    // Adjust current page if we're on the last page and it becomes empty
-    if (currentTeachers.length === 1 && currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+    if (!editId || !editTeacher) return;
+    updateTeacher.mutate({
+      id: editId,
+      data: {
+        ...editTeacher,
+        courses: {
+          set: editTeacher.courses?.map((c: any) => ({ id: c.id })) || [],
+        },
+      },
+    });
   }
 
-  const goToPage = (page: number) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  };
+  function handleDelete(id: string) {
+    deleteTeacher.mutate({ id });
+  }
 
   return (
     <div className="w-full px-2 sm:px-4">
@@ -101,7 +93,11 @@ export default function AdminTeacher() {
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           <CardTitle className="text-2xl">Teachers</CardTitle>
           <Button
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setOpen(true);
+              setEditId(null);
+              setEditTeacher(null);
+            }}
             variant="link"
             className="text-blue-700 dark:text-blue-400 w-full sm:w-auto"
           >
@@ -115,87 +111,62 @@ export default function AdminTeacher() {
             </div>
           ) : (
             <div className="w-full max-w-full overflow-x-auto">
-              <table className="min-w-[600px] bg-white dark:bg-background rounded-lg shadow mt-4 text-sm">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      ID
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      First Name
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Last Name
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Phone Number
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Email
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Grade
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentTeachers.map((t, i) => (
-                    <tr
-                      key={startIndex + i}
-                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
-                    >
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap font-medium text-gray-600 dark:text-gray-400">
-                        {startIndex + i + 1}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {t.firstName}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {t.lastName}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {t.phoneNumber}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {t.email}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 whitespace-nowrap">
-                        {t.grade}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 flex flex-col sm:flex-row gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full sm:w-auto"
-                          onClick={() => {
-                            setEditIndex(startIndex + i);
-                            setEditTeacher(t);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="w-full sm:w-auto"
-                          onClick={() => handleDelete(startIndex + i)}
-                        >
-                          Delete
-                        </Button>
-                      </td>
+              <div className="w-full">
+                <table className="w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-xs">
+                  <thead>
+                    <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">No</th>
+                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">First Name</th>
+                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Last Name</th>
+                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Email</th>
+                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {teachers.map((t, i) => (
+                      <tr
+                        key={startIndex + i}
+                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
+                      >
+                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap font-medium text-gray-600 dark:text-gray-400">
+                          {startIndex + i + 1}
+                        </td>
+                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.firstName}</td>
+                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.lastName}</td>
+                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.email}</td>
+                        <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full sm:w-auto"
+                            onClick={() => {
+                              setEditId(t.id);
+                              setEditTeacher(t);
+                              setOpen(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="w-full sm:w-auto"
+                            onClick={() => handleDelete(t.id)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               
               {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4 px-2 sm:px-4">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {startIndex + 1} to {Math.min(endIndex, teachers.length)} of {teachers.length} teachers
+                    Showing {startIndex + 1} to {Math.min(endIndex, total)} of {total} teachers
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -238,11 +209,6 @@ export default function AdminTeacher() {
               )}
             </div>
           )}
-          {success && (
-            <div className="text-emerald-500 text-center mt-2">
-              Teacher created!
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -250,17 +216,21 @@ export default function AdminTeacher() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg w-full px-2 sm:px-6">
           <DialogHeader>
-            <DialogTitle>Add New Teacher</DialogTitle>
+            <DialogTitle>{editId ? "Edit Teacher" : "Add New Teacher"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={editId ? handleEditSave : handleSave} className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   First Name
                 </label>
                 <Input
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  value={editId ? editTeacher?.firstName || "" : firstName}
+                  onChange={e =>
+                    editId
+                      ? setEditTeacher({ ...editTeacher, firstName: e.target.value })
+                      : setFirstName(e.target.value)
+                  }
                   required
                 />
               </div>
@@ -269,22 +239,15 @@ export default function AdminTeacher() {
                   Last Name
                 </label>
                 <Input
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  value={editId ? editTeacher?.lastName || "" : lastName}
+                  onChange={e =>
+                    editId
+                      ? setEditTeacher({ ...editTeacher, lastName: e.target.value })
+                      : setLastName(e.target.value)
+                  }
                   required
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Phone Number
-              </label>
-              <Input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                required
-              />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -292,25 +255,38 @@ export default function AdminTeacher() {
               </label>
               <Input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={editId ? editTeacher?.email || "" : email}
+                onChange={e =>
+                  editId
+                    ? setEditTeacher({ ...editTeacher, email: e.target.value })
+                    : setEmail(e.target.value)
+                }
                 required
               />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Grade
+                Courses
               </label>
-              <Select value={grade} onValueChange={setGrade} required>
+              <Select
+                value={editId ? (editTeacher?.courses?.[0]?.id || "") : selectedCourse}
+                onValueChange={value =>
+                  editId
+                    ? setEditTeacher({
+                        ...editTeacher,
+                        courses: [{ id: value }],
+                      })
+                    : setSelectedCourse(value)
+                }
+              >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select grade" />
+                  <SelectValue placeholder="Select course" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[...Array(12)].map((_, i) => (
-                    <SelectItem
-                      key={i + 1}
-                      value={(i + 1).toString()}
-                    >{`Grade ${i + 1}`}</SelectItem>
+                  {state.courses.map((course: any) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -328,132 +304,12 @@ export default function AdminTeacher() {
               <Button
                 type="submit"
                 className="bg-blue-700 hover:bg-blue-600 w-full sm:w-auto"
-                disabled={saving}
+                disabled={createTeacher.isPending || updateTeacher.isPending}
               >
-                {saving ? "Saving..." : "Save"}
+                {createTeacher.isPending || updateTeacher.isPending ? "Saving..." : "Save"}
               </Button>
             </DialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Teacher Dialog */}
-      <Dialog
-        open={editIndex !== null}
-        onOpenChange={(v) => {
-          if (!v) {
-            setEditIndex(null);
-            setEditTeacher(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-lg w-full px-2 sm:px-6">
-          <DialogHeader>
-            <DialogTitle>Edit Teacher</DialogTitle>
-          </DialogHeader>
-          {editTeacher && (
-            <form onSubmit={handleEditSave} className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    First Name
-                  </label>
-                  <Input
-                    value={editTeacher.firstName}
-                    onChange={(e) =>
-                      setEditTeacher({
-                        ...editTeacher,
-                        firstName: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Last Name
-                  </label>
-                  <Input
-                    value={editTeacher.lastName}
-                    onChange={(e) =>
-                      setEditTeacher({
-                        ...editTeacher,
-                        lastName: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Phone Number
-                </label>
-                <Input
-                  type="tel"
-                  value={editTeacher.phoneNumber}
-                  onChange={(e) =>
-                    setEditTeacher({ ...editTeacher, phoneNumber: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  value={editTeacher.email}
-                  onChange={(e) =>
-                    setEditTeacher({ ...editTeacher, email: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Grade
-                </label>
-                <Select
-                  value={editTeacher.grade}
-                  onValueChange={(v) =>
-                    setEditTeacher({ ...editTeacher, grade: v })
-                  }
-                  required
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select grade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[...Array(12)].map((_, i) => (
-                      <SelectItem
-                        key={i + 1}
-                        value={(i + 1).toString()}
-                      >{`Grade ${i + 1}`}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-end">
-                <DialogClose asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button
-                  type="submit"
-                  className="bg-blue-700 hover:bg-blue-600 w-full sm:w-auto"
-                >
-                  Save
-                </Button>
-              </DialogFooter>
-            </form>
-          )}
         </DialogContent>
       </Dialog>
     </div>
