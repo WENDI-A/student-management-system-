@@ -37,24 +37,21 @@ const sidebarConfig = {
     { label: "Dashboard", icon: LayoutDashboard, href: "/student" },
     { label: "Course Material", icon: Book, href: "/student/course-material" },
     { label: "Assessment", icon: ClipboardList, href: "/student/assessment" },
-    { label: "Exam", icon: FileText, href: "/student/exam" },
-    { label: "Notification", icon: Bell, href: "/student/notification" },
-    { label: "Setting", icon: Settings, href: "/student/setting" },
+    // { label: "Exam", icon: FileText, href: "/student/exam" }, // TEMPORARILY COMMENTED OUT
+    // { label: "Notification", icon: Bell, href: "/student/notification" }, // TEMPORARILY COMMENTED OUT
+    // { label: "Setting", icon: Settings, href: "/student/setting" }, // TEMPORARILY COMMENTED OUT
+    { label: "Grades", icon: GraduationCap, href: "/student/grade" },
   ],
   teacher: [
     { label: "Dashboard", icon: LayoutDashboard, href: "/teacher" },
     { label: "Course Material", icon: Book, href: "/teacher/course-material" },
-    {
-      label: "Course Enrollment",
-      icon: Users,
-      href: "/teacher/course-enrollment",
-    },
+    // { label: "Course Enrollment", icon: Users, href: "/teacher/course-enrollment" }, // TEMPORARILY COMMENTED OUT
     { label: "Assessment", icon: ClipboardList, href: "/teacher/assessment" },
     { label: "Attendance", icon: CheckCircle, href: "/teacher/attendance" },
     { label: "Grade", icon: GraduationCap, href: "/teacher/grade" },
-    { label: "Question", icon: FileQuestion, href: "/teacher/question" },
-    { label: "Notification", icon: Bell, href: "/teacher/notification" },
-    { label: "Setting", icon: Settings, href: "/teacher/setting" },
+    // { label: "Question", icon: FileQuestion, href: "/teacher/question" }, // TEMPORARILY COMMENTED OUT
+    // { label: "Notification", icon: Bell, href: "/teacher/notification" }, // TEMPORARILY COMMENTED OUT
+    // { label: "Setting", icon: Settings, href: "/teacher/setting" }, // TEMPORARILY COMMENTED OUT
   ],
   admin: [
     { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
