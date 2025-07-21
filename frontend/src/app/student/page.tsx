@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import FullCalendar from "@fullcalendar/react";
+import dynamic from "next/dynamic";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { CalendarDays } from "lucide-react";
+
+const FullCalendar = dynamic(() => import("@fullcalendar/react"), { ssr: false });
 
 // Mock data for schedule
 const scheduleEvents = [
