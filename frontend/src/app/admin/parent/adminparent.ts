@@ -3,8 +3,18 @@ import dataProvider from '@/hooks/dataProvider';
 import { useState } from 'react';
 
 export function useParentList(page = 1, perPage = 10, filter = {}) {
-  return dataProvider.useListQuery('parents', { page, perPage, filter });
+  return dataProvider.useListQuery('parents', {
+    page,
+    perPage,
+    filter,
+    include: JSON.stringify({ parentLinks: { include: { student: true } } }),
+  });
 }
+
+export function useAllStudents() {
+  return dataProvider.useListQuery('students', { page: 1, perPage: 100 });
+}
+
 export function useCreateParent(options: any) {
   return dataProvider.useCreateMutation('parents', options);
 }
@@ -25,6 +35,7 @@ export function useParentAdminState() {
   const [editParent, setEditParent] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const parentsPerPage = 10;
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
   const {
     data: parentData,
@@ -32,6 +43,8 @@ export function useParentAdminState() {
     error,
     refetch,
   } = useParentList(currentPage, parentsPerPage);
+  const { data: allStudentsData, isLoading: studentsLoading } = useAllStudents();
+  const allStudents = allStudentsData?.data || [];
 
   const createParent = useCreateParent({
     onSuccess: () => {
@@ -71,6 +84,7 @@ export function useParentAdminState() {
         lastName,
         email,
         password,
+        parentLinks: selectedStudentIds.map(studentId => ({ studentId })),
       },
     });
   }
@@ -84,6 +98,7 @@ export function useParentAdminState() {
         firstName: editParent.firstName,
         lastName: editParent.lastName,
         email: editParent.email,
+        parentLinks: selectedStudentIds.map(studentId => ({ studentId })),
       },
     });
   }
@@ -110,5 +125,9 @@ export function useParentAdminState() {
     createParent, updateParent, deleteParent,
     parents, total, totalPages, startIndex, endIndex,
     handleSave, handleEditSave, handleDelete, goToPage,
+    allStudents,
+    studentsLoading,
+    selectedStudentIds,
+    setSelectedStudentIds,
   };
 } 

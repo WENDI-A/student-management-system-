@@ -11,7 +11,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Search } from "lucide-react";
+import { useState, useMemo } from "react";
 
 export default function AdminParent() {
   const state = useParentAdminState();
@@ -40,7 +41,45 @@ export default function AdminParent() {
     updateParent,
     deleteParent,
     goToPage,
+    allStudents,
+    studentsLoading,
+    selectedStudentIds,
+    setSelectedStudentIds,
   } = state;
+
+  // Local state for student search
+  const [studentSearch, setStudentSearch] = useState("");
+
+  // Filter students based on search
+  const filteredStudents = useMemo(() => {
+    if (!studentSearch.trim()) return allStudents;
+    return allStudents.filter((student: any) =>
+      `${student.firstName} ${student.lastName} ${student.email}`
+        .toLowerCase()
+        .includes(studentSearch.toLowerCase())
+    );
+  }, [allStudents, studentSearch]);
+
+  // Get selected students data
+  const selectedStudents = useMemo(() => {
+    return allStudents.filter((student: any) => 
+      selectedStudentIds.includes(student.id)
+    );
+  }, [allStudents, selectedStudentIds]);
+
+  // Handle student selection
+  const handleStudentSelect = (studentId: string) => {
+    if (selectedStudentIds.includes(studentId)) {
+      setSelectedStudentIds(selectedStudentIds.filter(id => id !== studentId));
+    } else {
+      setSelectedStudentIds([...selectedStudentIds, studentId]);
+    }
+  };
+
+  // Handle student removal from selected
+  const handleStudentRemove = (studentId: string) => {
+    setSelectedStudentIds(selectedStudentIds.filter(id => id !== studentId));
+  };
 
   // Use a default password for creation
   function handleSave(e: React.FormEvent<HTMLFormElement>) {
@@ -51,6 +90,7 @@ export default function AdminParent() {
         lastName,
         email,
         password: "changeme123", // Default password for new parents
+        parentLinks: selectedStudentIds.map(studentId => ({ studentId })),
       },
     });
   }
@@ -64,6 +104,7 @@ export default function AdminParent() {
         firstName: editParent.firstName,
         lastName: editParent.lastName,
         email: editParent.email,
+        parentLinks: selectedStudentIds.map(studentId => ({ studentId })),
       },
     });
   }
@@ -82,6 +123,8 @@ export default function AdminParent() {
               setOpen(true);
               setEditId(null);
               setEditParent(null);
+              setSelectedStudentIds([]);
+              setStudentSearch("");
             }}
             variant="link"
             className="text-blue-700 dark:text-blue-400 w-full sm:w-auto"
@@ -104,6 +147,7 @@ export default function AdminParent() {
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">First Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Last Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Email</th>
+                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Students</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
@@ -119,6 +163,19 @@ export default function AdminParent() {
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{p.firstName}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{p.lastName}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{p.email}</td>
+                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                          {p.parentLinks && p.parentLinks.length > 0 ? (
+                            <ul className="list-disc ml-2">
+                              {p.parentLinks.map((link: any) => (
+                                <li key={link.student?.id} className="text-xs">
+                                  {link.student?.firstName} {link.student?.lastName} ({link.student?.email})
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span className="text-gray-400">None</span>
+                          )}
+                        </td>
                         <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
                         <Button
                           size="sm"
@@ -128,6 +185,10 @@ export default function AdminParent() {
                               setEditId(p.id);
                             setEditParent(p);
                               setOpen(true);
+                              // Set selected students for edit
+                              setSelectedStudentIds(
+                                p.parentLinks?.map((link: any) => link.student?.id) || []
+                              );
                           }}
                         >
                           Edit
@@ -245,6 +306,84 @@ export default function AdminParent() {
                 required
               />
             </div>
+            
+            {/* Student Selection */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Students
+              </label>
+              
+              {/* Selected Students Display */}
+              {selectedStudents.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {selectedStudents.map((student: any) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+                    >
+                      <span>{student.firstName} {student.lastName}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleStudentRemove(student.id)}
+                        className="hover:bg-blue-200 rounded-full p-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Student Search and Selection */}
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="Search students..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+              
+              {/* Student List */}
+              <div className="max-h-40 overflow-y-auto border rounded-md">
+                {studentsLoading ? (
+                  <div className="p-2 text-center text-gray-500">Loading students...</div>
+                ) : filteredStudents.length === 0 ? (
+                  <div className="p-2 text-center text-gray-500">
+                    {studentSearch ? "No students found" : "No students available"}
+                  </div>
+                ) : (
+                  <div className="divide-y">
+                    {filteredStudents.map((student: any) => (
+                      <div
+                        key={student.id}
+                        className={`p-2 cursor-pointer hover:bg-gray-50 ${
+                          selectedStudentIds.includes(student.id) ? 'bg-blue-50' : ''
+                        }`}
+                        onClick={() => handleStudentSelect(student.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-sm">
+                              {student.firstName} {student.lastName}
+                            </div>
+                            <div className="text-xs text-gray-500">{student.email}</div>
+                          </div>
+                          {selectedStudentIds.includes(student.id) && (
+                            <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
+                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            
             <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-end">
               <DialogClose asChild>
                 <Button

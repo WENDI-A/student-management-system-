@@ -57,7 +57,7 @@ const sidebarConfig = {
     { label: "Setting", icon: Settings, href: "/teacher/setting" },
   ],
   admin: [
-    { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+    { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
     { label: "Student", icon: User, href: "/admin/student" },
     { label: "Teacher", icon: Users, href: "/admin/teacher" },
     { label: "Parent", icon: User, href: "/admin/parent" },
