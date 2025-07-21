@@ -21994,6 +21994,7 @@ export namespace Prisma {
     startTime: Date | null
     endTime: Date | null
     location: string | null
+    day: string | null
   }
 
   export type ScheduleMaxAggregateOutputType = {
@@ -22002,6 +22003,7 @@ export namespace Prisma {
     startTime: Date | null
     endTime: Date | null
     location: string | null
+    day: string | null
   }
 
   export type ScheduleCountAggregateOutputType = {
@@ -22010,6 +22012,7 @@ export namespace Prisma {
     startTime: number
     endTime: number
     location: number
+    day: number
     _all: number
   }
 
@@ -22020,6 +22023,7 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     location?: true
+    day?: true
   }
 
   export type ScheduleMaxAggregateInputType = {
@@ -22028,6 +22032,7 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     location?: true
+    day?: true
   }
 
   export type ScheduleCountAggregateInputType = {
@@ -22036,6 +22041,7 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     location?: true
+    day?: true
     _all?: true
   }
 
@@ -22117,6 +22123,7 @@ export namespace Prisma {
     startTime: Date
     endTime: Date
     location: string | null
+    day: string
     _count: ScheduleCountAggregateOutputType | null
     _min: ScheduleMinAggregateOutputType | null
     _max: ScheduleMaxAggregateOutputType | null
@@ -22142,6 +22149,7 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     location?: boolean
+    day?: boolean
     course?: boolean | CourseDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["schedule"]>
 
@@ -22153,9 +22161,10 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     location?: boolean
+    day?: boolean
   }
 
-  export type ScheduleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "courseId" | "startTime" | "endTime" | "location", ExtArgs["result"]["schedule"]>
+  export type ScheduleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "courseId" | "startTime" | "endTime" | "location" | "day", ExtArgs["result"]["schedule"]>
   export type ScheduleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     course?: boolean | CourseDefaultArgs<ExtArgs>
   }
@@ -22171,6 +22180,7 @@ export namespace Prisma {
       startTime: Date
       endTime: Date
       location: string | null
+      day: string
     }, ExtArgs["result"]["schedule"]>
     composites: {}
   }
@@ -22546,6 +22556,7 @@ export namespace Prisma {
     readonly startTime: FieldRef<"Schedule", 'DateTime'>
     readonly endTime: FieldRef<"Schedule", 'DateTime'>
     readonly location: FieldRef<"Schedule", 'String'>
+    readonly day: FieldRef<"Schedule", 'String'>
   }
     
 
@@ -23156,7 +23167,8 @@ export namespace Prisma {
     courseId: 'courseId',
     startTime: 'startTime',
     endTime: 'endTime',
-    location: 'location'
+    location: 'location',
+    day: 'day'
   };
 
   export type ScheduleScalarFieldEnum = (typeof ScheduleScalarFieldEnum)[keyof typeof ScheduleScalarFieldEnum]
@@ -23404,7 +23416,8 @@ export namespace Prisma {
   export const ScheduleOrderByRelevanceFieldEnum: {
     id: 'id',
     courseId: 'courseId',
-    location: 'location'
+    location: 'location',
+    day: 'day'
   };
 
   export type ScheduleOrderByRelevanceFieldEnum = (typeof ScheduleOrderByRelevanceFieldEnum)[keyof typeof ScheduleOrderByRelevanceFieldEnum]
@@ -24785,6 +24798,7 @@ export namespace Prisma {
     startTime?: DateTimeFilter<"Schedule"> | Date | string
     endTime?: DateTimeFilter<"Schedule"> | Date | string
     location?: StringNullableFilter<"Schedule"> | string | null
+    day?: StringFilter<"Schedule"> | string
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
   }
 
@@ -24794,6 +24808,7 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     location?: SortOrderInput | SortOrder
+    day?: SortOrder
     course?: CourseOrderByWithRelationInput
     _relevance?: ScheduleOrderByRelevanceInput
   }
@@ -24807,6 +24822,7 @@ export namespace Prisma {
     startTime?: DateTimeFilter<"Schedule"> | Date | string
     endTime?: DateTimeFilter<"Schedule"> | Date | string
     location?: StringNullableFilter<"Schedule"> | string | null
+    day?: StringFilter<"Schedule"> | string
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
   }, "id">
 
@@ -24816,6 +24832,7 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     location?: SortOrderInput | SortOrder
+    day?: SortOrder
     _count?: ScheduleCountOrderByAggregateInput
     _max?: ScheduleMaxOrderByAggregateInput
     _min?: ScheduleMinOrderByAggregateInput
@@ -24830,6 +24847,7 @@ export namespace Prisma {
     startTime?: DateTimeWithAggregatesFilter<"Schedule"> | Date | string
     endTime?: DateTimeWithAggregatesFilter<"Schedule"> | Date | string
     location?: StringNullableWithAggregatesFilter<"Schedule"> | string | null
+    day?: StringWithAggregatesFilter<"Schedule"> | string
   }
 
   export type StudentCreateInput = {
@@ -26133,6 +26151,7 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     location?: string | null
+    day: string
     course: CourseCreateNestedOneWithoutSchedulesInput
   }
 
@@ -26142,6 +26161,7 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     location?: string | null
+    day: string
   }
 
   export type ScheduleUpdateInput = {
@@ -26149,6 +26169,7 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    day?: StringFieldUpdateOperationsInput | string
     course?: CourseUpdateOneRequiredWithoutSchedulesNestedInput
   }
 
@@ -26158,6 +26179,7 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    day?: StringFieldUpdateOperationsInput | string
   }
 
   export type ScheduleCreateManyInput = {
@@ -26166,6 +26188,7 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     location?: string | null
+    day: string
   }
 
   export type ScheduleUpdateManyMutationInput = {
@@ -26173,6 +26196,7 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    day?: StringFieldUpdateOperationsInput | string
   }
 
   export type ScheduleUncheckedUpdateManyInput = {
@@ -26181,6 +26205,7 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    day?: StringFieldUpdateOperationsInput | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -27372,6 +27397,7 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     location?: SortOrder
+    day?: SortOrder
   }
 
   export type ScheduleMaxOrderByAggregateInput = {
@@ -27380,6 +27406,7 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     location?: SortOrder
+    day?: SortOrder
   }
 
   export type ScheduleMinOrderByAggregateInput = {
@@ -27388,6 +27415,7 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     location?: SortOrder
+    day?: SortOrder
   }
 
   export type ClassCreateNestedOneWithoutStudentsInput = {
@@ -30441,6 +30469,7 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     location?: string | null
+    day: string
   }
 
   export type ScheduleUncheckedCreateWithoutCourseInput = {
@@ -30448,6 +30477,7 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     location?: string | null
+    day: string
   }
 
   export type ScheduleCreateOrConnectWithoutCourseInput = {
@@ -30612,6 +30642,7 @@ export namespace Prisma {
     startTime?: DateTimeFilter<"Schedule"> | Date | string
     endTime?: DateTimeFilter<"Schedule"> | Date | string
     location?: StringNullableFilter<"Schedule"> | string | null
+    day?: StringFilter<"Schedule"> | string
   }
 
   export type GradeSummaryUpsertWithWhereUniqueWithoutCourseInput = {
@@ -33372,6 +33403,7 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     location?: string | null
+    day: string
   }
 
   export type GradeSummaryCreateManyCourseInput = {
@@ -33494,6 +33526,7 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    day?: StringFieldUpdateOperationsInput | string
   }
 
   export type ScheduleUncheckedUpdateWithoutCourseInput = {
@@ -33501,6 +33534,7 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    day?: StringFieldUpdateOperationsInput | string
   }
 
   export type ScheduleUncheckedUpdateManyWithoutCourseInput = {
@@ -33508,6 +33542,7 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    day?: StringFieldUpdateOperationsInput | string
   }
 
   export type GradeSummaryUpdateWithoutCourseInput = {

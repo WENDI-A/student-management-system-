@@ -4,11 +4,22 @@ const bcrypt = require("bcrypt");
 
 const validateDirector = (data, req) => {
   try {
-    // Set default password if not provided (for admin-created directors)
-    if (req.method && req.method.toLowerCase() === "post" && !data.password) {
-      data.password = "director123";
+    // Defensive: Only validate if data is an object
+    if (!data || typeof data !== 'object') {
+      return {
+        isValid: false,
+        message: 'Invalid input: expected object, received ' + typeof data,
+        errors: ['Invalid input: expected object, received ' + typeof data],
+        status: 400
+      };
     }
-    console.log("[Director Registration] Incoming data:", data);
+    // REMOVED: Set default password if not provided (for admin-created directors)
+    // if (req.method && req.method.toLowerCase() === "post" && !data.password) {
+    //   data.password = "director123";
+    // }
+    if (req.method && req.method.toLowerCase() === "put") {
+      console.log("[Director Update] Received body:", data);
+    }
     let validatedData;
     if (req.method && req.method.toLowerCase() === "post") {
       validatedData = DirectorSchema.parse(data);
@@ -28,21 +39,28 @@ const validateDirector = (data, req) => {
         isValid: false,
         message: errors.join(", "),
         errors: errors,
+        status: 400
       };
     }
     return {
       isValid: false,
       message: "Validation failed",
       errors: [error.message],
+      status: 400
     };
   }
 };
 
 const hashPassword = async (data, req) => {
-  const saltRounds = 10;
-  // Always hash the password, defaulting to "director123" if not present
-  const passwordToHash = data.password || "director123";
-  return { ...data, password: await bcrypt.hash(passwordToHash, saltRounds) };
+  // Set default password if not provided (for admin-created directors)
+  if (req && req.method && req.method.toLowerCase() === "post" && !data.password) {
+    data.password = "director123";
+  }
+  if (data.password) {
+    const saltRounds = 10;
+    data.password = await bcrypt.hash(data.password, saltRounds);
+  }
+  return data;
 };
 
 module.exports = {

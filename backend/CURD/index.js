@@ -555,7 +555,13 @@ class PrismaCrudRouter {
           }
           if (validation && validation.update) {
             const validationResult = await validation.update(data,req);
-            if (!validationResult.isValid) throw new Error(validationResult.message || 'Validation failed');
+            if (!validationResult.isValid) {
+              // Return 400 for validation errors
+              return res.status(validationResult.status || 400).json({
+                message: validationResult.message,
+                errors: validationResult.errors || [],
+              });
+            }
           }
           if (enableConstraintChecking) {
             const constraintCheck = await this.databaseAnalyzer.checkConstraints('update', data, model);
@@ -566,6 +572,9 @@ class PrismaCrudRouter {
             if (!cascadeResult.success) {
               console.warn(`Cascade operations completed with warnings: ${cascadeResult.results.join(', ')}`);
             }
+          }
+          if (data && !('password' in data)) {
+            delete data.password;
           }
           // Auto-detect and handle relations
           const updated = autoDetectRelations ? 

@@ -1,6 +1,6 @@
 const { AssessmentSchema } = require("../../zodSchemas/Assessment");
 const auth = require("../../middleware/authMiddleware");
-const { PrismaClient } = require('../../prismaClient');
+const { PrismaClient } = require("../../prismaClient");
 const prisma = new PrismaClient();
 
 const validateAssessment = (data, req) => {
@@ -14,21 +14,21 @@ const validateAssessment = (data, req) => {
     return {
       isValid: true,
       message: "Validation successful",
-      data: validatedData
+      data: validatedData,
     };
   } catch (error) {
     if (error.errors) {
-      const errors = error.errors.map(err => JSON.stringify(err));
+      const errors = error.errors.map((err) => JSON.stringify(err));
       return {
         isValid: false,
         message: errors.join(", "),
-        errors: errors
+        errors: errors,
       };
     }
     return {
       isValid: false,
       message: "Validation failed",
-      errors: [error.message]
+      errors: [error.message],
     };
   }
 };
@@ -38,12 +38,21 @@ const assessmentConfig = {
   customActions: {
     POST: async (req, res) => {
       try {
-        const { title, type, courseId, teacherId, date, totalMarks, questions } = req.body;
+        const {
+          title,
+          type,
+          courseId,
+          teacherId,
+          date,
+          totalMarks,
+          questions,
+        } = req.body;
 
         // Validate required fields
         if (!title || !type || !courseId || !teacherId || !date) {
           return res.status(400).json({
-            error: 'Missing required fields: title, type, courseId, teacherId, date'
+            error:
+              "Missing required fields: title, type, courseId, teacherId, date",
           });
         }
 
@@ -53,21 +62,24 @@ const assessmentConfig = {
           for (const question of questions) {
             if (!question.text || !question.type || !question.marks) {
               return res.status(400).json({
-                error: 'Each question must have text, type, and marks'
+                error: "Each question must have text, type, and marks",
               });
             }
             if (question.marks <= 0) {
               return res.status(400).json({
-                error: 'Question marks must be greater than 0'
+                error: "Question marks must be greater than 0",
               });
             }
             calculatedTotalMarks += question.marks;
           }
 
           // Validate total marks match
-          if (totalMarks && Math.abs(calculatedTotalMarks - totalMarks) > 0.01) {
+          if (
+            totalMarks &&
+            Math.abs(calculatedTotalMarks - totalMarks) > 0.01
+          ) {
             return res.status(400).json({
-              error: `Total marks (${totalMarks}) does not match sum of question marks (${calculatedTotalMarks})`
+              error: `Total marks (${totalMarks}) does not match sum of question marks (${calculatedTotalMarks})`,
             });
           }
         }
@@ -82,8 +94,8 @@ const assessmentConfig = {
               courseId,
               teacherId,
               date: new Date(date),
-              totalMarks: totalMarks || 0
-            }
+              totalMarks: totalMarks || 0,
+            },
           });
 
           // Create questions if provided
@@ -95,11 +107,11 @@ const assessmentConfig = {
               marks: q.marks,
               options: q.options ? JSON.stringify(q.options) : null,
               correctAnswer: q.correctAnswer || null,
-              order: q.order !== undefined ? q.order : index
+              order: q.order !== undefined ? q.order : index,
             }));
 
             await tx.question.createMany({
-              data: questionData
+              data: questionData,
             });
           }
 
@@ -110,21 +122,21 @@ const assessmentConfig = {
               course: true,
               teacher: true,
               questions: {
-                orderBy: { order: 'asc' }
-              }
-            }
+                orderBy: { order: "asc" },
+              },
+            },
           });
         });
 
         res.status(201).json({
-          message: 'Assessment created successfully',
-          data: result
+          message: "Assessment created successfully",
+          data: result,
         });
       } catch (error) {
-        console.error('Error creating assessment:', error);
+        console.error("Error creating assessment:", error);
         res.status(500).json({
-          error: 'Failed to create assessment',
-          details: error.message
+          error: "Failed to create assessment",
+          details: error.message,
         });
       }
     },
@@ -133,12 +145,21 @@ const assessmentConfig = {
     PUT: async (req, res) => {
       try {
         const { id } = req.params;
-        const { title, type, courseId, teacherId, date, totalMarks, questions } = req.body;
+        const {
+          title,
+          type,
+          courseId,
+          teacherId,
+          date,
+          totalMarks,
+          questions,
+        } = req.body;
 
         // Validate required fields
         if (!title || !type || !courseId || !teacherId || !date) {
           return res.status(400).json({
-            error: 'Missing required fields: title, type, courseId, teacherId, date'
+            error:
+              "Missing required fields: title, type, courseId, teacherId, date",
           });
         }
 
@@ -148,21 +169,24 @@ const assessmentConfig = {
           for (const question of questions) {
             if (!question.text || !question.type || !question.marks) {
               return res.status(400).json({
-                error: 'Each question must have text, type, and marks'
+                error: "Each question must have text, type, and marks",
               });
             }
             if (question.marks <= 0) {
               return res.status(400).json({
-                error: 'Question marks must be greater than 0'
+                error: "Question marks must be greater than 0",
               });
             }
             calculatedTotalMarks += question.marks;
           }
 
           // Validate total marks match
-          if (totalMarks && Math.abs(calculatedTotalMarks - totalMarks) > 0.01) {
+          if (
+            totalMarks &&
+            Math.abs(calculatedTotalMarks - totalMarks) > 0.01
+          ) {
             return res.status(400).json({
-              error: `Total marks (${totalMarks}) does not match sum of question marks (${calculatedTotalMarks})`
+              error: `Total marks (${totalMarks}) does not match sum of question marks (${calculatedTotalMarks})`,
             });
           }
         }
@@ -178,13 +202,13 @@ const assessmentConfig = {
               courseId,
               teacherId,
               date: new Date(date),
-              totalMarks: totalMarks || 0
-            }
+              totalMarks: totalMarks || 0,
+            },
           });
 
           // Delete existing questions
           await tx.question.deleteMany({
-            where: { assessmentId: id }
+            where: { assessmentId: id },
           });
 
           // Create new questions if provided
@@ -196,11 +220,11 @@ const assessmentConfig = {
               marks: q.marks,
               options: q.options ? JSON.stringify(q.options) : null,
               correctAnswer: q.correctAnswer || null,
-              order: q.order !== undefined ? q.order : index
+              order: q.order !== undefined ? q.order : index,
             }));
 
             await tx.question.createMany({
-              data: questionData
+              data: questionData,
             });
           }
 
@@ -211,21 +235,21 @@ const assessmentConfig = {
               course: true,
               teacher: true,
               questions: {
-                orderBy: { order: 'asc' }
-              }
-            }
+                orderBy: { order: "asc" },
+              },
+            },
           });
         });
 
         res.json({
-          message: 'Assessment updated successfully',
-          data: result
+          message: "Assessment updated successfully",
+          data: result,
         });
       } catch (error) {
-        console.error('Error updating assessment:', error);
+        console.error("Error updating assessment:", error);
         res.status(500).json({
-          error: 'Failed to update assessment',
-          details: error.message
+          error: "Failed to update assessment",
+          details: error.message,
         });
       }
     },
@@ -237,21 +261,21 @@ const assessmentConfig = {
 
         // Delete assessment (questions will be deleted automatically due to cascade)
         await prisma.assessment.delete({
-          where: { id }
+          where: { id },
         });
 
         res.json({
-          message: 'Assessment deleted successfully'
+          message: "Assessment deleted successfully",
         });
       } catch (error) {
-        console.error('Error deleting assessment:', error);
+        console.error("Error deleting assessment:", error);
         res.status(500).json({
-          error: 'Failed to delete assessment',
-          details: error.message
+          error: "Failed to delete assessment",
+          details: error.message,
         });
       }
-    }
-  }
+    },
+  },
 };
 
-module.exports = assessmentConfig; 
+module.exports = assessmentConfig;

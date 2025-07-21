@@ -6,7 +6,8 @@ const AssessmentSchema = z.object({
   type: z.string(),
   courseId: z.string(),
   teacherId: z.string(),
-  date: z.date()
+  date: z.date(),
+  mark: z.number(), // Added mark
 });
 
 module.exports = { AssessmentSchema }; 

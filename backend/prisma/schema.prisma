@@ -276,5 +276,6 @@ model Schedule {
   startTime   DateTime
   endTime     DateTime
   location    String?
+  day         String   // Added day of week (e.g., 'Monday')
   course      Course    @relation(fields: [courseId], references: [id])
 } 
