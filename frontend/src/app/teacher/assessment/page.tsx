@@ -9,12 +9,19 @@ import {
   useTeacherCourses,
   Question,
   Assessment,
-} from "./assessment";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+  useQuestionsByAssessmentId,
+  useAllQuestionsForTeacherAssessments
+} from './assessment';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -25,7 +32,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useSnackbar } from "notistack";
-import { useIdentity } from "@/hooks/auth/useIdentity";
 import {
   Plus,
   Edit,
@@ -38,12 +44,15 @@ import {
   AlertCircle,
   FileText,
   Type,
-  Hash,
-} from "lucide-react";
+  Hash
+} from 'lucide-react';
+import { useIdentity } from '@/hooks/auth/useIdentity';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 export default function AssessmentPage() {
   const { enqueueSnackbar } = useSnackbar();
   const { data: identity } = useIdentity();
+  const teacherId = typeof identity === 'object' && identity !== null && 'id' in identity ? (identity as any).id : undefined;
   const [isCreating, setIsCreating] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(
     null
@@ -124,17 +133,23 @@ export default function AssessmentPage() {
   const assessments = assessmentsData?.data || [];
   const courses = coursesData?.data || [];
 
+  // Fetch all questions for all assessments at once (TOP LEVEL, not inside map)
+  const assessmentIds = assessments.map((a: any) => a.id);
+  const { data: allQuestionsData, isLoading: allQuestionsLoading } = useAllQuestionsForTeacherAssessments(assessmentIds);
+  const allQuestions = allQuestionsData?.data || [];
+  // Group questions by assessmentId
+  const questionsByAssessment: Record<string, any[]> = {};
+  allQuestions.forEach((q: any) => {
+    if (!questionsByAssessment[q.assessmentId]) questionsByAssessment[q.assessmentId] = [];
+    questionsByAssessment[q.assessmentId].push(q);
+  });
+
   const handleSaveAssessment = async () => {
     const error = validateAssessment();
     if (error) {
       enqueueSnackbar(error, { variant: "error" });
       return;
     }
-
-    const teacherId =
-      typeof identity === "object" && identity !== null && "id" in identity
-        ? (identity as any).id
-        : undefined;
 
     const assessmentData = {
       ...assessment,
@@ -509,106 +524,100 @@ export default function AssessmentPage() {
               <CardTitle>Questions ({questions.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <Accordion type="multiple" className="w-full">
                 {questions.map((question, index) => (
-                  <div key={index} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-start justify-between">
+                  <AccordionItem key={index} value={`question-${index}`}>
+                    <AccordionTrigger>
                       <div className="flex items-center space-x-2">
                         <Badge className={getQuestionTypeColor(question.type)}>
                           {getQuestionTypeIcon(question.type)}
-                          <span className="ml-1">
-                            {question.type.replace("_", " ")}
-                          </span>
+                          <span className="ml-1">{question.type.replace('_', ' ')}</span>
                         </Badge>
+                        <span className="font-medium">{question.text.slice(0, 40)}{question.text.length > 40 ? '...' : ''}</span>
                         <Badge variant="outline">{question.marks} marks</Badge>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => moveQuestionUp(index)}
-                          disabled={index === 0}
-                        >
-                          <MoveUp className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => moveQuestionDown(index)}
-                          disabled={index === questions.length - 1}
-                        >
-                          <MoveDown className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => editQuestion(index)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteQuestion(index)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <p className="font-medium">{question.text}</p>
-                    {question.type === "MULTIPLE_CHOICE" &&
-                      question.options && (
-                        <div className="ml-4 space-y-1">
-                          <div className="text-sm font-medium text-gray-700 mb-2">
-                            Options:
-                          </div>
-                          {question.options.map((option, optIndex) => (
-                            <div
-                              key={optIndex}
-                              className="flex items-center space-x-2"
-                            >
-                              <span className="w-4 h-4 rounded-full border flex items-center justify-center text-xs">
-                                {String.fromCharCode(65 + optIndex)}
-                              </span>
-                              <span
-                                className={
-                                  option === question.correctAnswer
-                                    ? "font-semibold text-green-600"
-                                    : ""
-                                }
-                              >
-                                {option}
-                              </span>
-                              {option === question.correctAnswer && (
-                                <div className="flex items-center space-x-1">
-                                  <CheckCircle className="w-4 h-4 text-green-600" />
-                                  <span className="text-xs text-green-600 font-medium">
-                                    Correct Answer
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    {(question.type === "TRUE_FALSE" ||
-                      question.type === "FILL_BLANK") &&
-                      question.correctAnswer && (
-                        <div className="ml-4 mt-2">
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-2">
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-sm font-medium text-gray-700">
-                              Correct Answer:
-                            </span>
-                            <span className="font-semibold text-green-600 bg-green-50 px-2 py-1 rounded">
-                              {question.correctAnswer}
-                            </span>
+                            <Badge className={getQuestionTypeColor(question.type)}>
+                              {getQuestionTypeIcon(question.type)}
+                              <span className="ml-1">{question.type.replace('_', ' ')}</span>
+                            </Badge>
+                            <Badge variant="outline">{question.marks} marks</Badge>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => moveQuestionUp(index)}
+                              disabled={index === 0}
+                            >
+                              <MoveUp className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => moveQuestionDown(index)}
+                              disabled={index === questions.length - 1}
+                            >
+                              <MoveDown className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => editQuestion(index)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteQuestion(index)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
-                      )}
-                  </div>
+                        <p className="font-medium">{question.text}</p>
+                        {question.type === 'MULTIPLE_CHOICE' && question.options && (
+                          <div className="ml-4 space-y-1">
+                            <div className="text-sm font-medium text-gray-700 mb-2">Options:</div>
+                            {question.options.map((option, optIndex) => (
+                              <div key={optIndex} className="flex items-center space-x-2">
+                                <span className="w-4 h-4 rounded-full border flex items-center justify-center text-xs">
+                                  {String.fromCharCode(65 + optIndex)}
+                                </span>
+                                <span className={option === question.correctAnswer ? 'font-semibold text-green-600' : ''}>
+                                  {option}
+                                </span>
+                                {option === question.correctAnswer && (
+                                  <div className="flex items-center space-x-1">
+                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                    <span className="text-xs text-green-600 font-medium">Correct Answer</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {(question.type === 'TRUE_FALSE' || question.type === 'FILL_BLANK') && question.correctAnswer && (
+                          <div className="ml-4 mt-2">
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                              <span className="text-sm font-medium text-gray-700">Correct Answer:</span>
+                              <span className="font-semibold text-green-600 bg-green-50 px-2 py-1 rounded">
+                                {question.correctAnswer}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </div>
+              </Accordion>
             </CardContent>
           </Card>
         )}
@@ -661,51 +670,59 @@ export default function AssessmentPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {assessments.map((assessment: any) => (
-            <Card
-              key={assessment.id}
-              className="hover:shadow-lg transition-shadow"
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg">
-                      {assessment.title}
-                    </CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline">{assessment.type}</Badge>
-                      <Badge variant="secondary">
-                        {assessment.totalMarks || 0} marks
-                      </Badge>
+          {assessments.map((assessment: any) => {
+            const questions = questionsByAssessment[assessment.id] || [];
+            return (
+              <Card key={assessment.id} className="hover:shadow-lg transition-shadow border-2 border-gray-100">
+      <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <CardTitle className="text-lg flex items-center space-x-2">
+                        <FileText className="w-5 h-5 text-blue-500" />
+                        <span>{assessment.title}</span>
+                      </CardTitle>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="outline">{assessment.type}</Badge>
+                        <Badge variant="secondary">{assessment.totalMarks || 0} marks</Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditAssessment(assessment)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteAssessment(assessment.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditAssessment(assessment)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteAssessment(assessment.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+      </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Course:</span>
+                      <span>{assessment.course?.name || <span className="text-red-500">N/A</span>}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Date:</span>
+                      <span>{assessment.date ? new Date(assessment.date).toLocaleDateString() : 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Questions:</span>
+                      <span>{questions.length}</span>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <p>Course: {assessment.course?.name || "N/A"}</p>
-                  <p>Date: {new Date(assessment.date).toLocaleDateString()}</p>
-                  <p>Questions: {assessment.questions?.length || 0}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+    </Card>
+            );
+          })}
         </div>
       )}
     </div>
