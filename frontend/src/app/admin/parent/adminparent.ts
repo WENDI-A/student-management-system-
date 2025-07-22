@@ -52,15 +52,18 @@ export function useParentAdminState() {
       setFirstName("");
       setLastName("");
       setEmail("");
-      setPassword("");
-      setCurrentPage(1);
+      setEditId(null);
+      setEditParent(null);
+      setSelectedStudentIds([]);
       refetch();
     },
   });
   const updateParent = useUpdateParent({
     onSuccess: () => {
+      setOpen(false);
       setEditId(null);
       setEditParent(null);
+      setSelectedStudentIds([]);
       refetch();
     },
   });

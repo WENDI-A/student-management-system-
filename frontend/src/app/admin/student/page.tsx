@@ -21,6 +21,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TableHeader } from "@/components/ui/TableHeader";
 import { TableRow } from "@/components/ui/TableRow";
+import { useState } from "react";
 
 
 export default function AdminStudent() {
@@ -45,6 +46,23 @@ export default function AdminStudent() {
     students, total, totalPages, startIndex, endIndex,
     handleSave, handleEditSave, handleDelete, goToPage,
   } = state;
+
+  // Add state for delete confirmation
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  function requestDelete(id: string) {
+    setDeleteId(id);
+    setDeleteDialogOpen(true);
+  }
+
+  function confirmDelete() {
+    if (deleteId) {
+      handleDelete(deleteId);
+      setDeleteId(null);
+      setDeleteDialogOpen(false);
+    }
+  }
 
   return (
     <div className="w-full px-2 sm:px-4">
@@ -108,7 +126,7 @@ export default function AdminStudent() {
                               size="sm"
                               variant="destructive"
                               className="w-full sm:w-auto"
-                              onClick={() => handleDelete(s.id || "")}
+                              onClick={() => requestDelete(s.id || "")}
                             >
                               Delete
                             </Button>
@@ -367,6 +385,19 @@ export default function AdminStudent() {
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div>Are you sure you want to delete this student?</div>
+          <DialogFooter className="flex flex-row gap-2 justify-end mt-4">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

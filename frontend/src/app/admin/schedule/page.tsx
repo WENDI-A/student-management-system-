@@ -159,6 +159,7 @@ export default function AdminSchedule() {
                     <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">Day</th>
                     <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">Start Time</th>
                     <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">End Time</th>
+                    <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">Room</th>
                     <th className="px-2 sm:px-4 py-2 text-left whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
@@ -177,6 +178,7 @@ export default function AdminSchedule() {
                         <td className="px-2 sm:px-4 py-2 whitespace-nowrap">{s.day}</td>
                         <td className="px-2 sm:px-4 py-2 whitespace-nowrap">{new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                         <td className="px-2 sm:px-4 py-2 whitespace-nowrap">{new Date(s.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                        <td className="px-2 sm:px-4 py-2 whitespace-nowrap">{s.location || '—'}</td>
                         <td className="px-2 sm:px-4 py-2 flex flex-col sm:flex-row gap-2">
                           <Button
                             size="sm"
@@ -184,7 +186,12 @@ export default function AdminSchedule() {
                             className="w-full sm:w-auto"
                             onClick={() => {
                               setEditIndex(startIndex + i);
-                              setEditSchedule(s);
+                              setEditSchedule({
+                                ...s,
+                                startTime: s.startTime ? new Date(s.startTime).toISOString().substring(11, 16) : '',
+                                endTime: s.endTime ? new Date(s.endTime).toISOString().substring(11, 16) : '',
+                                location: s.location || '',
+                              });
                             }}
                           >
                             Edit
