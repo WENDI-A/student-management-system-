@@ -1,7 +1,12 @@
 const Api_Response = require('./api_response_folder/Api_Response');
 const DatabaseAnalyzer  = require('./Curd_op/DatabaseAnalyzer').DatabaseAnalyzer
 const ErrorCode = require('./Curd_op/PrismaError').ErrorCode
-const FileHandler = require("./Curd_op/FileHandler")
+const FileHandler = require("./Curd_op/handler/FileHandler")
+const { QueryProcessor } = require('./Curd_op/QueryProcessor')
+const { GetHandler } = require('./Curd_op/handler/GetHandler')
+const { CreateHandler } = require('./Curd_op/handler/CreateHandler')
+const { UpdateHandler } = require('./Curd_op/handler/UpdateHandler')
+const { DeleteHandler } = require('./Curd_op/handler/DeleteHandler')
 
 class PrismaCrudRouter {
   /**
@@ -52,6 +57,16 @@ class PrismaCrudRouter {
 
     this.databaseAnalyzer = new DatabaseAnalyzer();
     this.databaseAnalyzer.models = this.models;
+    
+    // Initialize QueryProcessor with database analyzer and options
+    this.queryProcessor = new QueryProcessor(this.databaseAnalyzer, this.options);
+    
+    // Initialize handler classes with shared dependencies
+    this.getHandler = new GetHandler(this.queryProcessor, this.apiResponse, this.databaseAnalyzer, this.options);
+    this.createHandler = new CreateHandler(this.apiResponse, this.databaseAnalyzer, this.options);
+    this.updateHandler = new UpdateHandler(this.apiResponse, this.databaseAnalyzer, this.options);
+    this.deleteHandler = new DeleteHandler(this.apiResponse, this.databaseAnalyzer, this.options);
+    
     this.registerPlugins();
   }
 
@@ -138,16 +153,8 @@ class PrismaCrudRouter {
     const {
       middleware = {},
       authMiddleware = null,
-      validation = null,
-      beforeActions = {},
-      afterActions = {},
       customActions = {},
       errorHandler = null,
-      includeRelations = false,
-      excludeRelations = [],
-      enableConstraintChecking =  routeOptions.enableConstraintChecking ??  this.options.enableConstraintChecking,
-      enableCascadeHandling = routeOptions.enableCascadeHandling ?? this.options.enableCascadeHandling,
-      autoDetectRelations = routeOptions.autoDetectRelations !== false,
       excludeRoute = [],
     } = routeOptions;
 
@@ -162,143 +169,7 @@ class PrismaCrudRouter {
       ...(authMiddleware ? [authMiddleware] : [])
     ];
 
-    const detectRelationTypes = (data) => {
-      const singleRelations = {};
-      const bulkRelations = {};
-
-      if (!autoDetectRelations) {
-        return { singleRelations, bulkRelations };
-      }
-
-      for (const [key, value] of Object.entries(data)) {
-        if (typeof value !== 'object' || value === null || 
-            ['id', 'createdAt', 'updatedAt', 'uploadedFiles'].includes(key)) {
-          continue;
-        }
-
-        if (Array.isArray(value)) {
-          bulkRelations[key] = value;
-        }
-        else if (typeof value === 'object' && !Array.isArray(value)) {
-          singleRelations[key] = value;
-        }
-      }
-
-      return { singleRelations, bulkRelations };
-    };
-
-    const processNestedData = (data, operation = 'create') => {
-      const mainData = { ...data };
-      const { singleRelations, bulkRelations } = detectRelationTypes(data);
-
-      Object.keys(singleRelations).forEach(key => {
-        delete mainData[key];
-      });
-      Object.keys(bulkRelations).forEach(key => {
-        delete mainData[key];
-      });
-
-      return { mainData, singleRelations, bulkRelations };
-    };
-
-
-    const createWithAutoDetectedRelations = async (data) => {
-      const { mainData, singleRelations, bulkRelations } = processNestedData(data, 'create');
-      
-      if (Object.keys(singleRelations).length === 0 && Object.keys(bulkRelations).length === 0) {
-        return await model.create({ data: mainData });
-      }
-
-      const createData = { ...mainData };
-      
-      for (const [relation, items] of Object.entries(singleRelations)) {
-        createData[relation] = {
-          create: items
-        };
-      }
-      
-      for (const [relation, items] of Object.entries(bulkRelations)) {
-        createData[relation] = {
-          create: items
-        };
-      }
-
-      const created = await model.create({
-        data: createData,
-        include: {
-          ...Object.keys(singleRelations).reduce((acc, key) => ({ ...acc, [key]: true }), {}),
-          ...Object.keys(bulkRelations).reduce((acc, key) => ({ ...acc, [key]: true }), {})
-        }
-      });
-      
-      return created;
-    };
-
-
-    const updateWithAutoDetectedRelations = async (id, data) => {
-      if (!id) {
-        throw new Error('ID is required for update operation');
-      }
-
-      let finalId;
-      if (typeof id === 'string') {
- 
-        const numericId = Number(id);
-        if (!isNaN(numericId)) {
-          finalId = numericId;
-        } else {
-          finalId = id;
-        }
-      } else if (typeof id === 'number') {
-        finalId = id;
-      } else {
-        throw new Error(`Invalid ID type: expected string or number, got ${typeof id}`);
-      }
-      
-      
-      const { mainData, singleRelations, bulkRelations } = processNestedData(data, 'update');
-      
-      if (Object.keys(singleRelations).length === 0 && Object.keys(bulkRelations).length === 0) {
-        return await model.update({ 
-          where: { id: finalId }, 
-          data: mainData 
-        });
-      }
-
-      const updateData = { ...mainData };
-        
-      for (const [relation, items] of Object.entries(singleRelations)) {
-        updateData[relation] = {
-          create: items
-        };
-      }
-      
-      for (const [relation, items] of Object.entries(bulkRelations)) {
-        updateData[relation] = {
-          create: items
-        };
-      }
-
-      const updated = await model.update({
-        where: { id: finalId },
-        data: updateData,
-        include: {
-          ...Object.keys(singleRelations).reduce((acc, key) => ({ ...acc, [key]: true }), {}),
-          ...Object.keys(bulkRelations).reduce((acc, key) => ({ ...acc, [key]: true }), {})
-        }
-      });
-      
-      return updated;
-    };
-
     const isExcluded = (method) => Array.isArray(excludeRoute) && excludeRoute.map(m => m.toLowerCase()).includes(method.toLowerCase());
-
-    const convertId = (id) => {
-      if (typeof id === 'string' && !isNaN(Number(id))) {
-        return Number(id);
-      }
-      return id;
-    };
 
     // Track which routes are registered
     const routeStatus = [
@@ -318,10 +189,10 @@ class PrismaCrudRouter {
           // For PUT and DELETE, use the /:id path
           if (methodLower === 'put' || methodLower === 'delete') {
             this.app[methodLower](`${routePath}/:id`, ...composeMiddleware(methodLower), handler);
-            console.log(`Registered custom ${methodLower.toUpperCase()} for ${routePath}/:id`);
+            // console.log(`Registered custom ${methodLower.toUpperCase()} for ${routePath}/:id`);
           } else {
             this.app[methodLower](routePath, ...composeMiddleware(methodLower), handler);
-            console.log(`Registered custom ${methodLower.toUpperCase()} for ${routePath}`);
+            // console.log(`Registered custom ${methodLower.toUpperCase()} for ${routePath}`);
           }
         }
       });
@@ -329,310 +200,36 @@ class PrismaCrudRouter {
 
     // Then register default CRUD routes, but skip if a custom action exists for that method
     if (!isExcluded('get') && !customActionMethods.includes('get')) {
-      this.app.get(routePath, ...composeMiddleware('get'), async (req, res) => {
-        try {
-          let query = req.query;
-          if (beforeActions.get) {
-            const result = await beforeActions.get(query, req);
-            if (typeof result !== 'undefined') query = result;
-          }
-          // Advanced query support
-          const filter = query.filter ? JSON.parse(query.filter) : {};
-          const limit = query.limit ? parseInt(query.limit) : 100;
-          const offset = query.offset ? parseInt(query.offset) : 0;
-          const order = query.order ? JSON.parse(query.order) : [];
-          const include = query.include ? JSON.parse(query.include) : undefined;
-          let select = query.select ? JSON.parse(query.select) : undefined;
-          let orderBy = query.orderBy ? JSON.parse(query.orderBy) : (order.length ? { [order[0][0]]: order[0][1].toLowerCase() } : undefined);
-          const skip = query.skip ? parseInt(query.skip) : offset;
-          const take = query.take ? parseInt(query.take) : limit;
-
-          // --- DYNAMIC FIELD FILTERING & EXCLUDE ---
-          // 1. Cache a sample record for field introspection
-          await this.databaseAnalyzer.cacheSampleRecord(model);
-          // 2. Get structure and valid fields
-          const structure = await this.databaseAnalyzer.analyzeDatabaseStructure(model);
-          const validFields = structure && structure.fields && structure.fields.length > 0 ? structure.fields : [];
-          // 3. Exclude list (global or per-route)
-          const globalExclude = (this.options.excludeFields || ['password']);
-          const routeExclude = (routeOptions.excludeFields || []);
-          const exclude = Array.from(new Set([...globalExclude, ...routeExclude]));
-          // 4. Filter valid fields
-          const filteredFields = validFields.filter(f => !exclude.includes(f));
-
-          // 4.5. Filter the filter (where) object
-          const filteredFilter = filterWhereObject(filter, filteredFields);
-
-          // 5. Filter select
-          let hasSelect = false;
-          if (select) {
-            hasSelect = true;
-            if (Array.isArray(select)) {
-              select = select.filter(f => filteredFields.includes(f));
-              // Convert to Prisma select object
-              select = Object.fromEntries(select.map(f => [f, true]));
-            } else if (typeof select === 'object') {
-              select = Object.fromEntries(Object.entries(select).filter(([f]) => filteredFields.includes(f)));
-            }
-          } else {
-            // Default: select all fields except excluded
-            select = Object.fromEntries(filteredFields.map(f => [f, true]));
-          }
-
-          // 6. Filter orderBy
-          if (orderBy && typeof orderBy === 'object') {
-            if (Array.isArray(orderBy)) {
-              orderBy = orderBy.filter(o => o && filteredFields.includes(Object.keys(o)[0]));
-            } else {
-              orderBy = Object.fromEntries(Object.entries(orderBy).filter(([f]) => filteredFields.includes(f)));
-            }
-            if (Array.isArray(orderBy) && orderBy.length === 0) orderBy = undefined;
-            if (typeof orderBy === 'object' && Object.keys(orderBy).length === 0) orderBy = undefined;
-          }
-
-          // 7. Filter include (only allow relations or valid fields)
-          let includeObject = {};
-          if (!hasSelect) { // Only process include if select is NOT present
-            if (includeRelations && structure) {
-              for (const fk of structure.foreignKeys) {
-                if (!excludeRelations.includes(fk.field)) {
-                  includeObject[fk.field] = true;
-                }
-              }
-            }
-            if (include) {
-              for (const [key, val] of Object.entries(include)) {
-                if (filteredFields.includes(key) || (structure && structure.foreignKeys.some(fk => fk.field === key))) {
-                  includeObject[key] = val;
-                }
-              }
-            }
-          }
-
-          // If any advanced query param is present, use them directly
-          const isAdvanced = select || orderBy || include || query.skip || query.take;
-          let rows, count;
-          if (isAdvanced) {
-            const findManyArgs = {
-              where: filteredFilter,
-              orderBy,
-              skip,
-              take
-            };
-            if (select) {
-              findManyArgs.select = select;
-            } else if (Object.keys(includeObject).length > 0) {
-              findManyArgs.include = includeObject;
-            }
-      
-            if (findManyArgs.select) {
-              const structure = await this.databaseAnalyzer.analyzeDatabaseStructure(model);
-              const validFields = structure && structure.fields && structure.fields.length > 0 ? structure.fields : [];
-              for (const key of Object.keys(findManyArgs.select)) {
-                if (!validFields.includes(key)) {
-                  delete findManyArgs.select[key];
-                }
-              }
-              if (Object.keys(findManyArgs.select).length === 0) {
-                delete findManyArgs.select;
-              }
-            }
-            rows = await model.findMany(findManyArgs);
-            count = await model.count({ where: filteredFilter });
-          } else {
-            [rows, count] = await Promise.all([
-              model.findMany({
-                where: filteredFilter,
-                skip: offset,
-                take: limit,
-                orderBy,
-                include: Object.keys(includeObject).length > 0 ? includeObject : undefined,
-              }),
-              model.count({ where: filteredFilter }),
-            ]);
-          }
-          let afterGetResult = { rows, count };
-          if (afterActions.get) {
-            const result = await afterActions.get(afterGetResult, req);
-            if (typeof result !== 'undefined') afterGetResult = result;
-          }
-          const apiResponse = this.apiResponse.success('get', { data: afterGetResult.rows, count: afterGetResult.count });
-          this.apiResponse.setResponseHeaders(res, apiResponse);
-          res.status(apiResponse.statusCode).json(apiResponse.body);
-        } catch (error) {
-          const errResp = this.handleError(error, 'get', errorHandler);
-          this.apiResponse.setResponseHeaders(res, errResp);
-          res.status(errResp.statusCode || 500).json(errResp.body);
-        }
+      this.app.get(routePath, ...composeMiddleware('get'), (req, res) => {
+        this.getHandler.handleGetAll(req, res, model, routeOptions, errorHandler);
       });
     }
 
     // GET /:id: get by id
     if (!isExcluded('getById') && !customActionMethods.includes('getbyid')) {
-      this.app.get(`${routePath}/:id`, ...composeMiddleware('getById'), async (req, res) => {
-        try {
-          const id = req.params.id;
-          const include = req.query.include ? JSON.parse(req.query.include) : {};
-          const structure = await this.databaseAnalyzer.analyzeDatabaseStructure(model);
-          let includeObject = {};
-          if (includeRelations && structure && structure.hasRelations) {
-            for (const fk of structure.foreignKeys) {
-              if (!excludeRelations.includes(fk.field)) {
-                includeObject[fk.field] = true;
-              }
-            }
-          }
-          includeObject = { ...includeObject, ...include };
-          let row = await model.findUnique({
-            where: { id: convertId(id) },
-            include: Object.keys(includeObject).length > 0 ? includeObject : undefined,
-          });
-          if (!row) throw { code: 'P2025', message: 'Record not found' };
-          if (afterActions.getById) {
-            const result = await afterActions.getById(row, req);
-            if (typeof result !== 'undefined') row = result;
-          }
-          const apiResponse = this.apiResponse.success('get', row);
-          this.apiResponse.setResponseHeaders(res, apiResponse);
-          res.status(apiResponse.statusCode).json(apiResponse.body);
-        } catch (error) {
-          const errResp = this.handleError(error, 'get', errorHandler);
-          this.apiResponse.setResponseHeaders(res, errResp);
-          res.status(errResp.statusCode || 500).json(errResp.body);
-        }
+      this.app.get(`${routePath}/:id`, ...composeMiddleware('getById'), (req, res) => {
+        this.getHandler.handleGetById(req, res, model, routeOptions, errorHandler);
       });
     }
 
     // POST /: create
     if (!isExcluded('post') && !customActionMethods.includes('post')) {
-      this.app.post(routePath, ...composeMiddleware('create'), async (req, res) => {
-        try {
-          let data = req.body;
-          if (!data || typeof data !== 'object') throw new Error('Invalid data provided for creation');
-          if (beforeActions.create) {
-            const result = await beforeActions.create(data, req);
-            if (typeof result !== 'undefined') data = result;
-          }
-          if (validation && validation.create) {
-            const validationResult = await validation.create(data,req);
-            if (!validationResult.isValid) throw new Error(validationResult.message || 'Validation failed');
-          }
-          if (enableConstraintChecking) {
-            const constraintCheck = await this.databaseAnalyzer.checkConstraints('create', data, model);
-            if (!constraintCheck.isValid) throw new Error(`Constraint violations: ${constraintCheck.violations.join(', ')}`);
-          }
-          // Auto-detect and handle relations
-          const created = autoDetectRelations ? 
-            await createWithAutoDetectedRelations(data) : 
-            await model.create({ data });
-          let responseData = created;
-          if (afterActions.create) {
-            const result = await afterActions.create(created, req);
-            if (typeof result !== 'undefined') responseData = result;
-          }
-          const apiResponse = this.apiResponse.success('post', responseData);
-          this.apiResponse.setResponseHeaders(res, apiResponse);
-          res.status(201).json(apiResponse.body);
-        } catch (error) {
-          const errResp = this.handleError(error, 'post', errorHandler);
-          this.apiResponse.setResponseHeaders(res, errResp);
-          res.status(errResp.statusCode || 500).json(errResp.body);
-        }
+      this.app.post(routePath, ...composeMiddleware('create'), (req, res) => {
+        this.createHandler.handleCreate(req, res, model, routeOptions, errorHandler);
       });
     }
 
     // PUT /:id: update
     if (!isExcluded('put') && !customActionMethods.includes('put')) {
-      this.app.put(`${routePath}/:id`, ...composeMiddleware('update'), async (req, res) => {
-        try {
-          const id = req.params.id;
-          let data = req.body;
-          if (!id) throw new Error('ID is required for update operation');
-          if (!data || typeof data !== 'object') throw new Error('Invalid data provided for update');
-          if (beforeActions.update) {
-            const result = await beforeActions.update(data, req);
-            if (typeof result !== 'undefined') data = result;
-          }
-          if (validation && validation.update) {
-            const validationResult = await validation.update(data,req);
-            if (!validationResult.isValid) {
-              // Return 400 for validation errors
-              return res.status(validationResult.status || 400).json({
-                message: validationResult.message,
-                errors: validationResult.errors || [],
-              });
-            }
-          }
-          if (enableConstraintChecking) {
-            const constraintCheck = await this.databaseAnalyzer.checkConstraints('update', data, model);
-            if (!constraintCheck.isValid) throw new Error(`Constraint violations: ${constraintCheck.violations.join(', ')}`);
-          }
-          if (enableCascadeHandling) {
-            const cascadeResult = await this.databaseAnalyzer.handleCascadeOperations('update', data, model, id);
-            if (!cascadeResult.success) {
-              console.warn(`Cascade operations completed with warnings: ${cascadeResult.results.join(', ')}`);
-            }
-          }
-          if (data && !('password' in data)) {
-            delete data.password;
-          }
-          // Auto-detect and handle relations
-          const updated = autoDetectRelations ? 
-            await updateWithAutoDetectedRelations(id, data) : 
-            await model.update({ 
-              where: { id: convertId(id) }, 
-              data 
-            });
-          let responseData = updated;
-          if (afterActions.update) {
-            const result = await afterActions.update(updated, req);
-            if (typeof result !== 'undefined') responseData = result;
-          }
-          const apiResponse = this.apiResponse.success('put', responseData);
-          this.apiResponse.setResponseHeaders(res, apiResponse);
-          res.status(apiResponse.statusCode).json(apiResponse.body);
-        } catch (error) {
-          const errResp = this.handleError(error, 'put', errorHandler);
-          this.apiResponse.setResponseHeaders(res, errResp);
-          res.status(errResp.statusCode || 500).json(errResp.body);
-        }
+      this.app.put(`${routePath}/:id`, ...composeMiddleware('update'), (req, res) => {
+        this.updateHandler.handleUpdate(req, res, model, routeOptions, errorHandler);
       });
     }
 
     // DELETE /:id: delete
     if (!isExcluded('delete') && !customActionMethods.includes('delete')) {
-      this.app.delete(`${routePath}/:id`, ...composeMiddleware('delete'), async (req, res) => {
-        try {
-          const id = req.params.id;
-          if (!id) throw new Error('ID is required for delete operation');
-          let deleted;
-          if (beforeActions.destroy) {
-            const result = await beforeActions.destroy(id, req);
-            if (typeof result !== 'undefined') deleted = result;
-          }
-          if (!deleted) {
-            if (enableCascadeHandling) {
-              const cascadeResult = await this.databaseAnalyzer.handleCascadeOperations('delete', {}, model, id);
-              if (!cascadeResult.success) {
-                console.warn(`Cascade operations completed with warnings: ${cascadeResult.results.join(', ')}`);
-              }
-            }
-            deleted = await model.delete({ 
-              where: { id: convertId(id) } 
-            });
-          }
-          if (afterActions.destroy) {
-            const result = await afterActions.destroy(deleted, req);
-            if (typeof result !== 'undefined') deleted = result;
-          }
-          const apiResponse = this.apiResponse.success('delete', deleted);
-          this.apiResponse.setResponseHeaders(res, apiResponse);
-          res.status(apiResponse.statusCode).json(apiResponse.body);
-        } catch (error) {
-          const errResp = this.handleError(error, 'delete', errorHandler);
-          this.apiResponse.setResponseHeaders(res, errResp);
-          res.status(errResp.statusCode || 500).json(errResp.body);
-        }
+      this.app.delete(`${routePath}/:id`, ...composeMiddleware('delete'), (req, res) => {
+        this.deleteHandler.handleDelete(req, res, model, routeOptions, errorHandler);
       });
     }
 
@@ -741,31 +338,6 @@ class PrismaCrudRouter {
   }
 }
 
-// Utility: Recursively filter filter/where object to only allow valid fields and Prisma logical operators
-function filterWhereObject(where, validFields) {
-  if (!where || typeof where !== 'object') return where;
-  const LOGICALS = ['AND', 'OR', 'NOT'];
-  let result = Array.isArray(where) ? [] : {};
-  for (const [key, value] of Object.entries(where)) {
-    if (LOGICALS.includes(key)) {
-      // Logical operators: recurse into array or object
-      if (Array.isArray(value)) {
-        result[key] = value.map(v => filterWhereObject(v, validFields)).filter(v => v && Object.keys(v).length > 0);
-      } else if (typeof value === 'object') {
-        const filtered = filterWhereObject(value, validFields);
-        if (filtered && Object.keys(filtered).length > 0) result[key] = filtered;
-      }
-    } else if (validFields.includes(key)) {
-      // Valid field: keep
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        result[key] = filterWhereObject(value, validFields);
-      } else {
-        result[key] = value;
-      }
-    }
-    // else: skip invalid field
-  }
-  return result;
-}
+
 
 module.exports = {PrismaCrudRouter,DatabaseAnalyzer,Api_Response,FileHandler};

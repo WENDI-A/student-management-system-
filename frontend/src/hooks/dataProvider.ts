@@ -131,9 +131,12 @@ const dataProvider = {
         params: { data: any }
     ): Promise<{ data: any }> => {
         const url = create_path[resource];
-        const response = await api.post(url, params.data);
+        const config = params.data instanceof FormData 
+            ? { headers: { 'Content-Type': 'multipart/form-data' } }
+            : {};
+        const response = await api.post(url, params.data, config);
         return {
-            data: { ...params.data, id: response.data.id },
+            data: response.data.data || { ...params.data, id: response.data.id },
         };
     },
     update: async (
@@ -141,7 +144,10 @@ const dataProvider = {
         params: { id: string; data: any }
     ): Promise<{ data: any }> => {
         const url = `${update_path[resource]}/${params.id}`;
-        const response = await api.put(url, params.data);
+        const config = params.data instanceof FormData 
+            ? { headers: { 'Content-Type': 'multipart/form-data' } }
+            : {};
+        const response = await api.put(url, params.data, config);
         return {
             data: response.data.data,
         };

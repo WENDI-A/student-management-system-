@@ -48,40 +48,14 @@ export default function CourseMaterialAdmin() {
     createMaterial,
     updateMaterial,
     deleteMaterial,
+    handleSave,
+    handleEditSave,
+    handleDelete,
     goToPage,
     courses,
     courseLoading,
+    errors, // Add errors from state
   } = state;
-
-  function handleSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    createMaterial.mutate({
-      data: {
-        title,
-        description,
-        file,
-        courseId,
-      },
-    });
-  }
-
-  function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!editId || !editMaterial) return;
-    updateMaterial.mutate({
-      id: editId,
-      data: {
-        title: editMaterial.title,
-        description: editMaterial.description,
-        file: editMaterial.file,
-        courseId: editMaterial.courseId,
-      },
-    });
-  }
-
-  function handleDelete(id: string) {
-    deleteMaterial.mutate({ id });
-  }
 
   return (
     <div className="w-full px-2 sm:px-4">
@@ -99,7 +73,7 @@ export default function CourseMaterialAdmin() {
           >
             + Create
           </Button>
-      </CardHeader>
+        </CardHeader>
         <CardContent>
           {materials.length === 0 ? (
             <div className="text-gray-500 text-center py-8">
@@ -209,7 +183,7 @@ export default function CourseMaterialAdmin() {
             </div>
           )}
         </CardContent>
-    </Card>
+      </Card>
       {/* Create/Edit Course Material Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg w-full px-2 sm:px-6">
@@ -228,8 +202,12 @@ export default function CourseMaterialAdmin() {
                     ? setEditMaterial({ ...editMaterial, title: e.target.value })
                     : setTitle(e.target.value)
                 }
+                className={errors?.title ? "border-red-500" : ""}
                 required
               />
+              {errors?.title && (
+                <p className="text-xs text-red-500 mt-1">{errors.title}</p>
+              )}
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -242,8 +220,11 @@ export default function CourseMaterialAdmin() {
                     ? setEditMaterial({ ...editMaterial, description: e.target.value })
                     : setDescription(e.target.value)
                 }
-                required
+                className={errors?.description ? "border-red-500" : ""}
               />
+              {errors?.description && (
+                <p className="text-xs text-red-500 mt-1">{errors.description}</p>
+              )}
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -252,7 +233,7 @@ export default function CourseMaterialAdmin() {
               <input
                 type="file"
                 accept=".pdf,.ppt,.pptx,.doc,.docx"
-                className="block w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={`block w-full rounded border ${errors?.file ? "border-red-500" : "border-gray-300"} bg-white px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                 onChange={e => {
                   const file = e.target.files?.[0] || null;
                   if (editId) {
@@ -265,6 +246,9 @@ export default function CourseMaterialAdmin() {
               {/* Show the file name if available */}
               {(editId ? editMaterial?.file : file) && (
                 <span className="text-xs text-gray-600">{(editId ? editMaterial.file?.name : file?.name) || ''}</span>
+              )}
+              {errors?.file && (
+                <p className="text-xs text-red-500 mt-1">{errors.file}</p>
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -281,7 +265,7 @@ export default function CourseMaterialAdmin() {
                   }
                   required
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className={`w-full ${errors?.courseId ? "border-red-500" : ""}`}>
                     <SelectValue placeholder="Select course" />
                   </SelectTrigger>
                   <SelectContent>
@@ -292,6 +276,9 @@ export default function CourseMaterialAdmin() {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors?.courseId && (
+                  <p className="text-xs text-red-500 mt-1">{errors.courseId}</p>
+                )}
               </div>
             </div>
             <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-end">

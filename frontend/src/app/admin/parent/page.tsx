@@ -175,7 +175,7 @@ export default function AdminParent() {
                           ) : (
                             <span className="text-gray-400">None</span>
                           )}
-                        </td>
+                      </td>
                         <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
                         <Button
                           size="sm"
@@ -331,7 +331,7 @@ export default function AdminParent() {
                       </button>
                     </div>
                   ))}
-                </div>
+            </div>
               )}
               
               {/* Student Search and Selection */}
@@ -376,8 +376,8 @@ export default function AdminParent() {
                               <div className="w-2 h-2 bg-white rounded-full"></div>
                             </div>
                           )}
-                        </div>
-                      </div>
+              </div>
+            </div>
                     ))}
                   </div>
                 )}

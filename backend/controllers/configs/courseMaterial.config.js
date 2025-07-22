@@ -34,21 +34,26 @@ const validateCourseMaterial = (data, req) => {
 
 // Before action to fix data structure
 const fixDataStructure = (data, req) => {
-  if (data && data['data[file]']) {
-    data.data.url = data['data[file]'];
-    delete data['data[file]'];
-    data.data.teacherId = req.user.id
+  // Handle file upload - if a file was uploaded, add its URL to the data
+  if (req.file) {
+    // Create a proper URL path from the file path
+    const relativePath = req.file.path.replace(/\\/g, '/');
+    data.url = `/${relativePath}`;
   }
   
-  if (data && data['data[file]Details']) {
-    delete data['data[file]Details'];
+  // Ensure teacherId is set from the authenticated user
+  if (req.user && req.user.id) {
+    data.teacherId = req.user.id;
   }
   
-  return data.data;
+  return data;
 };
 
 module.exports = {
-  middleware: [auth.protect, file.single("data[file]", { allowedTypes: ['application/pdf'] })],
+  middleware: [auth.protect, file.single("file", { 
+    allowedTypes: ['application/pdf', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    maxFileSize: 20 * 1024 * 1024 // 20MB
+  })],
   validation: {
     create: validateCourseMaterial,
     update: validateCourseMaterial
