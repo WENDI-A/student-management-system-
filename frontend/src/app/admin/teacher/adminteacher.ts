@@ -46,13 +46,14 @@ export function useTeacherAdminState() {
       setFirstName("");
       setLastName("");
       setEmail("");
-      setSelectedCourse("");
-      setCurrentPage(1);
+      setEditId(null);
+      setEditTeacher(null);
       refetch();
     },
   });
   const updateTeacher = useUpdateTeacher({
     onSuccess: () => {
+      setOpen(false);
       setEditId(null);
       setEditTeacher(null);
       refetch();
