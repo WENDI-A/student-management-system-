@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 export default function AdminTeacher() {
   const state = useTeacherAdminState();
@@ -55,8 +56,25 @@ export default function AdminTeacher() {
 
   const courses = state.courses;
 
+  // Add state for delete confirmation
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   function handleDelete(id: string) {
     deleteTeacher.mutate({ id });
+  }
+
+  function requestDelete(id: string) {
+    setDeleteId(id);
+    setDeleteDialogOpen(true);
+  }
+
+  function confirmDelete() {
+    if (deleteId) {
+      handleDelete(deleteId);
+      setDeleteId(null);
+      setDeleteDialogOpen(false);
+    }
   }
 
   return (
@@ -91,6 +109,7 @@ export default function AdminTeacher() {
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">First Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Last Name</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Email</th>
+                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Courses</th>
                       <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
@@ -106,6 +125,11 @@ export default function AdminTeacher() {
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.firstName}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.lastName}</td>
                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{t.email}</td>
+                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                          {(t.courses && t.courses.length > 0)
+                            ? t.courses.map((c: any) => c.name).join(', ')
+                            : '—'}
+                        </td>
                         <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
                         <Button
                           size="sm"
@@ -123,7 +147,7 @@ export default function AdminTeacher() {
                           size="sm"
                           variant="destructive"
                           className="w-full sm:w-auto"
-                          onClick={() => handleDelete(t.id)}
+                          onClick={() => requestDelete(t.id)}
                         >
                           Delete
                         </Button>
@@ -282,6 +306,20 @@ export default function AdminTeacher() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Delete Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div>Are you sure you want to delete this teacher?</div>
+          <DialogFooter className="flex flex-row gap-2 justify-end mt-4">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

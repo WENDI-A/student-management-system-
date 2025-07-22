@@ -84,8 +84,8 @@ export default function AdminDirector() {
     try {
       const headers = getHeader();
       console.log('DEBUG: Authorization header for director registration:', headers);
-      const res = await axios.post('/directors', { firstName, lastName, email }, { headers });
-      setDirectors((prev) => [...prev, res.data.data]);
+      await axios.post('/directors', { firstName, lastName, email }, { headers });
+      await fetchDirectors();
       setSuccess(true);
       setOpen(false);
       setFirstName("");
@@ -108,12 +108,20 @@ export default function AdminDirector() {
       const headers = getHeader();
       const id = directors[editIndex]?.id;
       if (!id) return;
-      // Remove password from updateData if present
-      const { password, ...updateData } = editDirector;
+      // Only send editable fields
+      const updateData = {
+        firstName: editDirector.firstName,
+        lastName: editDirector.lastName,
+        email: editDirector.email,
+      };
       await axios.put(`/directors/${id}`, updateData, { headers });
+      await fetchDirectors();
       setEditIndex(null);
       setEditDirector(null);
-      fetchDirectors();
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err) {
+      // Optionally handle error
     } finally {
       setEditLoading(false);
     }

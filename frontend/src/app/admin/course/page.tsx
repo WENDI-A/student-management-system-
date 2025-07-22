@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 export default function AdminCourse() {
   const state = useCourseAdminState();
@@ -53,6 +54,23 @@ export default function AdminCourse() {
     handleEditSave,
     handleDelete,
   } = state;
+
+  // Add state for delete confirmation
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  function requestDelete(id: string) {
+    setDeleteId(id);
+    setDeleteDialogOpen(true);
+  }
+
+  function confirmDelete() {
+    if (deleteId) {
+      handleDelete(deleteId);
+      setDeleteId(null);
+      setDeleteDialogOpen(false);
+    }
+  }
 
   return (
     <div className="w-full px-2 sm:px-4">
@@ -118,7 +136,7 @@ export default function AdminCourse() {
                           size="sm"
                           variant="destructive"
                           className="w-full sm:w-auto"
-                            onClick={() => handleDelete(c.id)}
+                          onClick={() => requestDelete(c.id)}
                         >
                           Delete
                         </Button>
@@ -254,6 +272,19 @@ export default function AdminCourse() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+      {/* Confirm Delete Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div>Are you sure you want to delete this course?</div>
+          <DialogFooter className="flex flex-row gap-2 justify-end mt-4">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
