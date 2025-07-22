@@ -48,40 +48,13 @@ export default function CourseMaterialAdmin() {
     createMaterial,
     updateMaterial,
     deleteMaterial,
+    handleSave,
+    handleEditSave,
+    handleDelete,
     goToPage,
     courses,
     courseLoading,
   } = state;
-
-  function handleSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    createMaterial.mutate({
-      data: {
-        title,
-        description,
-        file,
-        courseId,
-      },
-    });
-  }
-
-  function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!editId || !editMaterial) return;
-    updateMaterial.mutate({
-      id: editId,
-      data: {
-        title: editMaterial.title,
-        description: editMaterial.description,
-        file: editMaterial.file,
-        courseId: editMaterial.courseId,
-      },
-    });
-  }
-
-  function handleDelete(id: string) {
-    deleteMaterial.mutate({ id });
-  }
 
   return (
     <div className="w-full px-2 sm:px-4">

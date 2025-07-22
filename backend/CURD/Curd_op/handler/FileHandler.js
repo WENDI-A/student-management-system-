@@ -1,7 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const Api_Response = require('../api_response_folder/Api_Response');
+const Api_Response = require('../../api_response_folder/Api_Response');
 
 class FileHandler {
   /**

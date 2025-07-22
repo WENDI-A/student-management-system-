@@ -661,7 +661,7 @@ export default function AssessmentPage() {
       {assessmentsLoading ? (
         <div className="text-center py-8">Loading assessments...</div>
       ) : assessments.length === 0 ? (
-        <Card>
+    <Card>
           <CardContent className="text-center py-8">
             <p className="text-gray-500">
               No assessments found. Create your first assessment!
@@ -727,4 +727,4 @@ export default function AssessmentPage() {
       )}
     </div>
   );
-}
+} 

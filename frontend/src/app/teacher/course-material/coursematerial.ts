@@ -2,32 +2,42 @@
 import dataProvider from '@/hooks/dataProvider';
 import { useState } from 'react';
 import { useIdentity } from '@/hooks/auth/useIdentity';
-import api from '@/lib/axios';
 
 export function useCourseMaterialList(page = 1, perPage = 10, filter = {}) {
   return dataProvider.useListQuery('coursematerial', { page, perPage, filter });
 }
-export function useCreateCourseMaterial(options: any) {
-  // Accept FormData and send as multipart/form-data
-  return {
-    mutate: (formData: FormData) =>
-      api.post('/course-materials', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }).then(res => options?.onSuccess?.(res.data)).catch(options?.onError),
-    isPending: false // You can wire up loading state if needed
-  };
+
+export function useCreateCourseMaterial(options: any = {}) {
+  return dataProvider.useCreateMutation('coursematerial', {
+    onSuccess: (data) => {
+      if (options.onSuccess) {
+        options.onSuccess(data);
+      }
+    },
+    onError: (error) => {
+      if (options.onError) {
+        options.onError(error);
+      }
+    },
+  });
 }
-export function useUpdateCourseMaterial(options: any) {
-  // Accept FormData and send as multipart/form-data
-  return {
-    mutate: ({ id, data }: { id: string, data: FormData }) =>
-      api.put(`/course-materials/${id}`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }).then(res => options?.onSuccess?.(res.data)).catch(options?.onError),
-    isPending: false
-  };
+
+export function useUpdateCourseMaterial(options: any = {}) {
+  return dataProvider.useUpdateMutation('coursematerial', {
+    onSuccess: (data) => {
+      if (options.onSuccess) {
+        options.onSuccess(data);
+      }
+    },
+    onError: (error) => {
+      if (options.onError) {
+        options.onError(error);
+      }
+    },
+  });
 }
-export function useDeleteCourseMaterial(options: any) {
+
+export function useDeleteCourseMaterial(options: any = {}) {
   return dataProvider.useDeleteMutation('coursematerial', options);
 }
 
@@ -99,11 +109,18 @@ export function useCourseMaterialAdminState() {
     if (!teacherId) return;
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('description', description);
+    formData.append('description', description || '');
     formData.append('courseId', courseId);
     formData.append('teacherId', teacherId);
     if (file) formData.append('file', file);
-    createMaterial.mutate(formData);
+    console.log('Creating course material with data:', {
+      title,
+      description,
+      courseId,
+      teacherId,
+      hasFile: !!file
+    });
+    createMaterial.mutate({ data: formData });
   }
 
   function handleEditSave(e: React.FormEvent<HTMLFormElement>) {
@@ -111,10 +128,19 @@ export function useCourseMaterialAdminState() {
     if (!editId || !editMaterial || !teacherId) return;
     const formData = new FormData();
     formData.append('title', editMaterial.title);
-    formData.append('description', editMaterial.description);
+    formData.append('description', editMaterial.description || '');
     formData.append('courseId', editMaterial.courseId);
     formData.append('teacherId', teacherId);
-    if (editMaterial.file) formData.append('file', editMaterial.file);
+    if (editMaterial.file instanceof File) {
+      formData.append('file', editMaterial.file);
+    }
+    console.log('Updating course material with data:', {
+      title: editMaterial.title,
+      description: editMaterial.description,
+      courseId: editMaterial.courseId,
+      teacherId,
+      hasFile: editMaterial.file instanceof File
+    });
     updateMaterial.mutate({ id: editId, data: formData });
   }
 
