@@ -130,7 +130,8 @@ class SelectValidator {
       // Validate field exists in model
       const fieldInfo = this.getFieldInfo(fieldName, modelInfo);
       if (!fieldInfo && !this.options.allowUnknownFields) {
-        context.warnings.push(`Unknown field '${fieldPath}' will be skipped`);
+        context.warnings.push(`Unknown field '${fieldPath}' will be skipped - Available fields: ${modelInfo.fields?.map(f => f.name).join(', ')}`);
+        console.log(`❌ Field '${fieldName}' not found in model '${modelInfo.modelName}'. Available fields:`, modelInfo.fields?.map(f => f.name));
         continue;
       }
 
@@ -401,21 +402,254 @@ class SelectValidator {
       relatedModel: this.getRelatedModelName(fieldName, structure)
     }));
 
-    // Add common relation fields that might not be in the fields array
-    const commonRelations = ['class', 'grades', 'attendances', 'enrollments', 'courses', 'students', 'teachers'];
-    for (const relationName of commonRelations) {
-      if (!fields.some(f => f.name === relationName)) {
-        fields.push({
-          name: relationName,
-          isRelation: true,
-          isRequired: false,
-          isUnique: false,
-          relatedModel: this.inferRelatedModel(relationName)
-        });
+    // Add reverse relations (fields that reference this model from other models)
+    const reverseRelations = this.detectReverseRelations(structure);
+    console.log(`🔍 Detected reverse relations for ${structure.modelName}:`, reverseRelations);
+    
+    for (const reverseRelation of reverseRelations) {
+      if (!fields.some(f => f.name === reverseRelation.name)) {
+        fields.push(reverseRelation);
+        console.log(`➕ Added reverse relation: ${reverseRelation.name} -> ${reverseRelation.relatedModel}`);
+      }
+    }
+
+    // Also add forward relations from foreign keys
+    if (structure.foreignKeys) {
+      for (const fk of structure.foreignKeys) {
+        const relationName = this.generateForwardRelationName(fk.referencedModel);
+        if (!fields.some(f => f.name === relationName)) {
+          fields.push({
+            name: relationName,
+            isRelation: true,
+            isRequired: false,
+            isUnique: false,
+            relatedModel: fk.referencedModel,
+            isForwardRelation: true,
+            foreignKeyField: fk.field
+          });
+          console.log(`➕ Added forward relation: ${relationName} -> ${fk.referencedModel}`);
+        }
       }
     }
 
     return fields;
+  }
+
+  /**
+   * Detect reverse relations by analyzing foreign keys that point to this model
+   * @param {Object} structure - Database structure from analyzer
+   * @returns {Array} Array of reverse relation field info
+   */
+  detectReverseRelations(structure) {
+    const reverseRelations = [];
+    
+    if (!structure || !structure.modelName) {
+      return reverseRelations;
+    }
+
+    const currentModelName = structure.modelName;
+    
+    // Method 1: Use getAllCachedStructures if available
+    if (this.databaseAnalyzer.getAllCachedStructures) {
+      const allStructures = this.databaseAnalyzer.getAllCachedStructures();
+      console.log(`🔍 Found ${allStructures.length} cached structures for reverse relation detection`);
+      
+      for (const otherStructure of allStructures) {
+        if (!otherStructure.foreignKeys || otherStructure.modelName === currentModelName) {
+          continue;
+        }
+
+        // Check if other model has foreign keys pointing to current model
+        for (const fk of otherStructure.foreignKeys) {
+          if (this.isReferencingCurrentModel(fk, currentModelName)) {
+            const relationName = this.generateReverseRelationName(otherStructure.modelName, fk.field);
+            
+            reverseRelations.push({
+              name: relationName,
+              isRelation: true,
+              isRequired: false,
+              isUnique: false,
+              relatedModel: otherStructure.modelName,
+              isReverseRelation: true,
+              foreignKeyField: fk.field,
+              sourceModel: otherStructure.modelName
+            });
+            console.log(`✅ Found reverse relation: ${currentModelName}.${relationName} -> ${otherStructure.modelName}`);
+          }
+        }
+      }
+    }
+    
+    // Always use fallback method to ensure we have the expected relations
+    // This ensures that even if dynamic detection fails, we still get the relations
+    const commonReverseRelations = this.inferCommonReverseRelations(currentModelName);
+    console.log(`🔄 Adding ${commonReverseRelations.length} fallback relations for ${currentModelName}`);
+    
+    for (const fallbackRelation of commonReverseRelations) {
+      // Only add if not already found by dynamic detection
+      if (!reverseRelations.some(r => r.name === fallbackRelation.name)) {
+        reverseRelations.push(fallbackRelation);
+        console.log(`🔄 Added fallback relation: ${currentModelName}.${fallbackRelation.name} -> ${fallbackRelation.relatedModel}`);
+      }
+    }
+
+    return reverseRelations;
+  }
+
+  /**
+   * Check if a foreign key references the current model
+   * @param {Object} fk - Foreign key object
+   * @param {string} currentModelName - Current model name
+   * @returns {boolean} True if FK references current model
+   */
+  isReferencingCurrentModel(fk, currentModelName) {
+    if (!fk.referencedModel) return false;
+    
+    // Direct match
+    if (fk.referencedModel === currentModelName) return true;
+    
+    // Flexible matching
+    if (this.isModelNameMatch(fk.referencedModel, currentModelName)) return true;
+    
+    // Check if foreign key field name suggests it references current model
+    // e.g., "assessmentId" suggests it references "Assessment" model
+    const fkFieldLower = fk.field.toLowerCase();
+    const currentModelLower = currentModelName.toLowerCase();
+    
+    if (fkFieldLower === currentModelLower + 'id' || 
+        fkFieldLower === currentModelLower.slice(0, -1) + 'id' || // Handle plurals
+        fkFieldLower.includes(currentModelLower)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Infer common reverse relations based on naming patterns
+   * @param {string} modelName - Current model name
+   * @returns {Array} Array of inferred reverse relations
+   */
+  inferCommonReverseRelations(modelName) {
+    const relations = [];
+    const modelLower = modelName.toLowerCase();
+    
+    // Common patterns based on model name
+    const relationPatterns = {
+      'assessment': ['questions', 'grades'],
+      'course': ['assessments', 'materials', 'enrollments', 'teachers', 'attendances', 'schedules', 'gradeSummaries'],
+      'student': ['grades', 'attendances', 'enrollments', 'parentLinks', 'gradeSummaries', 'studentAnswers', 'notifications'],
+      'teacher': ['courses', 'assessments', 'materials', 'notifications'],
+      'question': ['studentAnswers'],
+      'class': ['students', 'courses'],
+      'parent': ['parentLinks', 'notifications'],
+      'admin': ['notifications'],
+      'director': ['notifications'],
+      'guest': ['notifications']
+    };
+    
+    const patterns = relationPatterns[modelLower] || [];
+    
+    for (const pattern of patterns) {
+      relations.push({
+        name: pattern,
+        isRelation: true,
+        isRequired: false,
+        isUnique: false,
+        relatedModel: this.inferModelFromRelationName(pattern),
+        isReverseRelation: true,
+        isInferred: true
+      });
+    }
+    
+    return relations;
+  }
+
+  /**
+   * Infer model name from relation name
+   * @param {string} relationName - Relation name (e.g., "questions")
+   * @returns {string} Inferred model name (e.g., "Question")
+   */
+  inferModelFromRelationName(relationName) {
+    // Convert plural relation name to singular model name
+    const singular = this.singularize(relationName);
+    return singular.charAt(0).toUpperCase() + singular.slice(1);
+  }
+
+  /**
+   * Simple singularization function
+   * @param {string} word - Plural word
+   * @returns {string} Singular word
+   */
+  singularize(word) {
+    if (word.endsWith('ies')) {
+      return word.slice(0, -3) + 'y';
+    } else if (word.endsWith('es')) {
+      return word.slice(0, -2);
+    } else if (word.endsWith('s')) {
+      return word.slice(0, -1);
+    }
+    return word;
+  }
+
+  /**
+   * Generate reverse relation name based on the referencing model
+   * @param {string} referencingModelName - Name of the model that has the foreign key
+   * @param {string} foreignKeyField - Name of the foreign key field
+   * @returns {string} Generated relation name
+   */
+  generateReverseRelationName(referencingModelName, foreignKeyField) {
+    // Convert model name to plural lowercase for relation name
+    // e.g., "Question" -> "questions", "CourseEnrollment" -> "courseEnrollments"
+    
+    // Handle compound words (PascalCase)
+    const words = referencingModelName.replace(/([A-Z])/g, ' $1').trim().split(' ');
+    const baseName = words.map(word => word.toLowerCase()).join('');
+    
+    // Simple pluralization rules
+    if (baseName.endsWith('s') || baseName.endsWith('x') || baseName.endsWith('ch') || baseName.endsWith('sh')) {
+      return baseName + 'es';
+    } else if (baseName.endsWith('y')) {
+      return baseName.slice(0, -1) + 'ies';
+    } else {
+      return baseName + 's';
+    }
+  }
+
+  /**
+   * Check if two model names match (case-insensitive and flexible matching)
+   * @param {string} name1 - First model name
+   * @param {string} name2 - Second model name
+   * @returns {boolean} True if names match
+   */
+  isModelNameMatch(name1, name2) {
+    if (!name1 || !name2) return false;
+    
+    // Direct match
+    if (name1.toLowerCase() === name2.toLowerCase()) return true;
+    
+    // Remove common suffixes/prefixes and compare
+    const clean1 = name1.replace(/^(model|table|entity)/i, '').replace(/(model|table|entity)$/i, '');
+    const clean2 = name2.replace(/^(model|table|entity)/i, '').replace(/(model|table|entity)$/i, '');
+    
+    return clean1.toLowerCase() === clean2.toLowerCase();
+  }
+
+  /**
+   * Generate forward relation name based on the referenced model
+   * @param {string} referencedModelName - Name of the referenced model
+   * @returns {string} Generated relation name
+   */
+  generateForwardRelationName(referencedModelName) {
+    // Convert model name to camelCase for relation name
+    // e.g., "Course" -> "course", "CourseMaterial" -> "courseMaterial"
+    
+    if (!referencedModelName) return '';
+    
+    // Handle compound words (PascalCase to camelCase)
+    const camelCase = referencedModelName.charAt(0).toLowerCase() + referencedModelName.slice(1);
+    
+    return camelCase;
   }
 
   /**

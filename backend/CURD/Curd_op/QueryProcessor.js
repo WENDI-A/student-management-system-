@@ -20,9 +20,12 @@ class QueryProcessor {
       defaultTake: options.defaultTake || 100,
       ...options
     };
-    
-    // Initialize SelectValidator with same options
-    this.selectValidator = new SelectValidator(databaseAnalyzer, this.options);
+
+    // Initialize SelectValidator with same options, but allow unknown fields for relations
+    this.selectValidator = new SelectValidator(databaseAnalyzer, {
+      ...this.options,
+      allowUnknownFields: true // Allow inferred relations to pass through
+    });
   }
 
   /**
@@ -38,12 +41,12 @@ class QueryProcessor {
       await this.databaseAnalyzer.cacheSampleRecord(model);
       const structure = await this.databaseAnalyzer.analyzeDatabaseStructure(model);
       const validFields = structure && structure.fields && structure.fields.length > 0 ? structure.fields : [];
-      
+
       // Build exclude list (global + route-specific)
       const globalExclude = this.options.excludeFields || [];
       const routeExclude = routeOptions.excludeFields || [];
       const excludeFields = Array.from(new Set([...globalExclude, ...routeExclude]));
-      
+
       // Filter valid fields
       const filteredFields = validFields.filter(f => !excludeFields.includes(f));
 
@@ -95,7 +98,7 @@ class QueryProcessor {
 
     try {
       let select = typeof selectParam === 'string' ? JSON.parse(selectParam) : selectParam;
-      
+
       // Handle array format: convert to object
       if (Array.isArray(select)) {
         const filteredFields = select.filter(f => validFields.includes(f) && !this.options.excludeFields.includes(f));
@@ -105,17 +108,17 @@ class QueryProcessor {
       // Handle object format: use SelectValidator for comprehensive validation
       if (typeof select === 'object') {
         const validationResult = await this.selectValidator.validateSelectObject(select, model);
-        
+
         if (!validationResult.isValid) {
           console.warn('Select validation warnings:', validationResult.warnings);
           console.warn('Select validation errors:', validationResult.errors);
-          
+
           // Throw error for critical validation failures
           if (validationResult.errors.length > 0) {
             throw new Error(validationResult.errors[0]);
           }
         }
-        
+
         return validationResult.validatedSelect;
       }
 
@@ -224,12 +227,12 @@ class QueryProcessor {
           // For nested relations, we would need to get the related model's fields
           // For now, we'll pass the nested select through with basic validation
           const nestedSelect = await this.validateNestedSelect(
-            value.select, 
+            value.select,
             model, // In a full implementation, this should be the related model
             validFields, // In a full implementation, this should be the related model's fields
             depth + 1
           );
-          
+
           if (Object.keys(nestedSelect).length > 0) {
             validatedSelect[field] = { select: nestedSelect };
           }
@@ -249,7 +252,7 @@ class QueryProcessor {
             validFields,
             depth + 1
           );
-          
+
           if (Object.keys(nestedSelect).length > 0) {
             validatedSelect[field] = nestedSelect;
           }
@@ -306,10 +309,10 @@ class QueryProcessor {
    */
   filterWhereObject(where, validFields) {
     if (!where || typeof where !== 'object') return where;
-    
+
     const LOGICAL_OPERATORS = ['AND', 'OR', 'NOT'];
     let result = Array.isArray(where) ? [] : {};
-    
+
     for (const [key, value] of Object.entries(where)) {
       if (LOGICAL_OPERATORS.includes(key)) {
         // Handle logical operators: recurse into array or object
@@ -333,7 +336,7 @@ class QueryProcessor {
       }
       // Invalid fields are skipped
     }
-    
+
     return result;
   }
 

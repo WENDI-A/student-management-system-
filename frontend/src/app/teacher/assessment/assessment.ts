@@ -24,16 +24,43 @@ export interface Assessment {
   questions?: Question[];
 }
 
-// Get assessments by teacher
-export function useAssessmentsByTeacher(page = 1, perPage = 10) {
+// Get assessments by teacher with questions and course info
+export function useAssessmentsByTeacher(page = 1, perPage = 100) {
   const { data: identity } = useIdentity();
   const teacherId = typeof identity === 'object' && identity !== null && 'id' in identity ? (identity as any).id : undefined;
-  
+
   return dataProvider.useListQuery('assessments', {
     page,
     perPage,
     filter: teacherId ? { teacherId } : {},
-    include: JSON.stringify({ course: true, questions: true }),
+    select: JSON.stringify({
+      id: true,
+      title: true,
+      type: true,
+      courseId: true,
+      teacherId: true,
+      date: true,
+      totalMarks: true,
+      course: {
+        select: {
+          id: true,
+          name: true,
+          code: true
+        }
+      },
+      questions: {
+        select: {
+          id: true,
+          text: true,
+          type: true,
+          marks: true,
+          options: true,
+          correctAnswer: true,
+          order: true,
+          assessmentId: true
+        }
+      }
+    })
   });
 }
 
@@ -42,17 +69,17 @@ export function useAssessmentById(id: string) {
   return dataProvider.useGetOneQuery('assessments', { id });
 }
 
-// Create assessment
+// Create assessment with questions (uses custom POST endpoint)
 export function useCreateAssessment(options: any) {
   return dataProvider.useCreateMutation('assessments', options);
 }
 
-// Update assessment
+// Update assessment with questions (uses custom PUT endpoint)
 export function useUpdateAssessment(options: any) {
   return dataProvider.useUpdateMutation('assessments', options);
 }
 
-// Delete assessment
+// Delete assessment (uses custom DELETE endpoint with cascade)
 export function useDeleteAssessment(options: any) {
   return dataProvider.useDeleteMutation('assessments', options);
 }
@@ -94,15 +121,23 @@ export function useAllQuestionsForTeacherAssessments(assessmentIds: string[]) {
 export function useTeacherCourses() {
   const { data: identity } = useIdentity();
   const teacherId = typeof identity === 'object' && identity !== null && 'id' in identity ? (identity as any).id : undefined;
-  
+
   return dataProvider.useListQuery('courses', {
     page: 1,
     perPage: 100,
-    filter: teacherId ? { 
-      courseTeachers: { 
-        some: { teacherId } 
-      } 
-    } : {},
+    filter: {},
+    select: JSON.stringify({
+      id: true,
+      name: true,
+      code: true,
+      courseTeachers: {
+        select: {
+          id: true,
+          teacherId: true,
+          courseId: true
+        }
+      }
+    })
   });
 }
 
@@ -146,9 +181,9 @@ export function useAssessmentBuilder() {
     const newQuestion: Question = {
       ...currentQuestion,
       order: questions.length,
-      id: undefined
+      id: undefined // New questions don't have IDs yet
     };
-    
+
     setQuestions([...questions, newQuestion]);
     resetCurrentQuestion();
   };
@@ -156,10 +191,14 @@ export function useAssessmentBuilder() {
   // Update existing question
   const updateQuestion = (index: number) => {
     const updatedQuestions = [...questions];
+    const existingQuestion = updatedQuestions[index];
+
     updatedQuestions[index] = {
       ...currentQuestion,
+      id: existingQuestion.id, // Preserve existing ID for updates
       order: index
     };
+
     setQuestions(updatedQuestions);
     setIsEditing(false);
     setEditingQuestionIndex(null);
@@ -169,9 +208,18 @@ export function useAssessmentBuilder() {
   // Edit question
   const editQuestion = (index: number) => {
     const question = questions[index];
+
+    // Ensure options is always an array for multiple choice questions
+    let options = ['', '', '', '']; // Default options
+    if (question.type === 'MULTIPLE_CHOICE') {
+      if (question.options && Array.isArray(question.options)) {
+        options = question.options.length >= 2 ? question.options : ['', '', '', ''];
+      }
+    }
+
     setCurrentQuestion({
       ...question,
-      options: question.options || ['', '', '', '']
+      options: question.type === 'MULTIPLE_CHOICE' ? options : undefined
     });
     setIsEditing(true);
     setEditingQuestionIndex(index);
@@ -236,13 +284,13 @@ export function useAssessmentBuilder() {
   const updateQuestionOption = (index: number, value: string) => {
     const newOptions = [...(currentQuestion.options || ['', '', '', ''])];
     newOptions[index] = value;
-    
+
     // Clear correct answer if it's no longer valid
     let newCorrectAnswer = currentQuestion.correctAnswer;
     if (newCorrectAnswer && !newOptions.includes(newCorrectAnswer)) {
       newCorrectAnswer = '';
     }
-    
+
     setCurrentQuestion(prev => ({
       ...prev,
       options: newOptions,
@@ -262,13 +310,13 @@ export function useAssessmentBuilder() {
   // Remove option from multiple choice
   const removeOption = (index: number) => {
     const newOptions = currentQuestion.options?.filter((_, i) => i !== index) || [];
-    
+
     // Clear correct answer if the removed option was the correct answer
     let newCorrectAnswer = currentQuestion.correctAnswer;
     if (currentQuestion.correctAnswer === currentQuestion.options?.[index]) {
       newCorrectAnswer = '';
     }
-    
+
     setCurrentQuestion(prev => ({
       ...prev,
       options: newOptions,
@@ -285,28 +333,44 @@ export function useAssessmentBuilder() {
       const q = questions[i];
       if (!q.text.trim()) return `Question ${i + 1} text is required`;
       if (q.marks <= 0) return `Question ${i + 1} marks must be greater than 0`;
-      
+
       if (q.type === 'MULTIPLE_CHOICE') {
         if (!q.options || q.options.length < 2) return `Question ${i + 1} must have at least 2 options`;
         if (!q.correctAnswer) return `Question ${i + 1} must have a correct answer`;
       }
-      
+
       if (q.type === 'TRUE_FALSE' && !q.correctAnswer) {
         return `Question ${i + 1} must have a correct answer`;
       }
-      
+
       if (q.type === 'FILL_BLANK' && !q.correctAnswer) {
         return `Question ${i + 1} must have a correct answer`;
       }
     }
-    
+
     return null; // No errors
   };
 
   // Load assessment for editing
-  const loadAssessment = (assessmentData: Assessment) => {
+  const loadAssessment = (assessmentData: Assessment, existingQuestions: Question[] = []) => {
     setAssessment(assessmentData);
-    setQuestions(assessmentData.questions || []);
+    // Use existing questions if provided, otherwise use questions from assessment data
+    const questionsToLoad = existingQuestions.length > 0 ? existingQuestions : (assessmentData.questions || []);
+
+    // Normalize questions to ensure proper structure
+    const normalizedQuestions = questionsToLoad.map(question => ({
+      ...question,
+      // Ensure options is properly structured for multiple choice questions
+      options: question.type === 'MULTIPLE_CHOICE'
+        ? (question.options && Array.isArray(question.options) && question.options.length >= 2
+          ? question.options
+          : ['', '', '', ''])
+        : question.options
+    }));
+
+    // Sort questions by order
+    const sortedQuestions = normalizedQuestions.sort((a, b) => (a.order || 0) - (b.order || 0));
+    setQuestions(sortedQuestions);
   };
 
   // Reset form
@@ -333,7 +397,7 @@ export function useAssessmentBuilder() {
     isEditing,
     editingQuestionIndex,
     totalMarks,
-    
+
     // Actions
     setAssessment,
     addQuestion,

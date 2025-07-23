@@ -74,8 +74,12 @@ const get_update_password: Record<string, string> = {
 interface UseListQueryOptions {
   page?: number;
   perPage?: number;
-  filter?: Record<string, any>;
+  filter?: Record<string, any> | string;
   include?: string;
+  select?: Record<string, any> | string;
+  orderBy?: Record<string, any> | string;
+  skip?: number;
+  take?: number;
 }
 
 interface UseGetOneQueryOptions {
@@ -89,26 +93,84 @@ interface UseMutationOptions<TData = any, TVariables = any> {
   onError?: (error: any) => void;
 }
 
+// Helper function for advanced search queries
+const createAdvancedQuery = (options: {
+    filter?: Record<string, any>;
+    select?: Record<string, any>;
+    orderBy?: Record<string, any>;
+    include?: Record<string, any>;
+}) => {
+    const query: any = {};
+    
+    if (options.filter) {
+        query.filter = JSON.stringify(options.filter);
+    }
+    
+    if (options.select) {
+        query.select = JSON.stringify(options.select);
+    }
+    
+    if (options.orderBy) {
+        query.orderBy = JSON.stringify(options.orderBy);
+    }
+    
+    if (options.include) {
+        query.include = JSON.stringify(options.include);
+    }
+    
+    return query;
+};
+
 const dataProvider = {
     // CRUD methods first so hooks can reference them
     getList: async (
         resource: keyof typeof get_path_list,
         params: {
             pagination?: { page: number; perPage: number };
-            filter?: Record<string, any>;
+            filter?: Record<string, any> | string;
             include?: string;
+            select?: Record<string, any> | string;
+            orderBy?: Record<string, any> | string;
+            skip?: number;
+            take?: number;
         } = {}
     ): Promise<{ data: any[]; total: number }> => {
         const url = get_path_list[resource];
         const { page = 1, perPage = 10 } = params.pagination || {};
-        const filter = params.filter || {};
-        const include = params.include;
+        const { filter, include, select, orderBy, skip, take } = params;
+        
         const queryObj: Record<string, string> = {
           page: String(page),
           perPage: String(perPage),
-          ...Object.fromEntries(Object.entries(filter).map(([k, v]) => [k, String(v)])),
         };
+
+        // Handle filter parameter
+        if (filter) {
+            if (typeof filter === 'string') {
+                queryObj.filter = filter;
+            } else if (typeof filter === 'object') {
+                // For simple object filters, convert to query parameters
+                Object.entries(filter).forEach(([k, v]) => {
+                    if (typeof v === 'object') {
+                        queryObj[k] = JSON.stringify(v);
+                    } else {
+                        queryObj[k] = String(v);
+                    }
+                });
+            }
+        }
+
+        // Handle advanced search parameters
         if (include) queryObj.include = include;
+        if (select) {
+            queryObj.select = typeof select === 'string' ? select : JSON.stringify(select);
+        }
+        if (orderBy) {
+            queryObj.orderBy = typeof orderBy === 'string' ? orderBy : JSON.stringify(orderBy);
+        }
+        if (skip !== undefined) queryObj.skip = String(skip);
+        if (take !== undefined) queryObj.take = String(take);
+
         const query = new URLSearchParams(queryObj).toString();
         const response = await api.get(`${url}?${query}`);
         return {
@@ -172,7 +234,17 @@ const dataProvider = {
         } = {}
     ): UseQueryResult<{ data: any[]; total: number }, unknown> => {
         const { enqueueSnackbar } = useSnackbar();
-        const { page = 1, perPage = 10, filter = {}, include } = options;
+        const { 
+            page = 1, 
+            perPage = 10, 
+            filter = {}, 
+            include, 
+            select, 
+            orderBy, 
+            skip, 
+            take 
+        } = options;
+        
         const onSuccess = (data: { data: any[]; total: number }) => {
             if (queryOptions.onSuccess) queryOptions.onSuccess(data);
             else enqueueSnackbar('Data loaded successfully!', { variant: 'success' });
@@ -181,9 +253,18 @@ const dataProvider = {
             if (queryOptions.onError) queryOptions.onError(error);
             else enqueueSnackbar('Failed to load data.', { variant: 'error' });
         };
+        
         const queryOptionsObject = {
-            queryKey: [resource, page, perPage, filter, include] as const,
-            queryFn: () => dataProvider.getList(resource, { pagination: { page, perPage }, filter, include }),
+            queryKey: [resource, page, perPage, filter, include, select, orderBy, skip, take] as const,
+            queryFn: () => dataProvider.getList(resource, { 
+                pagination: { page, perPage }, 
+                filter, 
+                include, 
+                select, 
+                orderBy, 
+                skip, 
+                take 
+            }),
             onSuccess,
             onError,
         };
@@ -261,6 +342,44 @@ const dataProvider = {
             },
         });
     },
+    
+    // Advanced search helper
+    createAdvancedQuery,
+    
+    // Convenient method for advanced list queries
+    useAdvancedListQuery: (
+        resource: keyof typeof get_path_list,
+        advancedOptions: {
+            filter?: Record<string, any>;
+            select?: Record<string, any>;
+            orderBy?: Record<string, any>;
+            include?: Record<string, any>;
+            page?: number;
+            perPage?: number;
+        },
+        queryOptions: {
+            onSuccess?: (data: { data: any[]; total: number }) => void;
+            onError?: (error: unknown) => void;
+        } = {}
+    ): UseQueryResult<{ data: any[]; total: number }, unknown> => {
+        const { 
+            filter, 
+            select, 
+            orderBy, 
+            include, 
+            page = 1, 
+            perPage = 10 
+        } = advancedOptions;
+        
+        return dataProvider.useListQuery(resource, {
+            page,
+            perPage,
+            filter,
+            select,
+            orderBy,
+            include: include ? JSON.stringify(include) : undefined
+        }, queryOptions);
+    }
 };
 
 export default dataProvider;
