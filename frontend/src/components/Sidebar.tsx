@@ -135,7 +135,7 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
   const SidebarContent = (
     <div className="flex flex-col h-full">
       {/* Empty header space */}
-      {/* <div className="px-4 py-4 h-16"></div> */}
+      <div className="px-4 py-4"></div> 
 
       <ScrollArea className="flex-1 px-2">
         <div className="pb-12 pt-2">

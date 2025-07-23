@@ -1,307 +1,277 @@
 "use client";
+import React, { useState, useCallback } from 'react';
 import { useCourseMaterialAdminState } from './coursematerial';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { DataTable } from "@/components/ui/data-table/data-table";
+import { CourseMaterialModal } from "@/components/modals/model";
+import { createColumns, CourseMaterial } from "./columns";
+import { useSnackbar } from "notistack";
 
 export default function CourseMaterialAdmin() {
-  const state = useCourseMaterialAdminState();
-  const {
-    open,
-    setOpen,
-    title,
-    setTitle,
-    description,
-    setDescription,
-    file,
-    setFile,
-    courseId,
-    setCourseId,
-    editId,
-    setEditId,
-    editMaterial,
-    setEditMaterial,
-    currentPage,
-    setCurrentPage,
-    materialsPerPage,
-    materials,
-    total,
-    totalPages,
-    startIndex,
-    endIndex,
-    createMaterial,
-    updateMaterial,
-    deleteMaterial,
-    handleSave,
-    handleEditSave,
-    handleDelete,
-    goToPage,
-    courses,
-    courseLoading,
-    errors, // Add errors from state
-  } = state;
+    const state = useCourseMaterialAdminState();
+    const {
+        open,
+        setOpen,
+        title,
+        setTitle,
+        description,
+        setDescription,
+        file,
+        setFile,
+        courseId,
+        setCourseId,
+        editId,
+        setEditId,
+        editMaterial,
+        setEditMaterial,
+        materials,
+        createMaterial,
+        updateMaterial,
+        handleSave,
+        handleEditSave,
+        handleDelete,
+        handleBulkDelete,
+        handleUndo,
+        courses,
+        errors,
+    } = state;
 
-  return (
-    <div className="w-full px-2 sm:px-4">
-      <Card className="w-full max-w-5xl mx-auto">
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-          <CardTitle className="text-2xl">Course Materials</CardTitle>
-          <Button
-            onClick={() => {
-              setOpen(true);
-              setEditId(null);
-              setEditMaterial(null);
-            }}
-            variant="link"
-            className="text-blue-700 dark:text-blue-400 w-full sm:w-auto"
-          >
-            + Create
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {materials.length === 0 ? (
-            <div className="text-gray-500 text-center py-8">
-              No course materials yet.
-            </div>
-          ) : (
-            <div className="w-full max-w-full overflow-x-auto">
-              <div className="w-full">
-                <table className="w-full bg-white dark:bg-background rounded-lg shadow mt-4 text-xs">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
-                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">No</th>
-                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Title</th>
-                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Description</th>
-                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">File</th>
-                      <th className="px-1 sm:px-2 py-1 text-left whitespace-nowrap">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {materials.map((m, i) => (
-                      <tr
-                        key={startIndex + i}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
-                      >
-                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap font-medium text-gray-600 dark:text-gray-400">
-                          {startIndex + i + 1}
-                        </td>
-                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{m.title}</td>
-                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">{m.description}</td>
-                        <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                          {m.url ? (
-                            <a href={m.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">
-                              {m.url.split('/').pop()}
-                            </a>
-                          ) : 'N/A'}
-                        </td>
-                        <td className="px-1 sm:px-2 py-1 flex flex-col sm:flex-row gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => {
-                              setEditId(m.id);
-                              setEditMaterial(m);
-                              setOpen(true);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="w-full sm:w-auto"
-                            onClick={() => handleDelete(m.id)}
-                          >
-                            Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 px-2 sm:px-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {startIndex + 1} to {Math.min(endIndex, total)} of {total} course materials
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => goToPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="flex items-center gap-1"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                      Previous
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => goToPage(page)}
-                          className="w-8 h-8 p-0"
-                        >
-                          {page}
-                        </Button>
-                      ))}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => goToPage(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="flex items-center gap-1"
-                    >
-                      Next
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      {/* Create/Edit Course Material Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg w-full px-2 sm:px-6">
-          <DialogHeader>
-            <DialogTitle>{editId ? "Edit Course Material" : "Add New Course Material"}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={editId ? handleEditSave : handleSave} className="space-y-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Title
-              </label>
-              <Input
-                value={editId ? editMaterial?.title || "" : title}
-                onChange={e =>
-                  editId
-                    ? setEditMaterial({ ...editMaterial, title: e.target.value })
-                    : setTitle(e.target.value)
-                }
-                className={errors?.title ? "border-red-500" : ""}
-                required
-              />
-              {errors?.title && (
-                <p className="text-xs text-red-500 mt-1">{errors.title}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Description
-              </label>
-              <Input
-                value={editId ? editMaterial?.description || "" : description}
-                onChange={e =>
-                  editId
-                    ? setEditMaterial({ ...editMaterial, description: e.target.value })
-                    : setDescription(e.target.value)
-                }
-                className={errors?.description ? "border-red-500" : ""}
-              />
-              {errors?.description && (
-                <p className="text-xs text-red-500 mt-1">{errors.description}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                File (ppt, pdf, doc, etc.)
-              </label>
-              <input
-                type="file"
-                accept=".pdf,.ppt,.pptx,.doc,.docx"
-                className={`block w-full rounded border ${errors?.file ? "border-red-500" : "border-gray-300"} bg-white px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                onChange={e => {
-                  const file = e.target.files?.[0] || null;
-                  if (editId) {
-                    setEditMaterial({ ...editMaterial, file });
-                  } else {
-                    setFile(file);
-                  }
-                }}
-              />
-              {/* Show the file name if available */}
-              {(editId ? editMaterial?.file : file) && (
-                <span className="text-xs text-gray-600">{(editId ? editMaterial.file?.name : file?.name) || ''}</span>
-              )}
-              {errors?.file && (
-                <p className="text-xs text-red-500 mt-1">{errors.file}</p>
-              )}
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Course
-                </label>
-                <Select
-                  value={editId ? editMaterial?.courseId || "" : courseId}
-                  onValueChange={value =>
-                    editId
-                      ? setEditMaterial({ ...editMaterial, courseId: value })
-                      : setCourseId(value)
-                  }
-                  required
-                >
-                  <SelectTrigger className={`w-full ${errors?.courseId ? "border-red-500" : ""}`}>
-                    <SelectValue placeholder="Select course" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {state.courses.map((course: any) => (
-                      <SelectItem key={course.id} value={course.id}>
-                        {course.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors?.courseId && (
-                  <p className="text-xs text-red-500 mt-1">{errors.courseId}</p>
-                )}
-              </div>
-            </div>
-            <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-end">
-              <DialogClose asChild>
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+    // State for individual delete with undo
+    const [pendingDeletes, setPendingDeletes] = useState<Map<string, NodeJS.Timeout>>(new Map());
+    const [deletingItems, setDeletingItems] = useState<Set<string>>(new Set());
+
+    // Handle individual delete with 5-second undo
+    const handleIndividualDelete = useCallback((id: string) => {
+        const material = materials.find((m: MaterialData) => m.id === id);
+        if (!material) return;
+
+        // Clear any existing timer for this item
+        setPendingDeletes(prev => {
+            const existingTimer = prev.get(id);
+            if (existingTimer) {
+                clearTimeout(existingTimer);
+            }
+            return prev;
+        });
+
+        // Add to deleting items set
+        setDeletingItems(prev => new Set(prev).add(id));
+
+        // Show snackbar with undo option
+        const snackbarId = enqueueSnackbar(`"${material.title}" will be deleted in 5 seconds`, {
+            variant: 'warning',
+            persist: true,
+            action: (key) => (
                 <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full sm:w-auto"
+                    size="sm"
+                    variant="ghost"
+                    className="text-white hover:text-white/80"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUndoIndividualDelete(id);
+                        closeSnackbar(key);
+                    }}
                 >
-                  Cancel
+                    Undo
                 </Button>
-              </DialogClose>
-              <Button
-                type="submit"
-                className="bg-blue-700 hover:bg-blue-600 w-full sm:w-auto"
-                disabled={createMaterial.isPending || updateMaterial.isPending}
-              >
-                {createMaterial.isPending || updateMaterial.isPending ? "Saving..." : "Save"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+            ),
+        });
+
+        // Set timer for actual deletion
+        const timer = setTimeout(() => {
+            // Actually delete the item
+            handleDelete(id);
+            
+            // Clean up state
+            setPendingDeletes(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(id);
+                return newMap;
+            });
+            setDeletingItems(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(id);
+                return newSet;
+            });
+            
+            closeSnackbar(snackbarId);
+            enqueueSnackbar(`"${material.title}" deleted`, { variant: 'success' });
+        }, 5000);
+
+        // Store the timer
+        setPendingDeletes(prev => new Map(prev).set(id, timer));
+    }, [materials, handleDelete, enqueueSnackbar, closeSnackbar]);
+
+    // Handle undo for individual delete
+    const handleUndoIndividualDelete = useCallback((id: string) => {
+        let timerCleared = false;
+        
+        setPendingDeletes(prev => {
+            const timer = prev.get(id);
+            if (timer) {
+                clearTimeout(timer);
+                timerCleared = true;
+                const newMap = new Map(prev);
+                newMap.delete(id);
+                return newMap;
+            }
+            return prev;
+        });
+        
+        setDeletingItems(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(id);
+            return newSet;
+        });
+        
+        if (timerCleared) {
+            const material = materials.find((m: MaterialData) => m.id === id);
+            enqueueSnackbar(`"${material?.title || 'Item'}" deletion cancelled`, { variant: 'success' });
+        }
+    }, [materials, enqueueSnackbar]);
+
+    // Cleanup timers on unmount
+    React.useEffect(() => {
+        return () => {
+            pendingDeletes.forEach(timer => clearTimeout(timer));
+        };
+    }, [pendingDeletes]);
+
+    // Define types for better type safety
+    interface Course {
+        id: string;
+        name: string;
+    }
+
+    interface MaterialData {
+        id: string;
+        title: string;
+        description: string;
+        url?: string;
+        courseId: string;
+        file?: File | null;
+    }
+
+    // Transform materials data for DataTable with course names
+    const tableData: CourseMaterial[] = materials.map((material: MaterialData) => {
+        const course = courses.find((c: Course) => c.id === material.courseId);
+        return {
+            ...material,
+            courseName: course?.name || "Unknown Course",
+        };
+    });
+
+    // Column definitions with actions
+    const columns = createColumns({
+        onEdit: (material: CourseMaterial) => {
+            setEditId(material.id);
+            setEditMaterial(material);
+            setOpen(true);
+        },
+        onDelete: (id: string) => {
+            handleIndividualDelete(id);
+        },
+        deletingItems,
+    });
+
+    // Handle modal form data changes with better type safety
+    const handleFormDataChange = (field: string, value: unknown) => {
+        if (editId && editMaterial) {
+            // For edit mode, update editMaterial
+            setEditMaterial({ ...editMaterial, [field]: value });
+        } else {
+            // For create mode, update form state
+            switch (field) {
+                case "title":
+                    setTitle(value as string);
+                    break;
+                case "description":
+                    setDescription(value as string);
+                    break;
+                case "file":
+                    setFile(value as File | null);
+                    break;
+                case "courseId":
+                    setCourseId(value as string);
+                    break;
+                default:
+                    console.warn(`Unknown field: ${field}`);
+            }
+        }
+    };
+
+    // Use the handleBulkDelete from state instead of local function
+
+    // Clear form when opening modal for create
+    const handleOpenCreate = () => {
+        setOpen(true);
+        setEditId(null);
+        setEditMaterial(null);
+        setTitle("");
+        setDescription("");
+        setFile(null);
+        setCourseId("");
+    };
+
+    return (
+        <>
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Course Materials</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Manage and organize course materials</p>
+                </div>
+                <Button
+                    onClick={handleOpenCreate}
+                    className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-10 px-4"
+                >
+                    + Create Material
+                </Button>
+            </div>
+
+            {/* Data Table Section */}
+            <Card className="shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                    <DataTable
+                        columns={columns}
+                        data={tableData}
+                        onDelete={handleBulkDelete}
+                        onUndo={handleUndo}
+                        searchKey="title"
+                        searchPlaceholder="Search materials..."
+                        emptyMessage="No course materials found. Create your first material!"
+                        enableColumnVisibility={true}
+                        enableSelection={true}
+                        enableSearch={true}
+                        enablePagination={true}
+                        pageSize={8}
+                    />
+                </CardContent>
+            </Card>
+
+            {/* Course Material Modal */}
+            <CourseMaterialModal
+                open={open}
+                onOpenChange={setOpen}
+                title={editId ? "Edit Course Material" : "Create Course Material"}
+                formData={{
+                    title: editId ? editMaterial?.title || "" : title,
+                    description: editId ? editMaterial?.description || "" : description,
+                    file: editId ? editMaterial?.file || null : file,
+                    courseId: editId ? editMaterial?.courseId || "" : courseId,
+                }}
+                onFormDataChange={handleFormDataChange}
+                courses={courses}
+                onSubmit={editId ? handleEditSave : handleSave}
+                isLoading={createMaterial.isPending || updateMaterial.isPending}
+                errors={errors}
+                isEdit={!!editId}
+                editMaterial={editMaterial}
+            />
+        </>
+    );
 } 

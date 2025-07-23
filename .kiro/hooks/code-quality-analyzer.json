@@ -1,0 +1,38 @@
+{
+    "name": "Code Quality Analyzer",
+    "description": "Analyzes modified source code files for potential improvements, code smells, design patterns, and best practices",
+    "trigger": {
+        "type": "fileChange",
+        "patterns": [
+            "**/*.js",
+            "**/*.jsx",
+            "**/*.ts",
+            "**/*.tsx",
+            "**/*.py",
+            "**/*.java",
+            "**/*.cpp",
+            "**/*.c",
+            "**/*.cs",
+            "**/*.go",
+            "**/*.rs",
+            "**/*.php",
+            "**/*.rb",
+            "**/*.swift",
+            "**/*.kt"
+        ],
+        "excludePatterns": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/build/**",
+            "**/.next/**",
+            "**/coverage/**",
+            "**/*.min.js",
+            "**/*.bundle.js",
+            "**/vendor/**",
+            "**/.git/**"
+        ]
+    },
+    "request": "Analyze the modified code in the following file(s) for potential improvements:\n\n#{{changedFiles}}\n\nPlease review the code changes and provide suggestions for:\n\n1. **Code Smells & Anti-patterns**: Identify any code smells, duplicated code, overly complex functions, or anti-patterns\n2. **Design Patterns**: Suggest appropriate design patterns that could improve the code structure\n3. **Best Practices**: Recommend language-specific and general programming best practices\n4. **Performance Optimizations**: Identify potential performance improvements without changing functionality\n5. **Readability & Maintainability**: Suggest improvements for code clarity, naming conventions, and documentation\n6. **Security Considerations**: Point out any potential security vulnerabilities or improvements\n7. **Testing Opportunities**: Suggest areas where additional testing would be beneficial\n\nFor each suggestion:\n- Explain WHY the improvement is beneficial\n- Provide specific code examples when possible\n- Prioritize suggestions by impact (High/Medium/Low)\n- Ensure suggestions maintain existing functionality\n\nFocus on actionable, practical improvements that enhance code quality while preserving the current behavior.",
+    "enabled": true,
+    "autoRun": true
+}
