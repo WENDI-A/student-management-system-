@@ -292,6 +292,38 @@ class DatabaseAnalyzer {
       results: cascadeResults
     };
   }
+  /**
+   * Get all cached database structures
+   * @returns {Array} Array of all cached database structures
+   */
+  getAllCachedStructures() {
+    return Array.from(this.dbStructure.values());
+  }
+
+  /**
+   * Get cached structure by model name
+   * @param {string} modelName - Model name
+   * @returns {Object|null} Cached structure or null
+   */
+  getCachedStructure(modelName) {
+    return this.dbStructure.get(modelName) || null;
+  }
+
+  /**
+   * Clear all cached structures
+   */
+  clearCache() {
+    this.dbStructure.clear();
+    this.relationCache.clear();
+  }
+
+  /**
+   * Get all cached model names
+   * @returns {Array} Array of cached model names
+   */
+  getCachedModelNames() {
+    return Array.from(this.dbStructure.keys());
+  }
 }
 
 module.exports = { DatabaseAnalyzer };
