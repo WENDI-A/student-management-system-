@@ -116,8 +116,12 @@ class FileHandler {
       for (const key in req.body) {
         if (typeof req.body[key] === 'string') {
           try {
-            req.body = JSON.parse(req.body[key]);
+            // Try to parse individual field, not overwrite entire body
+            const parsed = JSON.parse(req.body[key]);
+            req.body[key] = parsed;
           } catch (e) {
+            // If parsing fails, keep original string value
+            // This is normal for non-JSON strings like titles, descriptions, etc.
           }
         }
       }
@@ -154,19 +158,36 @@ class FileHandler {
       if (opts.single) {
         return upload.single(opts.single)(req, res, (err) => {
           if (err) {
+            console.log('🔍 FILEHANDLER ERROR:', err.message);
             const errorResp = apiResponse.error('post', null, 'File upload error: ' + err.message, 400);
             apiResponse.setResponseHeaders(res, errorResp);
             return res.status(400).json(errorResp.body);
           }
+          
+          console.log('🔍 FILEHANDLER: Before processing');
+          console.log('🔍 req.file:', req.file ? {
+            fieldname: req.file.fieldname,
+            originalname: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size
+          } : 'NO FILE');
+          console.log('🔍 req.body before parsing:', req.body);
+          
           // Parse JSON string fields in body
           self.parseJsonBodyFields(req);
+          
+          console.log('🔍 req.body after parsing:', req.body);
+          
           // Only process if file exists
           if (req.file) {
             const processedFile = self.processUploadedFile(req.file, uploadDir);
             req.uploadedFiles = processedFile;
+            console.log('🔍 processedFile:', processedFile);
             // Add to body if enabled
             if (addToBody) {
+              console.log('🔍 Adding file to body (addToBody=true)');
               self.addFilesToBody(req, processedFile, uploadDir);
+              console.log('🔍 req.body after addFilesToBody:', req.body);
             }
           }
           next();

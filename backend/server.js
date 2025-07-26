@@ -60,7 +60,7 @@ app.use((err, req, res, next) => {
 
 // ---- route 
 
-app.use("/api" , require("./routes/index"))
+app.use("/api", require("./routes/index"))
 
 // ---- end
 const startServer = async () => {

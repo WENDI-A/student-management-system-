@@ -13,8 +13,6 @@ import {
     AlertCircle,
     Loader2,
     Search,
-    Filter,
-    Download,
     CheckSquare,
     Square
 } from "lucide-react";
@@ -25,14 +23,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { useState, useMemo, useEffect } from "react";
 
@@ -48,7 +38,11 @@ export default function AttendanceAdmin() {
         students,
         studentsLoading,
         courses,
-        coursesLoading
+        coursesLoading,
+        attendanceLoading,
+        selectedCourseData,
+        getStudentAttendanceStatus,
+        isStudentMarked
     } = useAttendanceAdminState();
 
     // Local state for search, filter, and pagination
@@ -60,11 +54,8 @@ export default function AttendanceAdmin() {
 
     // Reset UI state when date or course changes
     useEffect(() => {
-        // Clear selected students when changing date/course
         setSelectedStudents(new Set());
-        // Reset to first page
         setCurrentPage(1);
-        // Clear search and filters when changing context
         setSearchQuery("");
         setStatusFilter("ALL");
     }, [selectedDate, selectedCourse]);
@@ -100,20 +91,18 @@ export default function AttendanceAdmin() {
         if (!students) return [];
 
         return students.filter((student: any) => {
-            // Search filter
             const matchesSearch = searchQuery === "" ||
                 `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 student.code.toLowerCase().includes(searchQuery.toLowerCase());
 
-            // Status filter
-            const studentStatus = studentAttendance[student.id] || "NOT_MARKED";
+            const studentStatus = getStudentAttendanceStatus ? getStudentAttendanceStatus(student.id) || "NOT_MARKED" : "NOT_MARKED";
             const matchesStatus = statusFilter === "ALL" ||
-                (statusFilter === "NOT_MARKED" && !studentAttendance[student.id]) ||
+                (statusFilter === "NOT_MARKED" && !getStudentAttendanceStatus?.(student.id)) ||
                 studentStatus === statusFilter;
 
             return matchesSearch && matchesStatus;
         });
-    }, [students, searchQuery, statusFilter, studentAttendance]);
+    }, [students, searchQuery, statusFilter, getStudentAttendanceStatus]);
 
     // Pagination
     const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
@@ -148,7 +137,6 @@ export default function AttendanceAdmin() {
         setSelectedStudents(new Set());
     };
 
-    // Reset pagination when filters change
     const handleSearchChange = (value: string) => {
         setSearchQuery(value);
         setCurrentPage(1);
@@ -190,15 +178,40 @@ export default function AttendanceAdmin() {
                                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                             <span>Loading courses...</span>
                                         </div>
+                                    ) : courses.length === 0 ? (
+                                        <div className="flex items-center justify-center p-4 text-muted-foreground">
+                                            <span>No courses assigned</span>
+                                        </div>
                                     ) : (
                                         courses.map((course: any) => (
                                             <SelectItem key={course.id} value={course.id}>
-                                                {course.name}
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{course.name}</span>
+                                                    {course.class && (
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Class: {course.class.name}{course.class.section ? ` - ${course.class.section}` : ''}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </SelectItem>
                                         ))
                                     )}
                                 </SelectContent>
                             </Select>
+                            {selectedCourseData && (
+                                <div className="text-sm text-muted-foreground mt-2 p-2 bg-muted/50 rounded">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium">Selected:</span>
+                                        <span>{selectedCourseData.name}</span>
+                                    </div>
+                                    {selectedCourseData.class && (
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="font-medium">Class:</span>
+                                            <span>{selectedCourseData.class.name}{selectedCourseData.class.section ? ` - ${selectedCourseData.class.section}` : ''}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="date">Select Date</Label>
@@ -209,6 +222,9 @@ export default function AttendanceAdmin() {
                                 onChange={(e) => setSelectedDate(e.target.value)}
                                 max={new Date().toISOString().split("T")[0]}
                             />
+                            <div className="text-sm text-muted-foreground">
+                                {format(new Date(selectedDate), "EEEE, MMMM d, yyyy")}
+                            </div>
                         </div>
                     </div>
                 </CardContent>
@@ -284,10 +300,10 @@ export default function AttendanceAdmin() {
                                 </div>
                             )}
 
-                            {isSaving && (
+                            {(isSaving || attendanceLoading) && (
                                 <div className="text-sm text-muted-foreground flex items-center gap-2">
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Auto-saving attendance changes...
+                                    {isSaving ? 'Auto-saving attendance changes...' : 'Loading attendance data...'}
                                 </div>
                             )}
                         </div>
@@ -302,7 +318,17 @@ export default function AttendanceAdmin() {
                             <div className="text-center py-12 text-muted-foreground">
                                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                                 <p className="text-lg font-medium">No students found for this course.</p>
-                                <p className="text-sm mt-2">Please check if students are assigned to the course&apos;s class.</p>
+                                <p className="text-sm mt-2">
+                                    {selectedCourseData ? 
+                                        `No students are enrolled in "${selectedCourseData.name}".` :
+                                        'Please select a course to view students.'
+                                    }
+                                </p>
+                                {selectedCourseData?.class && (
+                                    <p className="text-xs mt-1 text-muted-foreground/80">
+                                        Class: {selectedCourseData.class.name}{selectedCourseData.class.section ? ` - ${selectedCourseData.class.section}` : ''}
+                                    </p>
+                                )}
                             </div>
                         ) : filteredStudents.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">
@@ -334,8 +360,8 @@ export default function AttendanceAdmin() {
 
                                     {/* Student Rows */}
                                     {paginatedStudents.map((student: any, index: number) => {
-                                        const currentStatus = studentAttendance[student.id];
-                                        const isMarked = !!currentStatus;
+                                        const currentStatus = getStudentAttendanceStatus(student.id);
+                                        const isMarked = isStudentMarked(student.id);
                                         
                                         return (
                                             <div
@@ -348,49 +374,13 @@ export default function AttendanceAdmin() {
                                                     ${!isMarked ? 'border-dashed border-muted-foreground/30' : ''}
                                                 `}
                                             >
-                                                {/* Mobile Card Header */}
-                                                <div className="flex items-center justify-between sm:hidden">
-                                                    <div className="flex items-center gap-3">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleSelectStudent(student.id)}
-                                                            className="h-6 w-6 p-0 shrink-0"
-                                                        >
-                                                            {selectedStudents.has(student.id) ?
-                                                                <CheckSquare className="h-4 w-4" /> :
-                                                                <Square className="h-4 w-4" />
-                                                            }
-                                                        </Button>
-                                                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-medium text-sm">
-                                                            {((currentPage - 1) * studentsPerPage) + index + 1}
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    {/* Status Badge for Mobile */}
-                                                    <div className="flex items-center gap-2">
-                                                        {isMarked ? (
-                                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(currentStatus)}`}>
-                                                                {getStatusIcon(currentStatus)}
-                                                                {currentStatus}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
-                                                                <AlertCircle className="h-3 w-3" />
-                                                                Not Marked
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
                                                 {/* Student Info */}
                                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                    {/* Desktop Selection Checkbox */}
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => handleSelectStudent(student.id)}
-                                                        className="h-6 w-6 p-0 shrink-0 hidden sm:flex"
+                                                        className="h-6 w-6 p-0 shrink-0"
                                                     >
                                                         {selectedStudents.has(student.id) ?
                                                             <CheckSquare className="h-4 w-4" /> :
@@ -398,19 +388,17 @@ export default function AttendanceAdmin() {
                                                         }
                                                     </Button>
                                                     
-                                                    {/* Desktop Number Badge */}
-                                                    <div className="w-8 h-8 bg-primary/10 rounded-full items-center justify-center text-primary font-medium text-sm shrink-0 hidden sm:flex">
+                                                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-medium text-sm shrink-0">
                                                         {((currentPage - 1) * studentsPerPage) + index + 1}
                                                     </div>
                                                     
                                                     <div className="min-w-0 flex-1">
-                                                        <h3 className="font-medium truncate text-base sm:text-sm">
+                                                        <h3 className="font-medium truncate">
                                                             {student.firstName} {student.lastName}
                                                         </h3>
                                                         <p className="text-sm text-muted-foreground">{student.code}</p>
                                                     </div>
 
-                                                    {/* Desktop Status Badge */}
                                                     <div className="hidden sm:block">
                                                         {isMarked ? (
                                                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(currentStatus)}`}>
@@ -427,60 +415,31 @@ export default function AttendanceAdmin() {
                                                 </div>
 
                                                 {/* Attendance Buttons */}
-                                                <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
-                                                    {/* Mobile: Two rows of buttons */}
-                                                    <div className="grid grid-cols-2 gap-2 sm:hidden">
-                                                        {["PRESENT", "ABSENT", "LATE", "EXCUSED"].map((status) => {
-                                                            // Only select if student is marked AND has this specific status
-                                                            const isSelected = isMarked && currentStatus === status;
-                                                            return (
-                                                                <Button
-                                                                    key={status}
-                                                                    variant={isSelected ? "default" : "outline"}
-                                                                    size="sm"
-                                                                    className={`h-10 text-xs font-medium transition-all ${
-                                                                        isSelected
-                                                                            ? `${getStatusColor(status)} shadow-sm`
-                                                                            : "hover:bg-muted/80 border-muted-foreground/30 bg-background"
-                                                                    }`}
-                                                                    onClick={() => updateStudentAttendance(student.id, status)}
-                                                                    disabled={isSaving}
-                                                                >
-                                                                    <span className="flex items-center gap-1.5">
-                                                                        {getStatusIcon(status)}
+                                                <div className="flex gap-2">
+                                                    {["PRESENT", "ABSENT", "LATE", "EXCUSED"].map((status) => {
+                                                        const isSelected = isMarked && currentStatus === status;
+                                                        return (
+                                                            <Button
+                                                                key={status}
+                                                                variant={isSelected ? "default" : "outline"}
+                                                                size="sm"
+                                                                className={`text-xs px-3 transition-all ${
+                                                                    isSelected
+                                                                        ? `${getStatusColor(status)} shadow-sm`
+                                                                        : "hover:bg-muted/80 border-muted-foreground/30 bg-background"
+                                                                }`}
+                                                                onClick={() => updateStudentAttendance(student.id, status)}
+                                                                disabled={isSaving}
+                                                            >
+                                                                <span className="flex items-center gap-1">
+                                                                    {getStatusIcon(status)}
+                                                                    <span className="hidden sm:inline">
                                                                         {status.charAt(0) + status.slice(1).toLowerCase()}
                                                                     </span>
-                                                                </Button>
-                                                            );
-                                                        })}
-                                                    </div>
-
-                                                    {/* Desktop: Single row */}
-                                                    <div className="hidden sm:flex sm:gap-2">
-                                                        {["PRESENT", "ABSENT", "LATE", "EXCUSED"].map((status) => {
-                                                            // Only select if student is marked AND has this specific status
-                                                            const isSelected = isMarked && currentStatus === status;
-                                                            return (
-                                                                <Button
-                                                                    key={status}
-                                                                    variant={isSelected ? "default" : "outline"}
-                                                                    size="sm"
-                                                                    className={`min-w-[85px] text-xs px-3 transition-all ${
-                                                                        isSelected
-                                                                            ? `${getStatusColor(status)} shadow-sm`
-                                                                            : "hover:bg-muted/80 border-muted-foreground/30 bg-background"
-                                                                    }`}
-                                                                    onClick={() => updateStudentAttendance(student.id, status)}
-                                                                    disabled={isSaving}
-                                                                >
-                                                                    <span className="flex items-center gap-1">
-                                                                        {getStatusIcon(status)}
-                                                                        {status.charAt(0) + status.slice(1).toLowerCase()}
-                                                                    </span>
-                                                                </Button>
-                                                            );
-                                                        })}
-                                                    </div>
+                                                                </span>
+                                                            </Button>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         );
@@ -548,4 +507,4 @@ export default function AttendanceAdmin() {
             )}
         </div>
     );
-} 
+}

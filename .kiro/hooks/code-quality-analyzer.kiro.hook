@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "name": "Code Quality Analyzer",
+  "description": "Monitors source code files for changes and analyzes them for potential improvements including code smells, design patterns, and best practices. Provides suggestions for improving readability, maintainability, and performance while preserving functionality.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "backend/**/*.js",
+      "frontend/src/**/*.ts",
+      "frontend/src/**/*.tsx",
+      "backend/zodSchemas/*.js",
+      "backend/controllers/**/*.js",
+      "backend/middleware/*.js",
+      "backend/CURD/**/*.js",
+      "backend/prisma/schema.prisma"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze the modified code files for potential improvements. Focus on:\n\n1. **Code Smells & Anti-patterns**: Identify long functions, duplicate code, complex conditionals, magic numbers, and poor naming\n2. **Design Patterns**: Suggest appropriate patterns (Factory, Strategy, Observer, etc.) where beneficial\n3. **Best Practices**: Check for proper error handling, validation, security practices, and architectural compliance\n4. **Performance**: Identify inefficient database queries, unnecessary re-renders, memory leaks, and optimization opportunities\n5. **Maintainability**: Assess code organization, documentation, testability, and adherence to project conventions\n6. **Project-Specific Guidelines**: Ensure compliance with the Student Management System architecture (CRUD patterns, Prisma usage, role-based access, validation with Zod schemas)\n\nFor each issue found, provide:\n- Clear description of the problem\n- Specific code location\n- Concrete improvement suggestion with example code when helpful\n- Impact assessment (readability/maintainability/performance)\n\nPrioritize suggestions that offer the most value while maintaining existing functionality. Consider the full-stack context and role-based architecture of this Student Management System."
+  }
+}
