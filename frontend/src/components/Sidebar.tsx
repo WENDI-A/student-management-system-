@@ -33,6 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 import * as React from "react";
 import { useAuthStore } from "@/lib/auth-store";
+import { handleUpdateProfile } from "@/lib/updateProfile";
 
 const sidebarConfig = {
   student: [
@@ -94,16 +95,27 @@ export function Sidebar({ role, sidebarOpen, onSidebarToggle }: SidebarProps) {
   const [success, setSuccess] = React.useState(false);
 
   // Handle edit profile form submit
-  function handleEditProfile(e: React.FormEvent<HTMLFormElement>) {
+  async function handleEditProfile(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!user?.id || !user?.role) return;
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      await handleUpdateProfile({
+        id: user.id,
+        role: user.role,
+        firstName: editName,
+        email: editEmail,
+        currentPassword,
+        newPassword: newPassword || undefined,
+      });
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 2000);
       setEditOpen(false);
-      // Here you would update the user in your store/backend
-    }, 1200);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err) {
+      alert(typeof err === 'string' ? err : 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
   }
 
   // Group navigation items by category

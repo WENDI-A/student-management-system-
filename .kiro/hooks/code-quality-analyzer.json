@@ -1,38 +1,26 @@
 {
-    "name": "Code Quality Analyzer",
-    "description": "Analyzes modified source code files for potential improvements, code smells, design patterns, and best practices",
-    "trigger": {
-        "type": "fileChange",
-        "patterns": [
-            "**/*.js",
-            "**/*.jsx",
-            "**/*.ts",
-            "**/*.tsx",
-            "**/*.py",
-            "**/*.java",
-            "**/*.cpp",
-            "**/*.c",
-            "**/*.cs",
-            "**/*.go",
-            "**/*.rs",
-            "**/*.php",
-            "**/*.rb",
-            "**/*.swift",
-            "**/*.kt"
-        ],
-        "excludePatterns": [
-            "**/node_modules/**",
-            "**/dist/**",
-            "**/build/**",
-            "**/.next/**",
-            "**/coverage/**",
-            "**/*.min.js",
-            "**/*.bundle.js",
-            "**/vendor/**",
-            "**/.git/**"
-        ]
-    },
-    "request": "Analyze the modified code in the following file(s) for potential improvements:\n\n#{{changedFiles}}\n\nPlease review the code changes and provide suggestions for:\n\n1. **Code Smells & Anti-patterns**: Identify any code smells, duplicated code, overly complex functions, or anti-patterns\n2. **Design Patterns**: Suggest appropriate design patterns that could improve the code structure\n3. **Best Practices**: Recommend language-specific and general programming best practices\n4. **Performance Optimizations**: Identify potential performance improvements without changing functionality\n5. **Readability & Maintainability**: Suggest improvements for code clarity, naming conventions, and documentation\n6. **Security Considerations**: Point out any potential security vulnerabilities or improvements\n7. **Testing Opportunities**: Suggest areas where additional testing would be beneficial\n\nFor each suggestion:\n- Explain WHY the improvement is beneficial\n- Provide specific code examples when possible\n- Prioritize suggestions by impact (High/Medium/Low)\n- Ensure suggestions maintain existing functionality\n\nFocus on actionable, practical improvements that enhance code quality while preserving the current behavior.",
-    "enabled": true,
-    "autoRun": true
+  "name": "Code Quality Analyzer",
+  "description": "Analyzes modified source code for potential improvements, code smells, design patterns, and best practices",
+  "trigger": {
+    "type": "fileChange",
+    "patterns": [
+      "**/*.js",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.jsx"
+    ],
+    "excludePatterns": [
+      "**/node_modules/**",
+      "**/.next/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/*.test.js",
+      "**/*.test.ts",
+      "**/*.spec.js",
+      "**/*.spec.ts"
+    ]
+  },
+  "prompt": "Analyze the modified code in the following file(s) for potential improvements. Focus on:\n\n1. **Code Smells & Anti-patterns**:\n   - Long functions/methods (>50 lines)\n   - Deeply nested code (>3 levels)\n   - Duplicate code patterns\n   - Magic numbers/strings\n   - Overly complex conditionals\n   - Large parameter lists\n\n2. **Design Patterns & Architecture**:\n   - Suggest appropriate design patterns\n   - Identify separation of concerns issues\n   - Recommend better abstraction layers\n   - Check for proper error handling\n\n3. **Best Practices**:\n   - Naming conventions consistency\n   - Function/variable naming clarity\n   - Code organization and structure\n   - Documentation and comments\n   - Type safety (for TypeScript files)\n\n4. **Performance Optimizations**:\n   - Unnecessary re-renders (React components)\n   - Inefficient loops or operations\n   - Memory leaks potential\n   - Database query optimization opportunities\n\n5. **Maintainability**:\n   - Code readability improvements\n   - Modularity suggestions\n   - Testability enhancements\n   - Dependency management\n\nFor each suggestion:\n- Explain WHY the change would be beneficial\n- Provide a concrete code example when possible\n- Prioritize suggestions by impact (High/Medium/Low)\n- Ensure suggestions maintain existing functionality\n\nAnalyze the changed files and provide actionable recommendations while being mindful of the project's architecture (Node.js/Express backend with Next.js frontend).",
+  "enabled": true,
+  "autoApprove": false
 }

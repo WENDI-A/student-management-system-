@@ -64,8 +64,7 @@ export function useCourseMaterialAdminState() {
     const [currentPage, setCurrentPage] = useState(1);
     const materialsPerPage = 10;
 
-    // Track if we need to refetch after undo
-    const [shouldRefetchAfterUndo, setShouldRefetchAfterUndo] = useState(false);
+
 
     // Validation states
     const [errors, setErrors] = useState<{
@@ -225,6 +224,23 @@ export function useCourseMaterialAdminState() {
         formData.append('teacherId', teacherId);
         if (file) formData.append('file', file);
 
+        // Debug FormData contents properly
+        console.log('=== FormData Debug ===');
+        console.log('FormData instance check:', formData instanceof FormData);
+        console.log('File state check:', file instanceof File, file?.name, file?.size);
+        for (const [key, value] of formData.entries()) {
+            if (value instanceof File) {
+                console.log(`${key}: File(name: ${value.name}, size: ${value.size} bytes, type: ${value.type})`);
+            } else {
+                console.log(`${key}: ${value}`);
+            }
+        }
+        console.log('=== End FormData Debug ===');
+
+        // Verify the data being passed to mutation
+        console.log('Data being passed to mutation:', { data: formData });
+        console.log('FormData check before mutation:', formData instanceof FormData);
+
         createMaterial.mutate({ data: formData });
     }
 
@@ -245,6 +261,17 @@ export function useCourseMaterialAdminState() {
         if (editMaterial.file instanceof File) {
             formData.append('file', editMaterial.file);
         }
+
+        // Debug FormData contents properly
+        console.log('=== Edit FormData Debug ===');
+        for (const [key, value] of formData.entries()) {
+            if (value instanceof File) {
+                console.log(`${key}: File(name: ${value.name}, size: ${value.size} bytes, type: ${value.type})`);
+            } else {
+                console.log(`${key}: ${value}`);
+            }
+        }
+        console.log('=== End Edit FormData Debug ===');
 
         updateMaterial.mutate({ id: editId, data: formData });
     }

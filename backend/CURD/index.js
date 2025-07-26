@@ -1,5 +1,5 @@
 const Api_Response = require('./api_response_folder/Api_Response');
-const DatabaseAnalyzer  = require('./Curd_op/DatabaseAnalyzer').DatabaseAnalyzer
+const DatabaseAnalyzer = require('./Curd_op/DatabaseAnalyzer').DatabaseAnalyzer
 const ErrorCode = require('./Curd_op/PrismaError').ErrorCode
 const FileHandler = require("./Curd_op/handler/FileHandler")
 const { QueryProcessor } = require('./Curd_op/QueryProcessor')
@@ -57,16 +57,16 @@ class PrismaCrudRouter {
 
     this.databaseAnalyzer = new DatabaseAnalyzer();
     this.databaseAnalyzer.models = this.models;
-    
+
     // Initialize QueryProcessor with database analyzer and options
     this.queryProcessor = new QueryProcessor(this.databaseAnalyzer, this.options);
-    
+
     // Initialize handler classes with shared dependencies
     this.getHandler = new GetHandler(this.queryProcessor, this.apiResponse, this.databaseAnalyzer, this.options);
     this.createHandler = new CreateHandler(this.apiResponse, this.databaseAnalyzer, this.options);
     this.updateHandler = new UpdateHandler(this.apiResponse, this.databaseAnalyzer, this.options);
     this.deleteHandler = new DeleteHandler(this.apiResponse, this.databaseAnalyzer, this.options);
-    
+
     this.registerPlugins();
   }
 
@@ -110,42 +110,42 @@ class PrismaCrudRouter {
     }
   }
 
-    /**
-   * Creates CRUD routes with flexible configuration using a custom generator.
-   *
-   * @param {string} routePath - The base route path (e.g., '/users').
-   * @param {Object} model - Prisma model instance used for CRUD operations.
-   * @param {Object} routeOptions - Configuration options for the route.
-   * @param {Function[]|Object} [routeOptions.middleware] - Array of Express middleware functions, or an object with per-method arrays (default, create, update, delete, get, getById)  { default: [], create: [], update: [], delete: [], get: [], getById: [] } .
-   * @param {Function} [routeOptions.authMiddleware] - Middleware for authentication.
-   *
-   * @param {Object} [routeOptions.validation] - Validation functions.
-   * @param {Function} [routeOptions.validation.create] - Validation function for create operations.
-   * @param {Function} [routeOptions.validation.update] - Validation function for update operations.
-   *
-   * @param {Object} [routeOptions.beforeActions] - Pre-operation hooks.
-   * @param {Function} [routeOptions.beforeActions.get] - Hook before GET all.
-   * @param {Function} [routeOptions.beforeActions.create] - Hook before POST.
-   * @param {Function} [routeOptions.beforeActions.update] - Hook before PUT.
-   * @param {Function} [routeOptions.beforeActions.destroy] - Hook before DELETE.
-   *
-   * @param {Object} [routeOptions.afterActions] - Post-operation hooks (same structure as beforeActions).
-   * @param {Function} [routeOptions.afterActions.get]
-   * @param {Function} [routeOptions.afterActions.create]
-   * @param {Function} [routeOptions.afterActions.update]
-   * @param {Function} [routeOptions.afterActions.destroy]
-   *
-   * @param {Object<string, Function>} [routeOptions.customActions] - Custom route handlers keyed by HTTP method.
-   * @param {Function} [routeOptions.errorHandler] - Custom error handler.
-   * @param {boolean} [routeOptions.includeRelations=false] - Include related models.
-   * @param {string[]} [routeOptions.excludeRelations] - Relation fields to exclude.
-   * @param {boolean} [routeOptions.enableConstraintChecking=true] - Enable DB constraint validation.
-   * @param {boolean} [routeOptions.enableCascadeHandling=true] - Enable cascade operation handling.
-   *
-   * @param {boolean} [routeOptions.autoDetectRelations=true] - Automatically detect and handle relations.
-   * @param {string[]} [routeOptions.excludeRoute] - HTTP methods to exclude (e.g., ['get', 'post']).
-   * @param {string[]} [routeOptions.excludeFields] - Fields to exclude from select, orderBy, and include (e.g., ['password']).
-   */
+  /**
+ * Creates CRUD routes with flexible configuration using a custom generator.
+ *
+ * @param {string} routePath - The base route path (e.g., '/users').
+ * @param {Object} model - Prisma model instance used for CRUD operations.
+ * @param {Object} routeOptions - Configuration options for the route.
+ * @param {Function[]|Object} [routeOptions.middleware] - Array of Express middleware functions, or an object with per-method arrays (default, create, update, delete, get, getById)  { default: [], create: [], update: [], delete: [], get: [], getById: [] } .
+ * @param {Function} [routeOptions.authMiddleware] - Middleware for authentication.
+ *
+ * @param {Object} [routeOptions.validation] - Validation functions.
+ * @param {Function} [routeOptions.validation.create] - Validation function for create operations.
+ * @param {Function} [routeOptions.validation.update] - Validation function for update operations.
+ *
+ * @param {Object} [routeOptions.beforeActions] - Pre-operation hooks.
+ * @param {Function} [routeOptions.beforeActions.get] - Hook before GET all.
+ * @param {Function} [routeOptions.beforeActions.create] - Hook before POST.
+ * @param {Function} [routeOptions.beforeActions.update] - Hook before PUT.
+ * @param {Function} [routeOptions.beforeActions.destroy] - Hook before DELETE.
+ *
+ * @param {Object} [routeOptions.afterActions] - Post-operation hooks (same structure as beforeActions).
+ * @param {Function} [routeOptions.afterActions.get]
+ * @param {Function} [routeOptions.afterActions.create]
+ * @param {Function} [routeOptions.afterActions.update]
+ * @param {Function} [routeOptions.afterActions.destroy]
+ *
+ * @param {Object<string, Function>} [routeOptions.customActions] - Custom route handlers keyed by HTTP method.
+ * @param {Function} [routeOptions.errorHandler] - Custom error handler.
+ * @param {boolean} [routeOptions.includeRelations=false] - Include related models.
+ * @param {string[]} [routeOptions.excludeRelations] - Relation fields to exclude.
+ * @param {boolean} [routeOptions.enableConstraintChecking=true] - Enable DB constraint validation.
+ * @param {boolean} [routeOptions.enableCascadeHandling=true] - Enable cascade operation handling.
+ *
+ * @param {boolean} [routeOptions.autoDetectRelations=true] - Automatically detect and handle relations.
+ * @param {string[]} [routeOptions.excludeRoute] - HTTP methods to exclude (e.g., ['get', 'post']).
+ * @param {string[]} [routeOptions.excludeFields] - Fields to exclude from select, orderBy, and include (e.g., ['password']).
+ */
 
 
 
@@ -173,11 +173,11 @@ class PrismaCrudRouter {
 
     // Track which routes are registered
     const routeStatus = [
-      { method: 'GET',      label: 'GET',      path: routePath,         excluded: isExcluded('get') },
-      { method: 'GET',      label: 'GET BY ID', path: `${routePath}/:id`,  excluded: isExcluded('getById') },
-      { method: 'POST',     label: 'POST',     path: routePath,         excluded: isExcluded('post') },
-      { method: 'PUT',      label: 'PUT',      path: `${routePath}/:id`, excluded: isExcluded('put') },
-      { method: 'DELETE',   label: 'DELETE',   path: `${routePath}/:id`, excluded: isExcluded('delete') },
+      { method: 'GET', label: 'GET', path: routePath, excluded: isExcluded('get') },
+      { method: 'GET', label: 'GET BY ID', path: `${routePath}/:id`, excluded: isExcluded('getById') },
+      { method: 'POST', label: 'POST', path: routePath, excluded: isExcluded('post') },
+      { method: 'PUT', label: 'PUT', path: `${routePath}/:id`, excluded: isExcluded('put') },
+      { method: 'DELETE', label: 'DELETE', path: `${routePath}/:id`, excluded: isExcluded('delete') },
     ];
 
     // Register custom actions first
@@ -263,7 +263,7 @@ class PrismaCrudRouter {
       return customErrorHandler(error, method, this.apiResponse);
     }
 
-    let errorMessage = this.isDev ? (error.code ? ErrorCode[error.code]?.errorMessage  : error.message  ) : ErrorCode.default.errorMessage;
+    let errorMessage = this.isDev ? (error.code ? ErrorCode[error.code]?.errorMessage : error.message) : ErrorCode.default.errorMessage;
     let statusCode = error.code ? ErrorCode[error.code]?.statusCode : ErrorCode.default.statusCode;
 
     return this.apiResponse.error(method, null, errorMessage, statusCode);
@@ -340,4 +340,4 @@ class PrismaCrudRouter {
 
 
 
-module.exports = {PrismaCrudRouter,DatabaseAnalyzer,Api_Response,FileHandler};
+module.exports = { PrismaCrudRouter, DatabaseAnalyzer, Api_Response, FileHandler };

@@ -119,16 +119,16 @@ export default function AssessmentPage() {
           parsedOptions = [];
         }
       }
-      
+
       return {
         ...question,
         options: parsedOptions
       };
     });
-    
+
     // Store processed questions for easy access
     questionsByAssessment[assessment.id] = questions;
-    
+
     // Calculate total marks from questions
     const totalMarks = questions.reduce((sum: number, q: any) => sum + (q.marks || 0), 0);
     return {
@@ -158,8 +158,8 @@ export default function AssessmentPage() {
           text: q.text,
           type: q.type,
           marks: parseFloat(q.marks.toString()) || 1,
-          options: q.type === 'MULTIPLE_CHOICE' && q.options 
-            ? q.options.filter(opt => opt.trim() !== '') 
+          options: q.type === 'MULTIPLE_CHOICE' && q.options
+            ? q.options.filter(opt => opt.trim() !== '')
             : null,
           correctAnswer: q.correctAnswer || null,
           order: index,
@@ -174,8 +174,8 @@ export default function AssessmentPage() {
         });
       } else {
         // Create new assessment using custom POST endpoint
-        await createMutation.mutateAsync({ 
-          data: assessmentData 
+        await createMutation.mutateAsync({
+          data: assessmentData
         });
       }
     } catch (error) {
@@ -186,10 +186,10 @@ export default function AssessmentPage() {
 
   const handleEditAssessment = (assessment: Assessment) => {
     setEditingAssessment(assessment);
-    
+
     // Get existing questions for this assessment
     const existingQuestions = questionsByAssessment[assessment.id!] || [];
-    
+
     // Load assessment with existing questions
     loadAssessment(assessment, existingQuestions);
     setIsCreating(true);
@@ -219,7 +219,7 @@ export default function AssessmentPage() {
         courses={courses}
         editingAssessment={editingAssessment}
         isLoading={
-          createMutation.isPending || 
+          createMutation.isPending ||
           updateMutation.isPending
         }
         setAssessment={setAssessment}
