@@ -511,7 +511,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\amiye\\Desktop\\student-management-system\\backend\\prismaClient",
+      "value": "C:\\Users\\wendi\\student-management-system\\backend\\prismaClient",
       "fromEnvVar": null
     },
     "config": {
@@ -525,7 +525,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\amiye\\Desktop\\student-management-system\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\wendi\\student-management-system\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

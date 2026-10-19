@@ -88,7 +88,7 @@ export default function LoginPage() {
                   placeholder="Student ID (e.g. 1378/14)"
                   className="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-700 border-0 dark:border-0"
                   value={tab === "student" ? identifier : ""}
-                  onInput={e => handleInput("identifier", (e.target as HTMLInputElement).value)}
+                // onInput={e => handleInput("identifier", (e.target as HTMLInputElement).value)}
                   autoFocus={tab === "student"}
                 />
                 {errors.identifier && <div className="text-red-500 text-xs">{errors.identifier}</div>}
@@ -97,7 +97,7 @@ export default function LoginPage() {
                   placeholder="Password"
                   className="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-700 border-0 dark:border-0"
                   value={tab === "student" ? password : ""}
-                  onInput={e => handleInput("password", (e.target as HTMLInputElement).value)}
+                //  onInput={e => handleInput("password", (e.target as HTMLInputElement).value)}
                 />
                 {errors.password && <div className="text-red-500 text-xs">{errors.password}</div>}
                 <Button type="submit" className="w-full" disabled={loginMutation.status === 'pending' || !!errors.identifier || !!errors.password}>
@@ -112,7 +112,7 @@ export default function LoginPage() {
                   placeholder="Email"
                   className="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-700 border-0 dark:border-0"
                   value={tab === "user" ? identifier : ""}
-                  onInput={e => handleInput("identifier", (e.target as HTMLInputElement).value)}
+                //  onInput={e => handleInput("identifier", (e.target as HTMLInputElement).value)}
                   autoFocus={tab === "user"}
                 />
                 {errors.identifier && <div className="text-red-500 text-xs">{errors.identifier}</div>}
