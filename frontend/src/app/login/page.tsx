@@ -37,8 +37,11 @@ export default function LoginPage() {
   }
 
   function handleTabChange(v: string) {
-    setTab(v as LoginTab);
-    setErrors(validateLoginInput({ identifier, password, tab: v as LoginTab }));
+    const newTab = v as LoginTab;
+    setTab(newTab);
+    setIdentifier("");
+    setPassword("");
+    setErrors({});
   }
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -87,8 +90,8 @@ export default function LoginPage() {
                   type="text"
                   placeholder="Student ID (e.g. 1378/14)"
                   className="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-700 border-0 dark:border-0"
-                  value={tab === "student" ? identifier : ""}
-                // onInput={e => handleInput("identifier", (e.target as HTMLInputElement).value)}
+                  value={identifier}
+                  onChange={(e) => handleInput("identifier", e.target.value)}
                   autoFocus={tab === "student"}
                 />
                 {errors.identifier && <div className="text-red-500 text-xs">{errors.identifier}</div>}
@@ -96,8 +99,8 @@ export default function LoginPage() {
                   type="password"
                   placeholder="Password"
                   className="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-700 border-0 dark:border-0"
-                  value={tab === "student" ? password : ""}
-                //  onInput={e => handleInput("password", (e.target as HTMLInputElement).value)}
+                  value={password}
+                  onChange={(e) => handleInput("password", e.target.value)}
                 />
                 {errors.password && <div className="text-red-500 text-xs">{errors.password}</div>}
                 <Button type="submit" className="w-full" disabled={loginMutation.status === 'pending' || !!errors.identifier || !!errors.password}>
@@ -111,8 +114,8 @@ export default function LoginPage() {
                   type="email"
                   placeholder="Email"
                   className="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-700 border-0 dark:border-0"
-                  value={tab === "user" ? identifier : ""}
-                //  onInput={e => handleInput("identifier", (e.target as HTMLInputElement).value)}
+                  value={identifier}
+                  onChange={(e) => handleInput("identifier", e.target.value)}
                   autoFocus={tab === "user"}
                 />
                 {errors.identifier && <div className="text-red-500 text-xs">{errors.identifier}</div>}
@@ -120,8 +123,8 @@ export default function LoginPage() {
                   type="password"
                   placeholder="Password"
                   className="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-700 border-0 dark:border-0"
-                  value={tab === "user" ? password : ""}
-                  onInput={e => handleInput("password", (e.target as HTMLInputElement).value)}
+                  value={password}
+                  onChange={(e) => handleInput("password", e.target.value)}
                 />
                 {errors.password && <div className="text-red-500 text-xs">{errors.password}</div>}
                 <Button type="submit" className="w-full" disabled={loginMutation.status === 'pending' || !!errors.identifier || !!errors.password}>
